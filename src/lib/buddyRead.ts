@@ -73,12 +73,41 @@ export function pickMemberProgress(
   };
 }
 
+export function progressPercent(progress: MemberProgress): number {
+  if (!progress.status) return 0;
+  if (progress.status === 'finished') return 100;
+  if (progress.total_pages && progress.total_pages > 0) {
+    return Math.min(100, Math.round((progress.current_page / progress.total_pages) * 100));
+  }
+  return 0;
+}
+
 export function progressLabel(progress: MemberProgress): string {
   if (!progress.status) return 'Ще не додав(ла) книгу';
   if (progress.status === 'finished') return 'Прочитано';
   if (progress.total_pages && progress.total_pages > 0) {
-    const pct = Math.min(100, Math.round((progress.current_page / progress.total_pages) * 100));
+    const pct = progressPercent(progress);
     return `${pct}% · ${progress.current_page}/${progress.total_pages} стор.`;
   }
   return `${progress.current_page} стор.`;
+}
+
+export function averageMemberProgress(
+  memberIds: string[],
+  entries: {
+    id: string;
+    user_id: string;
+    status: BookEntryStatus;
+    current_page: number;
+    total_pages: number | null;
+    rating: number | null;
+    finished_on: string | null;
+    updated_at: string;
+  }[],
+): number {
+  if (!memberIds.length) return 0;
+  const sum = memberIds.reduce((acc, userId) => {
+    return acc + progressPercent(pickMemberProgress(entries, userId));
+  }, 0);
+  return Math.round(sum / memberIds.length);
 }

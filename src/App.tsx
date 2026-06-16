@@ -1,6 +1,14 @@
+import { useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { LoginForm } from './components/LoginForm';
+import {
+  hasCompletedOnboarding,
+  OnboardingWelcome,
+} from './components/OnboardingWelcome';
+import { AppearancePrefsEffect } from './components/AppearancePrefsEffect';
+import { AppOverlaysProvider } from './components/AppOverlays';
 import { OfflineProvider } from './components/OfflineProvider';
+import { RoomBackdrop } from './components/RoomBackdrop';
 import { useAuth } from './hooks/useAuth';
 import { AuthCallbackPage } from './pages/AuthCallbackPage';
 import { BuddyReadDetailPage } from './pages/BuddyReadDetailPage';
@@ -8,19 +16,36 @@ import { BuddyReadJoinPage } from './pages/BuddyReadJoinPage';
 import { BuddyReadsPage } from './pages/BuddyReadsPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { LibraryPage } from './pages/LibraryPage';
+import { NotesPage } from './pages/NotesPage';
 
 function AuthenticatedRoutes({ userId, userEmail }: { userId: string; userEmail: string }) {
+  const [onboarded, setOnboarded] = useState(() => hasCompletedOnboarding(userId));
+
+  if (!onboarded) {
+    return (
+      <OnboardingWelcome
+        userId={userId}
+        userEmail={userEmail}
+        onComplete={() => setOnboarded(true)}
+      />
+    );
+  }
+
   return (
     <OfflineProvider userId={userId}>
-      <Routes>
-        <Route path="/" element={<LibraryPage userId={userId} userEmail={userEmail} />} />
-        <Route path="/dashboard" element={<DashboardPage userId={userId} userEmail={userEmail} />} />
-        <Route path="/buddy-reads" element={<BuddyReadsPage userId={userId} userEmail={userEmail} />} />
-        <Route path="/buddy-reads/join/:token" element={<BuddyReadJoinPage />} />
-        <Route path="/buddy-reads/:id" element={<BuddyReadDetailPage userId={userId} userEmail={userEmail} />} />
-        <Route path="/auth/callback" element={<Navigate to="/" replace />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <AppearancePrefsEffect userId={userId} />
+      <AppOverlaysProvider userId={userId} userEmail={userEmail}>
+        <Routes>
+          <Route path="/" element={<LibraryPage userId={userId} userEmail={userEmail} />} />
+          <Route path="/dashboard" element={<DashboardPage userId={userId} userEmail={userEmail} />} />
+          <Route path="/notes" element={<NotesPage userId={userId} userEmail={userEmail} />} />
+          <Route path="/buddy-reads" element={<BuddyReadsPage userId={userId} userEmail={userEmail} />} />
+          <Route path="/buddy-reads/join/:token" element={<BuddyReadJoinPage />} />
+          <Route path="/buddy-reads/:id" element={<BuddyReadDetailPage userId={userId} userEmail={userEmail} />} />
+          <Route path="/auth/callback" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AppOverlaysProvider>
     </OfflineProvider>
   );
 }
@@ -29,7 +54,12 @@ function AppRoutes() {
   const { user, loading } = useAuth();
 
   if (loading) {
-    return <div className="center-page">Завантаження…</div>;
+    return (
+      <div className="center-page center-page--auth">
+        <RoomBackdrop />
+        <p style={{ position: 'relative', zIndex: 2, color: 'var(--ink-room-soft)' }}>Завантаження…</p>
+      </div>
+    );
   }
 
   return (
@@ -41,9 +71,10 @@ function AppRoutes() {
           user ? (
             <AuthenticatedRoutes userId={user.id} userEmail={user.email ?? ''} />
           ) : (
-            <div className="center-page">
+            <>
+              <RoomBackdrop />
               <LoginForm />
-            </div>
+            </>
           )
         }
       />

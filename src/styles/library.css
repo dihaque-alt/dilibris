@@ -1,0 +1,350 @@
+/* DiLibris — real photo library backdrop + books standing spine-out on real
+   wooden shelves. Linked by the prototype and the screens canvas. */
+
+:root {
+  /* fine procedural grain reused for leather spines & paper covers */
+  --grain-paper: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='120'%20height='120'%3E%3Cfilter%20id='p'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.9'%20numOctaves='2'%20seed='4'/%3E%3CfeColorMatrix%20type='saturate'%20values='0'/%3E%3C/filter%3E%3Crect%20width='100%25'%20height='100%25'%20filter='url(%23p)'/%3E%3C/svg%3E");
+  /* coarse soft blotches — the uneven dye/wear of aged leather & cloth */
+  --grain-leather: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='200'%20height='280'%3E%3Cfilter%20id='l'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.02%200.04'%20numOctaves='2'%20seed='9'/%3E%3CfeColorMatrix%20type='saturate'%20values='0'/%3E%3C/filter%3E%3Crect%20width='100%25'%20height='100%25'%20filter='url(%23l)'/%3E%3C/svg%3E");
+}
+
+/* ============ THE ROOM — real photo backdrop ========================== */
+.dl-room {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+  background: #0b0805;
+}
+.dl-photo {
+  position: absolute; inset: 0;
+  background: url('room-bg.jpg') no-repeat center center / cover;
+  filter: saturate(1.04) contrast(1.03);
+}
+/* keep the photo readable up top, deepen lower so shelves read against it */
+.dl-photo-grade {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(180deg, rgba(8,5,3,0.42) 0%, rgba(8,5,3,0.04) 20%, rgba(8,5,3,0) 38%,
+      rgba(9,6,4,0.5) 66%, rgba(7,4,2,0.8) 100%),
+    radial-gradient(120% 80% at 50% 6%, rgba(255,196,120,0.05), rgba(255,196,120,0) 55%);
+}
+/* dimming + vignette controlled by the Tweaks “Затемнення фону” slider */
+.dl-grade {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(4,3,1,0) 30%, rgba(4,3,1,0.94) 100%),
+    radial-gradient(120% 92% at 50% 20%, transparent 44%, rgba(4,2,1,0.62) 100%);
+  opacity: var(--dl-dim, 0.45);
+}
+
+/* ============ HERO — the cozy nook shows through above the shelves ===== */
+.dl-hero {
+  position: relative; display: flex; align-items: flex-end;
+  min-height: clamp(220px, 34vh, 420px);
+  padding: 0 clamp(16px, 4vw, 40px) 10px;
+}
+/* warm pool of light behind the title + a soft scrim so it sits in the room */
+.dl-hero::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(70% 120% at 16% 100%, rgba(255,196,116,0.12), rgba(255,196,116,0) 56%),
+    linear-gradient(0deg, rgba(6,4,2,0.5) 0%, rgba(6,4,2,0) 52%);
+}
+.dl-hero-inner { position: relative; z-index: 1; width: 100%; max-width: var(--maxw); margin: 0 auto; }
+.dl-hero .eyebrow {
+  font-family: var(--font-sans); font-weight: 600; font-size: var(--fs-sm);
+  letter-spacing: 0.4px; color: var(--ink-room-soft);
+  text-shadow: 0 1px 8px rgba(0,0,0,0.7);
+}
+.dl-hero h1 {
+  margin: 6px 0 0; font-family: var(--font-serif); font-weight: 700;
+  font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.05; color: var(--ink-room);
+  text-shadow: 0 2px 20px rgba(0,0,0,0.6); text-wrap: balance;
+}
+
+/* ============ THE LIBRARY (stacked shelves over the room) ============= */
+.dl-library {
+  position: relative; z-index: 1; max-width: var(--maxw); margin: 0 auto;
+  padding: 0 clamp(16px, 4vw, 40px) 90px;
+}
+
+/* ---- one shelf ---- */
+.dl-shelf { padding-top: 20px; }
+.dl-shelf-head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+  margin: 0 4px 4px;
+}
+.dl-shelf-titles { display: flex; align-items: baseline; gap: 12px; min-width: 0; }
+.dl-shelf-titles h2 {
+  margin: 0; font-family: var(--font-serif); font-weight: 700;
+  font-size: clamp(1.2rem, 2.3vw, 1.6rem); color: var(--ink-room);
+  letter-spacing: 0.2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  text-shadow: 0 1px 10px rgba(0,0,0,0.6);
+}
+.dl-count {
+  font-family: var(--font-sans); font-weight: 600; font-size: var(--fs-sm);
+  color: var(--ink-room-faint); flex: 0 0 auto; text-shadow: 0 1px 6px rgba(0,0,0,0.6);
+}
+/* engraved aged-brass plate, not a glassy pill */
+.dl-addbook {
+  flex: 0 0 auto; cursor: pointer; white-space: nowrap;
+  font-family: var(--font-sans); font-weight: 700; font-size: var(--fs-sm); letter-spacing: 0.3px;
+  padding: 7px 15px; border-radius: 7px; color: #3a2a14;
+  background: linear-gradient(180deg, #E4C57E 0%, #C8A656 48%, #A9842F 100%);
+  border: 1px solid rgba(60,40,12,0.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255,246,214,0.6), inset 0 -2px 3px rgba(80,52,16,0.45),
+    0 2px 5px rgba(0,0,0,0.45);
+  text-shadow: 0 1px 0 rgba(255,244,206,0.5);
+  transition: filter var(--dur-fast) ease, transform var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+}
+.dl-addbook:hover {
+  filter: brightness(1.07); transform: translateY(-1px);
+  box-shadow: inset 0 1px 0 rgba(255,246,214,0.7), inset 0 -2px 3px rgba(80,52,16,0.4), 0 3px 8px rgba(0,0,0,0.5);
+}
+.dl-addbook:active { transform: translateY(0); box-shadow: inset 0 2px 4px rgba(60,40,12,0.5); }
+
+/* ---- the stage: a recessed shelf bay, books, then a wooden board ---- */
+.dl-stage { position: relative; }
+
+/* dark recessed back of the bay so the row reads as a real shelf against the
+   busy photo, with the shelf above casting shadow on the books' heads */
+.dl-back {
+  position: absolute; left: -2px; right: -2px; top: 22px; bottom: 24px; z-index: 0;
+  border-radius: 3px;
+  background:
+    radial-gradient(120% 70% at 50% 122%, rgba(255,184,104,0.06), rgba(255,184,104,0) 58%),
+    radial-gradient(90% 90% at 0% 0%, rgba(0,0,0,0.5), rgba(0,0,0,0) 42%),
+    radial-gradient(90% 90% at 100% 0%, rgba(0,0,0,0.5), rgba(0,0,0,0) 42%),
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.18) 0 2px, rgba(40,26,15,0) 2px 66px),
+    linear-gradient(180deg, rgba(6,4,2,0.92) 0%, rgba(12,7,3,0.55) 16%, rgba(18,11,6,0.34) 50%, rgba(8,5,3,0.62) 100%),
+    #150d06;
+  box-shadow:
+    inset 0 12px 26px rgba(0,0,0,0.65), inset 0 -5px 12px rgba(0,0,0,0.45),
+    inset 15px 0 26px rgba(0,0,0,0.4), inset -15px 0 26px rgba(0,0,0,0.4);
+}
+
+.dl-rail {
+  display: flex; align-items: flex-end; gap: clamp(14px, 1.8vw, 26px);
+  overflow-x: auto; overflow-y: visible;
+  padding: 40px 8px 0; scroll-snap-type: x proximity; scrollbar-width: none;
+  position: relative; z-index: 2;
+}
+/* spine view: pack tightly like a real shelf */
+.dl-rail.is-spine { gap: 2px; padding-left: 12px; padding-right: 12px; }
+.dl-rail::-webkit-scrollbar { height: 0; display: none; }
+
+.dl-tile { flex: 0 0 auto; cursor: pointer; position: relative; scroll-snap-align: start; }
+.dl-cv { position: relative; transition: transform var(--dur-base) var(--ease-back); }
+/* spines: shave the per-book contact shadow (the bay back handles depth) */
+.dl-tile.is-spine .dl-cv::after { left: -1px; right: -1px; bottom: -4px; height: 8px; background: radial-gradient(60% 90% at 50% 0%, rgba(0,0,0,0.7), rgba(0,0,0,0) 80%); }
+
+/* ---- a single realistic spine ---- */
+.dl-spine {
+  position: relative; flex: 0 0 auto; overflow: hidden;
+  border-radius: 2px 2px 1px 1px;
+}
+.dl-spine .cloth {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image: var(--grain-paper); background-size: 90px 90px;
+  mix-blend-mode: overlay; opacity: 0.5;
+}
+/* large uneven blotches — sun-faded, hand-worn dye */
+.dl-spine .mottle {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image: var(--grain-leather); background-size: 150px 220px;
+  mix-blend-mode: soft-light; opacity: 0.7;
+}
+/* edge darkening into the neighbours + faint vertical fibre of the binding */
+.dl-spine .wear {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0) 11%, rgba(0,0,0,0) 89%, rgba(0,0,0,0.4) 100%),
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.05) 0 1px, rgba(255,232,190,0.02) 1px 2px, rgba(0,0,0,0) 2px 4px);
+}
+/* contact shadow where the book meets the board */
+.dl-cv::after {
+  content: ""; position: absolute; left: 2%; right: 2%; bottom: -7px; height: 14px;
+  background: radial-gradient(50% 80% at 50% 0%, rgba(0,0,0,0.65), rgba(0,0,0,0) 75%);
+  filter: blur(2px); z-index: -1;
+}
+/* status marker — a small enamelled pin pressed into the book */
+.dl-tile-dot {
+  position: absolute; top: 8px; right: 8px; width: 12px; height: 12px; border-radius: 999px;
+  box-shadow:
+    inset 0 -1px 2px rgba(0,0,0,0.5), inset 0 1px 1px rgba(255,255,255,0.4),
+    0 1px 2px rgba(0,0,0,0.6), 0 0 0 1.5px rgba(10,7,4,0.5);
+  z-index: 3;
+}
+.dl-tile-dot::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(circle at 34% 28%, rgba(255,255,255,0.72), rgba(255,255,255,0) 46%);
+}
+/* reading progress — warm gilt inlaid into a recessed dark groove */
+.dl-tile-prog {
+  position: absolute; left: 7%; right: 7%; bottom: 7px; height: 5px; z-index: 3;
+  border-radius: 999px; background: rgba(10,7,4,0.62);
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.6), 0 1px 0 rgba(255,236,190,0.12); overflow: hidden;
+}
+.dl-tile-prog i {
+  display: block; height: 100%; border-radius: 999px;
+  background: linear-gradient(180deg, #E9C766 0%, var(--gold-highlight) 45%, #C79A2E 100%);
+  box-shadow: inset 0 1px 0 rgba(255,247,214,0.5);
+}
+
+/* book detail card — warm paper sheet: faint fibre tooth over the ivory */
+.dl-detailcard::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background-image: var(--grain-paper); background-size: 88px 88px;
+  mix-blend-mode: multiply; opacity: 0.06;
+}
+.dl-detailcard > * { position: relative; z-index: 1; }
+
+/* hover tooltip with title/author */
+.dl-tip {
+  position: absolute; bottom: calc(100% - 30px); left: 50%; transform: translateX(-50%);
+  display: flex; flex-direction: column; gap: 2px; align-items: center; text-align: center;
+  padding: 8px 12px; border-radius: var(--r-md); pointer-events: none; z-index: 9;
+  background: rgba(18,12,8,0.94); box-shadow: 0 8px 22px rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,226,176,0.14); max-width: 230px;
+  transition: opacity var(--dur-fast) ease;
+}
+.dl-tip .t { font-family: var(--font-serif); font-weight: 700; font-size: var(--fs-sm); color: #F2E4CD; line-height: 1.2; }
+.dl-tip .a { font-family: var(--font-sans); font-size: var(--fs-xs); color: rgba(242,228,205,0.62); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+
+/* ---- the wooden shelf board the books stand on ---- */
+.dl-board {
+  position: relative; z-index: 2; height: 32px; margin-top: -3px; border-radius: 2px 2px 0 0;
+  background:
+    linear-gradient(180deg, rgba(0,0,0,0.36) 0%, rgba(0,0,0,0.04) 26%, rgba(0,0,0,0) 40%),
+    url('floor.jpg') repeat-x center 42% / 620px auto;
+  filter: brightness(0.96) saturate(0.95) contrast(1.05);
+  box-shadow:
+    inset 0 2px 0 rgba(255,232,184,0.28),
+    inset 0 -7px 13px rgba(0,0,0,0.5),
+    0 16px 26px rgba(0,0,0,0.55);
+}
+/* warm light pooling on the board (echoes the photo's fairy lights) */
+.dl-board::before {
+  content: ""; position: absolute; left: 0; right: 0; top: -34px; height: 34px; pointer-events: none;
+  background: radial-gradient(60% 90% at 50% 100%, rgba(255,196,116,0.12), rgba(255,196,116,0) 72%);
+}
+/* front lip / thickness of the board, with its cast shadow */
+.dl-board .lip {
+  position: absolute; left: 0; right: 0; top: 100%; height: 12px; border-radius: 0 0 3px 3px;
+  background: linear-gradient(180deg, #2a1b0f 0%, #1a1009 60%, #120b05 100%);
+  box-shadow: 0 14px 22px rgba(0,0,0,0.55);
+}
+
+/* empty shelf */
+.dl-empty {
+  display: flex; align-items: flex-end; min-height: 150px; padding: 0 8px 6px;
+  font-family: var(--font-serif); font-style: italic; font-size: var(--fs-body);
+  color: var(--ink-room-faint); text-shadow: 0 1px 8px rgba(0,0,0,0.6);
+}
+.dl-empty-btn {
+  border: 1.5px dashed var(--ink-room-faint); background: rgba(0,0,0,0.18);
+  border-radius: var(--r-md); cursor: pointer; align-items: center; min-height: 96px;
+  padding: 0 22px; transition: all var(--dur-fast) ease;
+}
+.dl-empty-btn:hover { border-color: var(--ink-room-soft); color: var(--ink-room); background: rgba(0,0,0,0.28); }
+
+/* library toolbar: search + sort, floats over the room like the shelves */
+.dl-libbar {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  max-width: var(--maxw); margin: 0 auto; padding: 4px 4px 8px;
+}
+.dl-libsearch {
+  display: flex; align-items: center; gap: 9px; flex: 1 1 260px; min-width: 0;
+  background: rgba(20,14,8,0.42); border: 1px solid rgba(255,240,210,0.16);
+  border-radius: var(--r-pill); padding: 9px 16px; backdrop-filter: blur(6px);
+}
+.dl-libsearch span { color: var(--ink-room-faint); font-size: 1.05rem; }
+.dl-libsearch input {
+  flex: 1; min-width: 0; border: none; outline: none; background: transparent;
+  font-family: var(--font-sans); font-size: var(--fs-sm); color: var(--ink-room);
+}
+.dl-libsearch input::placeholder { color: var(--ink-room-faint); }
+.dl-libsearch button {
+  border: none; background: transparent; cursor: pointer; color: var(--ink-room-faint);
+  font-size: 0.8rem; padding: 2px 4px;
+}
+.dl-libsort { display: flex; gap: 4px; padding: 4px; background: rgba(20,14,8,0.42); border: 1px solid rgba(255,240,210,0.16); border-radius: var(--r-pill); backdrop-filter: blur(6px); flex: 0 0 auto; }
+.dl-libsort button {
+  border: none; cursor: pointer; background: transparent; color: var(--ink-room-soft);
+  font-family: var(--font-sans); font-weight: 600; font-size: var(--fs-sm);
+  padding: 6px 13px; border-radius: var(--r-pill); white-space: nowrap; transition: all var(--dur-fast) ease;
+}
+.dl-libsort button.is-active { background: var(--nav-active-bg); color: var(--ink-room); box-shadow: var(--nav-active-shadow); }
+
+/* note feed filter chips (sit on warm paper, not the room) */
+.dl-notefilter {
+  border: 1.5px solid var(--line-strong); background: var(--bg-card); cursor: pointer;
+  font-family: var(--font-sans); font-weight: 600; font-size: var(--fs-sm);
+  color: var(--text-muted); padding: 7px 14px; border-radius: var(--r-pill);
+  transition: all var(--dur-fast) ease;
+}
+.dl-notefilter:hover { border-color: var(--text-faint); color: var(--text-main); }
+.dl-notefilter[data-active="true"] { background: var(--accent-lime-light); border-color: var(--accent-lime); color: var(--accent-lime-deep); }
+
+/* ============ SCREENS — Dashboard & Buddy reads over the room ========= */
+/* page container: same width + gutters as the library, floats over the room */
+.dl-page {
+  position: relative; z-index: 1; max-width: var(--maxw); margin: 0 auto;
+  padding: clamp(8px, 2vw, 20px) clamp(16px, 4vw, 40px) 90px;
+}
+.dl-pagehead {
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 16px;
+  flex-wrap: wrap; margin: clamp(8px, 3vh, 26px) 0 22px;
+}
+.dl-pagehead-eyebrow {
+  font-family: var(--font-sans); font-weight: 600; font-size: var(--fs-sm);
+  letter-spacing: 0.4px; color: var(--ink-room-soft); text-shadow: 0 1px 8px rgba(0,0,0,0.7);
+}
+.dl-pagehead-title {
+  margin: 6px 0 0; font-family: var(--font-serif); font-weight: 700;
+  font-size: clamp(1.9rem, 4.4vw, 2.9rem); line-height: 1.05; color: var(--ink-room);
+  text-shadow: 0 2px 20px rgba(0,0,0,0.6); text-wrap: balance;
+}
+.dl-pagehead-sub {
+  margin-top: 8px; max-width: 46ch; font-family: var(--font-sans); font-size: var(--fs-sm);
+  color: var(--ink-room-soft); text-shadow: 0 1px 8px rgba(0,0,0,0.6);
+}
+
+/* warm paper card floating on the dark room */
+.dl-panel {
+  background: var(--bg-card); border: 1px solid rgba(120,90,50,0.12);
+  border-radius: var(--r-lg); box-shadow: 0 18px 44px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.26), inset 0 1px 0 rgba(255,255,255,0.7);
+  padding: 20px;
+}
+.dl-panel.is-soft { background: var(--bg-card-soft); }
+.dl-panel.is-clickable { cursor: pointer; transition: transform var(--dur-base) var(--ease-warm), box-shadow var(--dur-base) ease; }
+.dl-panel.is-clickable:hover { transform: translateY(-3px); box-shadow: 0 26px 56px rgba(0,0,0,0.46), 0 8px 18px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.7); }
+.dl-panel.is-clickable:active { transform: translateY(-1px); }
+
+.dl-challenge {
+  background: linear-gradient(135deg, #FFFCF2 0%, #FFF4D6 100%) !important;
+  border-color: #EFDFA8 !important;
+}
+
+.dl-bar { border-radius: 6px 6px 0 0; transition: height var(--dur-base) var(--ease-warm); }
+
+/* ghost button tuned to read on the dark room backdrop */
+.dl-ghost-room {
+  background: rgba(255,242,222,0.07); border-color: rgba(255,238,209,0.22); color: var(--ink-room);
+  backdrop-filter: saturate(140%) blur(6px); -webkit-backdrop-filter: saturate(140%) blur(6px);
+}
+.dl-ghost-room:hover { background: rgba(255,242,222,0.14); border-color: rgba(255,238,209,0.4); color: var(--ink-room); }
+
+@media (max-width: 640px) {
+  .dl-pagehead-title { font-size: 1.8rem; }
+}
+
+/* ============ DAY MODE (kept for the screens canvas) ================== */
+:root[data-mood="day"] .dl-room { background: var(--bg-room); }
+:root[data-mood="day"] .dl-photo { filter: saturate(1) brightness(1.04); }
+:root[data-mood="day"] .dl-board { filter: brightness(1.05) saturate(0.95); }
+
+@media (max-width: 640px) {
+  .dl-hero { min-height: clamp(170px, 26vh, 280px); }
+  .dl-shelf-titles h2 { font-size: 1.18rem; }
+  .dl-rail { padding-top: 34px; }
+}

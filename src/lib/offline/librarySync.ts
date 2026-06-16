@@ -276,6 +276,57 @@ export async function updateEntry(userId: string, entryId: string, patch: Record
   });
 }
 
+export async function renameShelf(userId: string, shelfId: string, name: string) {
+  const trimmed = name.trim();
+  if (!trimmed) throw new Error('Назва полиці не може бути порожньою');
+
+  const existing = await offlineDb.shelves.get(shelfId);
+  if (existing) {
+    await offlineDb.shelves.put({ ...existing, name: trimmed, updated_at: nowIso() });
+  }
+
+  if (isOnline()) {
+    const { error } = await supabase
+      .from('user_shelves')
+      .update({ name: trimmed, updated_at: nowIso() })
+      .eq('id', shelfId);
+    if (error) throw error;
+    return;
+  }
+
+  await enqueue(userId, {
+    table: 'user_shelves',
+    operation: 'update',
+    payload: { id: shelfId, name: trimmed },
+  });
+}
+
+export async function reorderShelves(userId: string, orderedIds: string[]) {
+  await Promise.all(orderedIds.map((id, index) => updateShelfOrder(userId, id, index)));
+}
+
+export async function updateShelfOrder(userId: string, shelfId: string, sortOrder: number) {
+  const existing = await offlineDb.shelves.get(shelfId);
+  if (existing) {
+    await offlineDb.shelves.put({ ...existing, sort_order: sortOrder, updated_at: nowIso() });
+  }
+
+  if (isOnline()) {
+    const { error } = await supabase
+      .from('user_shelves')
+      .update({ sort_order: sortOrder })
+      .eq('id', shelfId);
+    if (error) throw error;
+    return;
+  }
+
+  await enqueue(userId, {
+    table: 'user_shelves',
+    operation: 'update',
+    payload: { id: shelfId, sort_order: sortOrder },
+  });
+}
+
 export async function fetchSessions(entryId: string): Promise<ReadingSession[]> {
   if (isOnline()) {
     const { data, error } = await supabase

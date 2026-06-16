@@ -9,7 +9,9 @@ export function OfflineBanner({ online, pending, syncing }: OfflineBannerProps) 
 
   return (
     <div className={`offline-banner ${online ? 'offline-banner--sync' : 'offline-banner--offline'}`}>
-      {!online && <span>Offline — показуємо збережену бібліотеку.</span>}
+      {!online && (
+        <span>Показано збережену копію — сервер тимчасово недоступний.</span>
+      )}
       {online && syncing && <span>Синхронізуємо зміни…</span>}
       {online && !syncing && pending > 0 && (
         <span>Є {pending} змін, що очікують синхронізації.</span>

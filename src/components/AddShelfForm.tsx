@@ -30,15 +30,26 @@ export function AddShelfForm({ onSubmit, onCancel }: AddShelfFormProps) {
   }
 
   return (
-    <form className="inline-form" onSubmit={handleSubmit}>
-      <h3>Нова полиця</h3>
-      <label>
-        Назва
-        <input value={name} onChange={(e) => setName(e.target.value)} required maxLength={80} />
+    <form className="add-shelf-form" onSubmit={handleSubmit}>
+      <label className="dl-field">
+        <span className="dl-field-label">Назва полиці</span>
+        <input
+          className="dl-field-input"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="напр. Літо 2026"
+          required
+          maxLength={80}
+          autoFocus
+        />
       </label>
-      <label>
-        Статус (опційно)
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as BookEntryStatus | '')}>
+      <label className="dl-field">
+        <span className="dl-field-label">Статус (необов&apos;язково)</span>
+        <select
+          className="dl-field-input"
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value as BookEntryStatus | '')}
+        >
           <option value="">Будь-який</option>
           {(Object.entries(STATUS_LABELS) as [BookEntryStatus, string][]).map(([value, label]) => (
             <option key={value} value={value}>
@@ -48,12 +59,12 @@ export function AddShelfForm({ onSubmit, onCancel }: AddShelfFormProps) {
         </select>
       </label>
       {error && <p className="form-error">{error}</p>}
-      <div className="form-actions">
-        <button type="button" className="btn-secondary" onClick={onCancel}>
+      <div className="add-shelf-actions">
+        <button type="button" className="dl-ghost" onClick={onCancel}>
           Скасувати
         </button>
-        <button type="submit" disabled={saving}>
-          {saving ? 'Зберігаємо…' : 'Створити'}
+        <button type="submit" className="dl-primary" disabled={saving || !name.trim()}>
+          {saving ? 'Зберігаємо…' : 'Створити полицю'}
         </button>
       </div>
     </form>

@@ -8,6 +8,15 @@ export const STATUS_LABELS: Record<BookEntryStatus, string> = {
   re_reading: 'Перечитую',
 };
 
+/** Maps DB status → handoff CSS token suffix (--status-{key}) */
+export const STATUS_CSS_VAR: Record<BookEntryStatus, string> = {
+  want_to_read: 'want',
+  reading: 'reading',
+  finished: 'done',
+  dnf: 'dnf',
+  re_reading: 'reread',
+};
+
 export const PLACEHOLDER_COVER = '/placeholder-cover.svg';
 
 export const NOTE_TYPE_LABELS = {

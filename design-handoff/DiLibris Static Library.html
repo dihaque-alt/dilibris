@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>DiLibris — Бібліотека (статична, 375px)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;700&family=EB+Garamond:ital,wght@0,500;0,700;1,500&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="tokens.css" />
+<style>
+  /* ---- This file is pure HTML + CSS. No JavaScript. 375px reference. ---- */
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); color: var(--text-main); background: #cfc4b2; display: grid; place-items: start center; padding: 24px; }
+  .phone { width: 375px; min-height: 760px; background: var(--bg-room); border-radius: 28px; overflow: hidden; box-shadow: var(--shadow-card); position: relative; }
+
+  /* grain tokens (mirrors library.css) */
+  :root { --grain-paper: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='120'%20height='120'%3E%3Cfilter%20id='p'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.9'%20numOctaves='2'%20seed='4'/%3E%3CfeColorMatrix%20type='saturate'%20values='0'/%3E%3C/filter%3E%3Crect%20width='100%25'%20height='100%25'%20filter='url(%23p)'/%3E%3C/svg%3E"); }
+
+  /* room */
+  .room { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+  .wall { position: absolute; inset: 0; background: radial-gradient(90% 60% at 84% -6%, #FFF3D4 0%, rgba(255,243,212,0) 46%), linear-gradient(180deg, #ECE0CC 0%, #E5D6BE 46%, #D8C6A9 100%); }
+  .floor { position: absolute; left: 0; right: 0; bottom: 0; height: 130px; background: linear-gradient(180deg, rgba(46,30,16,0.3) 0, rgba(46,30,16,0) 12%), repeating-linear-gradient(90deg, rgba(46,30,16,0.16) 0 2px, rgba(46,30,16,0) 2px 70px), linear-gradient(180deg, #B58C63, #946B45); }
+  .baseboard { position: absolute; left: 0; right: 0; bottom: 130px; height: 14px; background: linear-gradient(180deg, #EFE6D3, #BFAE90); }
+  .vignette { position: absolute; inset: 0; background: radial-gradient(116% 78% at 50% 34%, rgba(36,32,28,0) 52%, rgba(36,32,28,0.16) 100%); }
+
+  /* header */
+  header { position: relative; z-index: 2; display: flex; align-items: center; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--line); background: rgba(249,246,240,0.86); }
+  header b { font-family: var(--font-brand); font-weight: 700; font-size: 1.2rem; }
+  header .sp { flex: 1; }
+  .btn-primary { border: none; background: var(--accent-lime); color: #fff; font-weight: 600; font-size: var(--fs-xs); padding: 8px 14px; border-radius: var(--r-pill); box-shadow: 0 3px 8px rgba(94,126,84,0.28); }
+  .nav { position: relative; z-index: 2; display: flex; gap: 4px; padding: 8px 12px 12px; background: rgba(249,246,240,0.86); border-bottom: 1px solid var(--line); }
+  .nav span { padding: 6px 13px; border-radius: var(--r-pill); font-weight: 600; font-size: var(--fs-sm); color: var(--text-muted); }
+  .nav span.on { color: var(--text-main); background: var(--bg-card); box-shadow: var(--shadow-book); }
+
+  main { position: relative; z-index: 1; padding: 16px 14px 40px; }
+  .kicker { font-size: var(--fs-sm); color: var(--text-muted); }
+  h1 { font-family: var(--font-serif); font-weight: 700; font-size: 1.6rem; margin: 2px 0 16px; }
+
+  /* pendant */
+  .pendant { position: relative; height: 44px; display: flex; justify-content: center; z-index: 2; }
+  .pendant .cord { width: 2px; height: 26px; background: linear-gradient(180deg,#7A5538,#3A2E22); }
+  .pendant .shade { position: absolute; top: 20px; width: 60px; height: 26px; background: linear-gradient(180deg,#F0D27A,#D8A82A 38%,#9C7A18); border-radius: 46% 46% 14px 14px / 78% 78% 14px 14px; box-shadow: inset 0 2px 1px rgba(255,250,228,0.75), 0 6px 14px rgba(36,32,28,0.3); }
+
+  /* bookcase */
+  .case { position: relative; z-index: 1; filter: drop-shadow(0 22px 26px rgba(46,30,16,0.34)); }
+  .cornice { height: 18px; margin: 0 -8px; background: repeating-linear-gradient(0deg, rgba(46,30,16,0.1) 0 1px, rgba(46,30,16,0) 1px 5px), linear-gradient(180deg,#B88E6B,#8A5F3D 52%,#5E4029); border-radius: 9px 9px 3px 3px; box-shadow: inset 0 2px 0 rgba(255,247,230,0.5); }
+  .body { position: relative; padding: 0 16px; background: repeating-linear-gradient(90deg, rgba(46,30,16,0.06) 0 1px, rgba(46,30,16,0) 1px 6px), linear-gradient(180deg,#B8946B,#A77E55); box-shadow: inset 0 16px 22px -12px rgba(46,30,16,0.6), inset 12px 0 18px -12px rgba(46,30,16,0.45), inset -12px 0 18px -12px rgba(46,30,16,0.45); }
+  .post { position: absolute; top: 0; bottom: 0; width: 16px; z-index: 3; background: repeating-linear-gradient(90deg, rgba(46,30,16,0.13) 0 1px, rgba(46,30,16,0) 1px 5px), linear-gradient(90deg,#8A5F3D,#5E4029); }
+  .post.l { left: 0; } .post.r { right: 0; }
+  .base { height: 22px; margin: 0 -12px; background: repeating-linear-gradient(0deg, rgba(46,30,16,0.1) 0 1px, rgba(46,30,16,0) 1px 5px), linear-gradient(180deg,#A9784F,#7A5538 68%,#5E4029); border-radius: 3px 3px 12px 12px; box-shadow: var(--shadow-shelf); }
+
+  .comp { position: relative; }
+  .books { display: flex; align-items: flex-end; gap: 16px; padding: 22px 8px 0; overflow: hidden; }
+  .plank { position: relative; height: 30px; }
+  .plank .face { position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(46,30,16,0.08) 0 1px, rgba(46,30,16,0) 1px 4px), linear-gradient(180deg,#BE9268,#9A6C46 46%,#67442B); box-shadow: 0 10px 18px rgba(36,32,28,0.28), inset 0 -3px 6px rgba(46,30,16,0.5); }
+  .plank .lip { position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(180deg, rgba(255,247,230,0.55), rgba(255,247,230,0)); }
+  .nameplate { position: absolute; z-index: 4; top: 50%; left: 14px; transform: translateY(-50%); display: inline-flex; align-items: center; gap: 8px; padding: 4px 10px; border-radius: var(--r-md); background: linear-gradient(180deg,#FFFDF9,#F4ECDE); box-shadow: 0 4px 10px rgba(36,32,28,0.22); border: 1px solid rgba(94,64,41,0.18); }
+  .nameplate .lbl { font-family: var(--font-serif); font-weight: 700; font-size: var(--fs-sm); white-space: nowrap; }
+  .pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 999px; font-weight: 600; font-size: 11px; color: var(--status-reading); background: var(--status-reading-bg); }
+  .pill i { width: 6px; height: 6px; border-radius: 999px; background: var(--status-reading); }
+  .addbook { position: absolute; z-index: 4; top: 50%; right: 12px; transform: translateY(-50%); border: none; font-weight: 600; font-size: 11px; padding: 5px 11px; border-radius: 999px; background: rgba(255,253,249,0.92); color: var(--accent-lime-deep); box-shadow: 0 3px 8px rgba(36,32,28,0.2); }
+
+  /* book covers (static) */
+  .book { position: relative; flex: 0 0 auto; width: 78px; border-radius: var(--r-book); overflow: hidden; box-shadow: var(--shadow-book); }
+  .book .art { position: absolute; inset: 0; display: flex; flex-direction: column; }
+  .book .ttl { font-family: var(--font-serif); font-weight: 700; line-height: 1.1; }
+  .book .ath { font-family: var(--font-sans); font-weight: 600; font-size: 7px; text-transform: uppercase; letter-spacing: .6px; opacity: .9; }
+  .book .spine { position: absolute; top: 0; bottom: 0; left: 0; width: 11%; background: linear-gradient(90deg, rgba(0,0,0,0.22), rgba(255,255,255,0.2) 28%, rgba(255,255,255,0) 60%, rgba(0,0,0,0.1)); }
+  .book .edge { position: absolute; top: 0; right: 0; width: 7%; height: 100%; background: linear-gradient(90deg, rgba(0,0,0,0), rgba(0,0,0,0.22)); }
+  .book .vg { position: absolute; inset: 0; background: radial-gradient(135% 100% at 34% 14%, rgba(255,255,255,0.12), rgba(0,0,0,0) 44%, rgba(0,0,0,0.24)); }
+  .book .grain { position: absolute; inset: 0; background-image: var(--grain-paper); background-size: 120px; mix-blend-mode: overlay; opacity: 0.45; }
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="room">
+    <div class="wall"></div>
+    <div class="vignette"></div>
+    <div class="baseboard"></div>
+    <div class="floor"></div>
+  </div>
+
+  <header>
+    <svg width="26" height="26" viewBox="0 0 32 32"><rect x="3" y="5" width="26" height="22" rx="5" fill="var(--accent-lime)"/><rect x="3" y="5" width="13" height="22" rx="5" fill="var(--accent-lime-deep)"/><rect x="14.5" y="7" width="3" height="18" rx="1.5" fill="var(--bg-room)"/><circle cx="9.5" cy="16" r="2" fill="var(--gold-highlight)"/></svg>
+    <b>DiLibris</b>
+    <span class="sp"></span>
+    <button class="btn-primary">+ Полиця</button>
+  </header>
+  <div class="nav"><span class="on">Бібліотека</span><span>Дашборд</span><span>Спільне читання</span></div>
+
+  <main>
+    <div class="kicker">Твоя бібліотека</div>
+    <h1>Вечір удома з книгами</h1>
+
+    <div class="pendant"><div class="cord"></div><div class="shade"></div></div>
+
+    <div class="case">
+      <div class="cornice"></div>
+      <div class="body">
+        <div class="post l"></div>
+        <div class="post r"></div>
+
+        <!-- shelf 1: Читаю зараз -->
+        <div class="comp">
+          <div class="books">
+            <div class="book" style="height:120px">
+              <div class="art" style="background:linear-gradient(160deg,#46604E,#33453A)">
+                <div style="padding:9px 8px;display:flex;flex-direction:column;height:100%">
+                  <div style="width:40%;height:2px;background:#9DB69B;margin-bottom:7px"></div>
+                  <div class="ttl" style="font-size:12px;color:#ECF1EB">Тигролови</div>
+                  <div style="flex:1"></div>
+                  <div class="ath" style="color:#ECF1EB">Багряний</div>
+                </div>
+              </div>
+              <div class="grain"></div><div class="vg"></div><div class="spine"></div><div class="edge"></div>
+            </div>
+            <div class="book" style="height:118px">
+              <div class="art" style="background:linear-gradient(180deg,#9A5563,#7C424F)">
+                <div style="position:absolute;top:33%;left:0;right:0;bottom:30%;background:#EBD7DC;display:grid;place-items:center;padding:0 6px"><div class="ttl" style="font-size:10px;color:#7C424F;text-align:center">Польові дослідження</div></div>
+                <div class="ath" style="position:absolute;left:0;right:0;bottom:8px;text-align:center;color:#F6E9EC">Забужко</div>
+              </div>
+              <div class="grain"></div><div class="vg"></div><div class="spine"></div><div class="edge"></div>
+            </div>
+            <div class="book" style="height:124px">
+              <div class="art" style="background:linear-gradient(180deg,#A37F33,#8A6A22)">
+                <div style="position:absolute;top:14px;left:50%;transform:translateX(-50%);width:40px;height:40px;border-radius:50%;background:radial-gradient(circle at 38% 34%,#C8A24C,#7C611C);box-shadow:0 0 10px #C8A24C"></div>
+                <div class="ttl" style="position:absolute;left:7px;right:7px;bottom:24px;font-size:11px;color:#2C2410;text-align:center">Місто</div>
+                <div class="ath" style="position:absolute;left:0;right:0;bottom:8px;text-align:center;color:#2C2410">Підмогильний</div>
+              </div>
+              <div class="grain"></div><div class="vg"></div><div class="spine"></div><div class="edge"></div>
+            </div>
+            <!-- placeholder cover: cat with knife -->
+            <div class="book" style="height:116px;background:linear-gradient(165deg,#FBF3E5,#EFE2CC)">
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;padding:8px 7px">
+                <div style="flex:1;display:grid;place-items:center;min-height:0">
+                  <svg viewBox="0 0 130 140" style="width:80%"><path d="M24 112 q-22 2 -22 -22 q1 -13 11 -12 q-7 6 -4 15 q4 9 15 9 Z" fill="#8A6346"/><ellipse cx="52" cy="106" rx="30" ry="26" fill="#9E7453"/><ellipse cx="34" cy="126" rx="10" ry="7" fill="#9E7453"/><path d="M24 40 L33 14 L47 35 Z" fill="#9E7453"/><path d="M82 40 L73 14 L59 35 Z" fill="#9E7453"/><path d="M28 38 L33 21 L41 34 Z" fill="#C28A4E"/><path d="M78 38 L73 21 L65 34 Z" fill="#C28A4E"/><ellipse cx="53" cy="56" rx="31" ry="28" fill="#9E7453"/><ellipse cx="43" cy="53" rx="5" ry="6.3" fill="#24201C"/><ellipse cx="64" cy="53" rx="5" ry="6.3" fill="#24201C"/><circle cx="44.8" cy="50.4" r="1.7" fill="#FBF3E8"/><circle cx="65.8" cy="50.4" r="1.7" fill="#FBF3E8"/><path d="M50 62 L56 62 L53 66 Z" fill="#7A5538"/><path d="M53 66 q-4 5 -9 3 M53 66 q4 5 9 3" stroke="#7A5538" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M74 102 Q92 90 98 74" stroke="#9E7453" stroke-width="15" fill="none" stroke-linecap="round"/><g transform="rotate(20 99 60)"><path d="M92 52 L106 52 L103 14 L98.5 8 L94 18 Z" fill="#D7DBE0"/><path d="M101 50 L106 52 L103.5 16 L101 18 Z" fill="#BFC5CC"/><rect x="90" y="52" width="18" height="7" rx="2" fill="#9AA0A8"/><rect x="92" y="58" width="14" height="26" rx="5" fill="#6E4A2F"/></g><ellipse cx="97" cy="74" rx="10" ry="8" fill="#9E7453"/></svg>
+                </div>
+                <div style="text-align:center"><div class="ttl" style="font-size:11px;color:#3A2E22">Кобзар</div><div style="font-size:7px;color:#72685E;margin-top:2px">Шевченко</div></div>
+              </div>
+              <div class="spine"></div><div class="edge"></div>
+            </div>
+          </div>
+          <div class="plank"><div class="face"></div><div class="lip"></div><div class="nameplate"><span class="lbl">Читаю зараз</span><span class="pill"><i></i>Читаю зараз</span></div><button class="addbook">+ Книга</button></div>
+        </div>
+
+        <!-- shelf 2: Прочитано -->
+        <div class="comp">
+          <div class="books">
+            <div class="book" style="height:120px">
+              <div class="art" style="background:linear-gradient(160deg,#3A716D,#2A5755)">
+                <div style="padding:9px 8px;display:flex;flex-direction:column;height:100%">
+                  <div style="width:40%;height:2px;background:#97C0BC;margin-bottom:7px"></div>
+                  <div class="ttl" style="font-size:12px;color:#E7F0EF">Лісова пісня</div>
+                  <div style="flex:1"></div><div class="ath" style="color:#E7F0EF">Українка</div>
+                </div>
+              </div>
+              <div class="grain"></div><div class="vg"></div><div class="spine"></div><div class="edge"></div>
+            </div>
+            <div class="book" style="height:122px">
+              <div class="art" style="background:linear-gradient(165deg,#67526C,#4E3D54)">
+                <div style="position:absolute;inset:7px;border:1.5px solid #B59CBA;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 6px">
+                  <div style="width:10px;height:2px;background:#B59CBA;margin-bottom:6px"></div>
+                  <div class="ttl" style="font-size:10px;color:#F4EEF1;text-align:center">Маруся Чурай</div>
+                  <div style="width:10px;height:2px;background:#B59CBA;margin:6px 0"></div>
+                  <div class="ath" style="color:#F4EEF1">Костенко</div>
+                </div>
+              </div>
+              <div class="grain"></div><div class="vg"></div><div class="spine"></div><div class="edge"></div>
+            </div>
+            <div class="book" style="height:118px">
+              <div class="art">
+                <div style="flex:0 0 54%;position:relative;background:linear-gradient(150deg,#3C3B40,#252428);overflow:hidden"><div style="position:absolute;inset:0;background:repeating-linear-gradient(135deg,#928C84 0 5px,#252428 5px 10px);opacity:.5"></div></div>
+                <div style="flex:1;background:#E7E2DB;padding:7px;display:flex;flex-direction:column;justify-content:center"><div class="ttl" style="font-size:11px;color:#2E2D31">Інтернат</div><div class="ath" style="color:#52504B;margin-top:3px">Жадан</div></div>
+              </div>
+              <div class="grain"></div><div class="vg"></div><div class="spine"></div><div class="edge"></div>
+            </div>
+            <div class="book" style="height:124px">
+              <div class="art" style="background:linear-gradient(160deg,#B06A52,#8E4E38)">
+                <div style="padding:9px 8px;display:flex;flex-direction:column;height:100%">
+                  <div style="width:40%;height:2px;background:#E0A98F;margin-bottom:7px"></div>
+                  <div class="ttl" style="font-size:11px;color:#F8EDE7">Солодка Даруся</div>
+                  <div style="flex:1"></div><div class="ath" style="color:#F8EDE7">Матіос</div>
+                </div>
+              </div>
+              <div class="grain"></div><div class="vg"></div><div class="spine"></div><div class="edge"></div>
+            </div>
+          </div>
+          <div class="plank"><div class="face"></div><div class="lip"></div><div class="nameplate"><span class="lbl">Прочитано</span><span class="pill" style="color:var(--status-done);background:var(--status-done-bg)"><i style="background:var(--status-done)"></i>Прочитано</span></div><button class="addbook">+ Книга</button></div>
+        </div>
+      </div>
+      <div class="base"></div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

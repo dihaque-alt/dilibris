@@ -26,7 +26,7 @@
 |---|---|
 | **Клієнт** | Web (mobile-first responsive) |
 | **Backend** | Supabase (Postgres + Auth + RLS) |
-| **Auth** | Email magic link |
+| **Auth** | Email magic link + Google OAuth (Supabase) |
 | **Offline** | Так — локальний кеш + sync при reconnect |
 | **Sync** | Один акаунт, кілька пристроїв |
 

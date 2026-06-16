@@ -1,11 +1,13 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { useIsMobile } from '../hooks/useIsMobile';
 import { openLibraryCoverUrl, openLibraryWorkId, searchOpenLibrary } from '../lib/openLibrary';
-import { formatAuthors } from '../lib/labels';
+import { formatAuthors, STATUS_LABELS } from '../lib/labels';
 import type { BookEntryStatus, OpenLibraryHit } from '../types/database';
 import { BookCover } from './BookCover';
 
 interface AddBookModalProps {
   shelfId: string | null;
+  shelfName?: string;
   defaultStatus: BookEntryStatus;
   onClose: () => void;
   searchEnabled?: boolean;
@@ -20,8 +22,18 @@ interface AddBookModalProps {
   }) => Promise<void>;
 }
 
-export function AddBookModal({ shelfId, defaultStatus, onClose, onAdd, searchEnabled = true }: AddBookModalProps) {
-  const [mode, setMode] = useState<'search' | 'manual'>(searchEnabled ? 'search' : 'manual');
+type Tab = 'search' | 'manual';
+
+export function AddBookModal({
+  shelfId,
+  shelfName,
+  defaultStatus,
+  onClose,
+  onAdd,
+  searchEnabled = true,
+}: AddBookModalProps) {
+  const mobile = useIsMobile();
+  const [tab, setTab] = useState<Tab>(searchEnabled ? 'search' : 'manual');
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<OpenLibraryHit[]>([]);
   const [searching, setSearching] = useState(false);
@@ -29,12 +41,17 @@ export function AddBookModal({ shelfId, defaultStatus, onClose, onAdd, searchEna
 
   const [title, setTitle] = useState('');
   const [authors, setAuthors] = useState('');
+  const [pages, setPages] = useState('');
   const [status, setStatus] = useState<BookEntryStatus>(defaultStatus);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (mode !== 'search') return;
+    setStatus(defaultStatus);
+  }, [defaultStatus]);
+
+  useEffect(() => {
+    if (tab !== 'search' || !searchEnabled) return;
     const q = query.trim();
     if (q.length < 2) {
       setResults([]);
@@ -55,9 +72,10 @@ export function AddBookModal({ shelfId, defaultStatus, onClose, onAdd, searchEna
     }, 400);
 
     return () => window.clearTimeout(timer);
-  }, [query, mode]);
+  }, [query, tab, searchEnabled]);
 
   async function pickHit(hit: OpenLibraryHit) {
+    if (!shelfId) return;
     setSaving(true);
     setError('');
     try {
@@ -78,10 +96,11 @@ export function AddBookModal({ shelfId, defaultStatus, onClose, onAdd, searchEna
     }
   }
 
-  async function handleManualSubmit(e: FormEvent) {
-    e.preventDefault();
+  async function submitManual() {
+    if (!title.trim() || !shelfId) return;
     setSaving(true);
     setError('');
+    const pageCount = pages.trim() ? parseInt(pages, 10) : null;
     try {
       await onAdd({
         title: title.trim(),
@@ -90,7 +109,7 @@ export function AddBookModal({ shelfId, defaultStatus, onClose, onAdd, searchEna
           .map((a) => a.trim())
           .filter(Boolean),
         coverUrl: null,
-        pageCount: null,
+        pageCount: pageCount && pageCount > 0 ? pageCount : null,
         publishedYear: null,
         externalIds: {},
         status,
@@ -103,88 +122,183 @@ export function AddBookModal({ shelfId, defaultStatus, onClose, onAdd, searchEna
     }
   }
 
+  function handleManualSubmit(e: FormEvent) {
+    e.preventDefault();
+    void submitManual();
+  }
+
+  const showSearch = searchEnabled;
+  const queryReady = query.trim().length >= 2;
+
   return (
-    <div className="modal-backdrop" onClick={onClose} role="presentation">
-      <div className="modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-labelledby="add-book-title">
-        <header className="modal-header">
-          <h2 id="add-book-title">Додати книгу</h2>
-          <button type="button" className="btn-icon" onClick={onClose} aria-label="Закрити">
-            ×
+    <div className="dl-modal-backdrop" onClick={onClose} role="presentation">
+      <div
+        className={`dl-detailcard add-book-sheet ${mobile ? 'is-sheet' : 'is-modal'}`}
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-labelledby="add-book-title"
+      >
+        {mobile && <div className="dl-sheet-handle" aria-hidden="true" />}
+        <header className="add-book-head">
+          <div>
+            <h2 id="add-book-title">Додати книгу</h2>
+            {shelfName && <p className="add-book-shelf">на полицю «{shelfName}»</p>}
+          </div>
+          <button type="button" className="dl-close" onClick={onClose} aria-label="Закрити">
+            ✕
           </button>
         </header>
 
         {!shelfId && (
-          <p className="form-hint">Спочатку обери або створи полицю.</p>
+          <p className="add-book-hint">Спочатку обери або створи полицю.</p>
         )}
 
-        {searchEnabled ? (
-          <div className="tabs">
-            <button type="button" className={mode === 'search' ? 'tab active' : 'tab'} onClick={() => setMode('search')}>
-              Пошук
-            </button>
-            <button type="button" className={mode === 'manual' ? 'tab active' : 'tab'} onClick={() => setMode('manual')}>
-              Вручну
-            </button>
-          </div>
-        ) : (
-          <p className="form-hint">Offline — лише ручне додавання.</p>
-        )}
+        <div className="add-book-body">
+          {showSearch ? (
+            <div className="dl-segmented" role="tablist" aria-label="Спосіб додавання">
+              <button
+                type="button"
+                role="tab"
+                aria-selected={tab === 'search'}
+                className={`dl-segmented-btn${tab === 'search' ? ' is-active' : ''}`}
+                onClick={() => setTab('search')}
+              >
+                Пошук
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={tab === 'manual'}
+                className={`dl-segmented-btn${tab === 'manual' ? ' is-active' : ''}`}
+                onClick={() => setTab('manual')}
+              >
+                Вручну
+              </button>
+            </div>
+          ) : (
+            <p className="add-book-hint">Offline — лише ручне додавання.</p>
+          )}
 
-        <label>
-          Статус
-          <select value={status} onChange={(e) => setStatus(e.target.value as BookEntryStatus)}>
-            <option value="want_to_read">Хочу прочитати</option>
-            <option value="reading">Читаю зараз</option>
-            <option value="finished">Прочитано</option>
-            <option value="dnf">Не дочитала</option>
-            <option value="re_reading">Перечитую</option>
-          </select>
-        </label>
-
-        {mode === 'search' ? (
-          <>
-            <label>
-              Назва або автор
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="1984, Оруелл…"
-                autoFocus
-              />
-            </label>
-            {searching && <p className="form-hint">Шукаємо…</p>}
-            {searchError && <p className="form-error">{searchError}</p>}
-            <ul className="search-results">
-              {results.map((hit) => (
-                <li key={hit.key}>
-                  <button type="button" className="search-hit" disabled={saving || !shelfId} onClick={() => pickHit(hit)}>
-                    <BookCover title={hit.title} coverUrl={openLibraryCoverUrl(hit.cover_i, 'S')} size="sm" />
-                    <span>
-                      <strong>{hit.title}</strong>
-                      <small>{formatAuthors(hit.author_name)}</small>
-                    </span>
-                  </button>
-                </li>
+          <label className="dl-field">
+            <span className="dl-field-label">Статус</span>
+            <select
+              className="dl-field-input"
+              value={status}
+              onChange={(e) => setStatus(e.target.value as BookEntryStatus)}
+            >
+              {(Object.entries(STATUS_LABELS) as [BookEntryStatus, string][]).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
               ))}
-            </ul>
-          </>
-        ) : (
-          <form onSubmit={handleManualSubmit} className="manual-form">
-            <label>
-              Назва
-              <input value={title} onChange={(e) => setTitle(e.target.value)} required />
-            </label>
-            <label>
-              Автори (через кому)
-              <input value={authors} onChange={(e) => setAuthors(e.target.value)} placeholder="Джордж Оруелл" />
-            </label>
-            <button type="submit" disabled={saving || !shelfId}>
+            </select>
+          </label>
+
+          {tab === 'search' && showSearch ? (
+            <>
+              <div className="dl-inline-field">
+                <span className="dl-inline-field-icon" aria-hidden="true">
+                  ⌕
+                </span>
+                <input
+                  className="dl-inline-field-input"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Назва, автор або ISBN…"
+                  autoFocus
+                />
+              </div>
+
+              {searching && <p className="add-book-hint">Шукаємо…</p>}
+              {searchError && <p className="form-error">{searchError}</p>}
+
+              <div className="add-book-results">
+                {!searching && queryReady && results.length === 0 && (
+                  <p className="add-book-empty">Нічого не знайдено — спробуй додати вручну</p>
+                )}
+                {results.map((hit) => (
+                  <div key={hit.key} className="add-book-hit">
+                    <BookCover
+                      title={hit.title}
+                      authors={hit.author_name}
+                      coverUrl={openLibraryCoverUrl(hit.cover_i, 'S')}
+                      size="sm"
+                    />
+                    <div className="add-book-hit-text">
+                      <div className="add-book-hit-title">{hit.title}</div>
+                      <div className="add-book-hit-author">{formatAuthors(hit.author_name)}</div>
+                    </div>
+                    <button
+                      type="button"
+                      className="dl-ghost"
+                      disabled={saving || !shelfId}
+                      onClick={() => void pickHit(hit)}
+                    >
+                      Додати
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              <p className="add-book-source">Результати з Open Library</p>
+            </>
+          ) : (
+            <form className="add-book-manual" onSubmit={handleManualSubmit}>
+              <label className="dl-field">
+                <span className="dl-field-label">Назва</span>
+                <input
+                  className="dl-field-input"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Назва книги"
+                  required
+                  autoFocus={!showSearch}
+                />
+              </label>
+              <label className="dl-field">
+                <span className="dl-field-label">Автор</span>
+                <input
+                  className="dl-field-input"
+                  value={authors}
+                  onChange={(e) => setAuthors(e.target.value)}
+                  placeholder="Ім&apos;я автора"
+                />
+              </label>
+              <label className="dl-field">
+                <span className="dl-field-label">Сторінок (необов&apos;язково)</span>
+                <input
+                  className="dl-field-input"
+                  inputMode="numeric"
+                  value={pages}
+                  onChange={(e) => setPages(e.target.value.replace(/[^0-9]/g, ''))}
+                  placeholder="320"
+                />
+              </label>
+            </form>
+          )}
+
+          {error && <p className="form-error">{error}</p>}
+        </div>
+
+        <footer className="add-book-foot">
+          <button type="button" className="dl-ghost" onClick={onClose}>
+            Скасувати
+          </button>
+          {tab === 'search' && showSearch ? (
+            <button type="button" className="dl-primary" onClick={onClose}>
+              Готово
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="dl-primary"
+              disabled={saving || !shelfId || !title.trim()}
+              onClick={() => void submitManual()}
+            >
               {saving ? 'Додаємо…' : 'Додати'}
             </button>
-          </form>
-        )}
-
-        {error && <p className="form-error">{error}</p>}
+          )}
+        </footer>
       </div>
     </div>
   );

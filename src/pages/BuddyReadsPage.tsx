@@ -1,34 +1,47 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AppNav } from '../components/AppNav';
-import { BookCover } from '../components/BookCover';
+import { BuddyCreateSheet } from '../components/BuddyCreateSheet';
+import { BuddyJoinSheet } from '../components/BuddyJoinSheet';
+import { MemberAvatar } from '../components/MemberAvatar';
+import { PageHead } from '../components/PageHead';
+import { RoomBackdrop } from '../components/RoomBackdrop';
+import { useIsMobile } from '../hooks/useIsMobile';
+import { averageMemberProgress, parseInviteToken } from '../lib/buddyRead';
 import { supabase } from '../lib/supabase';
-import { parseInviteToken } from '../lib/buddyRead';
-import { formatAuthors } from '../lib/labels';
 import type { BuddyReadListItem, UserBookEntry } from '../types/database';
+import '../styles/library.css';
+import '../styles/screens-ui.css';
 
 interface BuddyReadsPageProps {
   userId: string;
   userEmail: string;
 }
 
+type BookEntryRow = {
+  id: string;
+  user_id: string;
+  book_id: string;
+  status: UserBookEntry['status'];
+  current_page: number;
+  total_pages: number | null;
+  rating: number | null;
+  finished_on: string | null;
+  updated_at: string;
+};
+
 export function BuddyReadsPage({ userId, userEmail }: BuddyReadsPageProps) {
+  const wide = !useIsMobile(760);
   const navigate = useNavigate();
   const [items, setItems] = useState<BuddyReadListItem[]>([]);
+  const [memberRows, setMemberRows] = useState<{ buddy_read_id: string; user_id: string }[]>([]);
+  const [bookEntries, setBookEntries] = useState<BookEntryRow[]>([]);
   const [libraryBooks, setLibraryBooks] = useState<UserBookEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showCreate, setShowCreate] = useState(false);
+  const [showJoin, setShowJoin] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
-
-  const [bookId, setBookId] = useState('');
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [deadline, setDeadline] = useState('');
-  const [creating, setCreating] = useState(false);
-
-  const [joinToken, setJoinToken] = useState('');
-  const [joining, setJoining] = useState(false);
 
   const loadData = useCallback(async () => {
     const [membersResult, entriesResult] = await Promise.all([
@@ -66,6 +79,29 @@ export function BuddyReadsPage({ userId, userEmail }: BuddyReadsPageProps) {
 
     setItems(list);
     setLibraryBooks((entriesResult.data as unknown as UserBookEntry[]) ?? []);
+
+    const brIds = list.map(({ buddy_read: br }) => br.id);
+    const bookIds = [...new Set(list.map(({ buddy_read: br }) => br.book_id))];
+
+    if (brIds.length === 0) {
+      setMemberRows([]);
+      setBookEntries([]);
+      return;
+    }
+
+    const [allMembers, allEntries] = await Promise.all([
+      supabase.from('buddy_read_members').select('buddy_read_id, user_id').in('buddy_read_id', brIds),
+      supabase
+        .from('user_book_entries')
+        .select('id, user_id, book_id, status, current_page, total_pages, rating, finished_on, updated_at')
+        .in('book_id', bookIds),
+    ]);
+
+    if (allMembers.error) throw allMembers.error;
+    if (allEntries.error) throw allEntries.error;
+
+    setMemberRows((allMembers.data as { buddy_read_id: string; user_id: string }[]) ?? []);
+    setBookEntries((allEntries.data as BookEntryRow[]) ?? []);
   }, [userId]);
 
   useEffect(() => {
@@ -78,152 +114,129 @@ export function BuddyReadsPage({ userId, userEmail }: BuddyReadsPageProps) {
 
   const visibleItems = items.filter((item) => showArchived || !item.buddy_read.is_archived);
 
-  async function handleCreate(e: FormEvent) {
-    e.preventDefault();
-    if (!bookId) {
-      setError('Обери книгу з бібліотеки');
-      return;
+  const progressByRead = useMemo(() => {
+    const map = new Map<string, { count: number; pct: number }>();
+    for (const { buddy_read: br } of items) {
+      const memberIds = memberRows.filter((m) => m.buddy_read_id === br.id).map((m) => m.user_id);
+      const entries = bookEntries.filter((e) => e.book_id === br.book_id);
+      map.set(br.id, {
+        count: memberIds.length,
+        pct: averageMemberProgress(memberIds, entries),
+      });
     }
+    return map;
+  }, [items, memberRows, bookEntries]);
 
-    setCreating(true);
-    setError('');
-
-    const selected = libraryBooks.find((entry) => entry.book_id === bookId);
+  async function handleCreate(payload: {
+    bookId: string;
+    title: string;
+    description: string;
+    deadline: string;
+  }) {
+    const selected = libraryBooks.find((entry) => entry.book_id === payload.bookId);
     const { data, error: insertError } = await supabase
       .from('buddy_reads')
       .insert({
         owner_id: userId,
-        book_id: bookId,
-        title: title.trim() || selected?.book?.title || 'Buddy read',
-        description: description.trim() || null,
-        target_finish_on: deadline || null,
+        book_id: payload.bookId,
+        title: payload.title.trim() || selected?.book?.title || 'Buddy read',
+        description: payload.description.trim() || null,
+        target_finish_on: payload.deadline || null,
       })
       .select('id')
       .single();
 
-    if (insertError) {
-      setError(insertError.message);
-      setCreating(false);
-      return;
-    }
-
+    if (insertError) throw insertError;
+    setShowCreate(false);
     navigate(`/buddy-reads/${data.id}`);
   }
 
-  async function handleJoin(e: FormEvent) {
-    e.preventDefault();
-    const token = parseInviteToken(joinToken);
-    if (!token) return;
-
-    setJoining(true);
-    setError('');
+  async function handleJoin(rawToken: string) {
+    const token = parseInviteToken(rawToken);
+    if (!token) throw new Error('Невірний лінк або token');
 
     const { data, error: joinError } = await supabase.rpc('join_buddy_read', { p_token: token });
-    if (joinError) {
-      setError(joinError.message);
-      setJoining(false);
-      return;
-    }
+    if (joinError) throw joinError;
 
+    setShowJoin(false);
     navigate(`/buddy-reads/${data}`);
   }
 
   if (loading) {
     return (
-      <div className="app-shell app-shell--room">
-        <AppNav userEmail={userEmail} active="buddy-reads" />
-        <div className="center-page">Завантажуємо спільне читання…</div>
+      <div className="app-shell">
+        <RoomBackdrop />
+        <AppNav userEmail={userEmail} userId={userId} active="buddy-reads" />
+        <div className="center-page" style={{ color: 'var(--ink-room-soft)' }}>
+          Завантажуємо спільне читання…
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="app-shell app-shell--room">
-      <AppNav userEmail={userEmail} active="buddy-reads" />
+    <div className="app-shell">
+      <RoomBackdrop />
+      <AppNav userEmail={userEmail} userId={userId} active="buddy-reads" />
 
-      <main className="buddy-reads-page">
-        <div className="dashboard-toolbar">
-          <h2>Спільне читання</h2>
-          <div className="toolbar-actions">
-            <button type="button" className="btn-small" onClick={() => setShowCreate((v) => !v)}>
-              + Створити
-            </button>
-          </div>
-        </div>
+      <main className="dl-page buddy-reads-page">
+        <PageHead
+          eyebrow="Читаємо разом"
+          title="Спільне читання"
+          sub="Маленькі клуби, спільний дедлайн і нотатки на полях"
+        >
+          <button type="button" className="dl-primary" onClick={() => setShowCreate(true)}>
+            + Створити
+          </button>
+        </PageHead>
 
         {error && <p className="banner-error">{error}</p>}
 
-        <section className="dashboard-card">
-          <h3>Приєднатися по лінку</h3>
-          <form className="join-form" onSubmit={handleJoin}>
-            <input
-              value={joinToken}
-              onChange={(e) => setJoinToken(e.target.value)}
-              placeholder="Встав invite token або останню частину URL"
-            />
-            <button type="submit" disabled={joining}>
-              {joining ? 'Приєднуємось…' : 'Приєднатися'}
+        {visibleItems.length === 0 ? (
+          <section className="dl-panel is-soft dl-buddy-empty">
+            <h2 className="dl-buddy-empty-title">Ще немає жодного клубу</h2>
+            <p className="dl-buddy-empty-sub">
+              Створи свій або долучися за лінком-запрошенням
+            </p>
+            <button type="button" className="dl-primary" onClick={() => setShowCreate(true)}>
+              Створити клуб
             </button>
-          </form>
-        </section>
-
-        {showCreate && (
-          <section className="dashboard-card">
-            <h3>Новий buddy read</h3>
-            {libraryBooks.length === 0 ? (
-              <p className="empty-hint">
-                Спочатку додай книгу в{' '}
-                <Link to="/">бібліотеку</Link>.
-              </p>
-            ) : (
-              <form className="inline-form" onSubmit={handleCreate}>
-                <label>
-                  Книга
-                  <select
-                    value={bookId}
-                    onChange={(e) => {
-                      setBookId(e.target.value);
-                      const entry = libraryBooks.find((b) => b.book_id === e.target.value);
-                      if (entry?.book?.title && !title) setTitle(entry.book.title);
-                    }}
-                    required
-                  >
-                    <option value="">Обери книгу…</option>
-                    {libraryBooks.map((entry) => (
-                      <option key={entry.id} value={entry.book_id}>
-                        {entry.book?.title ?? 'Книга'}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  Назва групи
-                  <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Спільне читання…" />
-                </label>
-                <label>
-                  Опис (опційно)
-                  <input value={description} onChange={(e) => setDescription(e.target.value)} />
-                </label>
-                <label>
-                  Дедлайн (опційно)
-                  <input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
-                </label>
-                <div className="form-actions">
-                  <button type="button" className="btn-secondary" onClick={() => setShowCreate(false)}>
-                    Скасувати
-                  </button>
-                  <button type="submit" disabled={creating}>
-                    {creating ? 'Створюємо…' : 'Створити'}
-                  </button>
-                </div>
-              </form>
-            )}
           </section>
+        ) : (
+          <div className={`dl-buddy-grid${wide ? '' : ''}`}>
+            {visibleItems.map(({ buddy_read: br }) => {
+              const meta = progressByRead.get(br.id) ?? { count: 0, pct: 0 };
+              return (
+                <Link key={br.id} to={`/buddy-reads/${br.id}`} className="dl-panel dl-buddy-card is-clickable">
+                  <div className="dl-buddy-card-head">
+                    <MemberAvatar name={br.title} />
+                    <div className="dl-buddy-card-meta">
+                      <h3 className="dl-buddy-card-title">{br.title}</h3>
+                      <p className="dl-buddy-card-sub">
+                        {meta.count} учасники · «{br.book?.title ?? 'Книга'}»
+                        {br.is_archived && ' · Архів'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="dl-buddy-progress">
+                    <div className="dl-buddy-progress-fill" style={{ width: `${meta.pct}%` }} />
+                  </div>
+                  <p className="dl-buddy-progress-note">Середній прогрес {meta.pct}%</p>
+                </Link>
+              );
+            })}
+          </div>
         )}
 
-        <div className="panel-head">
-          <h3>Мої buddy reads</h3>
-          <label className="checkbox-label">
+        <section className="dl-panel is-soft dl-buddy-join">
+          <p className="dl-buddy-join-text">Маєш запрошення? Долучайся за лінком.</p>
+          <button type="button" className="dl-ghost" onClick={() => setShowJoin(true)}>
+            Долучитися за лінком
+          </button>
+        </section>
+
+        {visibleItems.length > 0 && (
+          <label className="checkbox-label" style={{ marginTop: 14, display: 'inline-flex' }}>
             <input
               type="checkbox"
               checked={showArchived}
@@ -231,30 +244,20 @@ export function BuddyReadsPage({ userId, userEmail }: BuddyReadsPageProps) {
             />
             Показати архів
           </label>
-        </div>
-
-        {visibleItems.length === 0 ? (
-          <p className="empty-hint">Ще немає buddy reads. Створи групове читання або приєднайся по лінку.</p>
-        ) : (
-          <ul className="buddy-read-list">
-            {visibleItems.map(({ role, buddy_read: br }) => (
-              <li key={br.id}>
-                <Link to={`/buddy-reads/${br.id}`} className="buddy-read-card">
-                  <BookCover title={br.book?.title ?? br.title} coverUrl={br.book?.cover_url} size="sm" />
-                  <div>
-                    <strong>{br.title}</strong>
-                    <p>{formatAuthors(br.book?.authors)}</p>
-                    <span className="status-pill">
-                      {role === 'owner' ? 'Організатор' : 'Учасник'}
-                      {br.is_archived && ' · Архів'}
-                    </span>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
         )}
       </main>
+
+      {showCreate && (
+        <BuddyCreateSheet
+          libraryBooks={libraryBooks}
+          onClose={() => setShowCreate(false)}
+          onSubmit={handleCreate}
+        />
+      )}
+
+      {showJoin && (
+        <BuddyJoinSheet onClose={() => setShowJoin(false)} onSubmit={handleJoin} />
+      )}
     </div>
   );
 }

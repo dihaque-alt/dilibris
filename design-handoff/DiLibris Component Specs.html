@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DiLibris — Компоненти та сторіборд</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;700&family=EB+Garamond:ital,wght@0,500;0,700;1,500&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="tokens.css" />
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); color: var(--text-main); background: var(--bg-room); line-height: var(--lh-body); -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px 100px; }
+  .hero { background: var(--lamp-glow); border-bottom: 1px solid var(--line); margin-bottom: 44px; }
+  .hero-in { max-width: 980px; margin: 0 auto; padding: 52px 24px 40px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-brand); font-weight: 700; font-size: 1.4rem; }
+  .hero h1 { font-family: var(--font-serif); font-weight: 700; font-size: var(--fs-h1); margin: 18px 0 6px; }
+  .hero p { color: var(--text-muted); margin: 0; max-width: 600px; }
+
+  section { margin-bottom: 56px; }
+  .eyebrow { font-size: var(--fs-sm); font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent-lime-deep); margin-bottom: 6px; }
+  h2.sec { font-family: var(--font-serif); font-weight: 700; font-size: var(--fs-h2); margin: 0 0 18px; }
+
+  .spec { background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow-card); padding: 22px 24px; margin-bottom: 14px; }
+  .spec h3 { font-family: var(--font-serif); font-weight: 700; font-size: var(--fs-h3); margin: 0 0 4px; }
+  .spec .anatomy { color: var(--text-muted); font-size: var(--fs-sm); margin: 0 0 14px; }
+  .spec table { width: 100%; border-collapse: collapse; }
+  .spec td { padding: 7px 0; border-bottom: 1px solid var(--line); font-size: var(--fs-sm); vertical-align: top; }
+  .spec tr:last-child td { border-bottom: none; }
+  .spec td.k { width: 150px; font-family: ui-monospace, monospace; color: var(--text-muted); }
+  .spec td.v code { font-family: ui-monospace, monospace; background: var(--bg-card-soft); border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; font-size: 0.85em; }
+
+  /* storyboard */
+  .frames { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 760px) { .frames { grid-template-columns: 1fr; } }
+  .frame { background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--shadow-card); }
+  .frame .stage { height: 230px; position: relative; overflow: hidden; background: var(--bg-room); display: grid; place-items: center; }
+  .frame .cap { padding: 14px 16px; }
+  .frame .cap .n { font-family: ui-monospace, monospace; font-size: var(--fs-xs); color: var(--accent-lime-deep); font-weight: 600; }
+  .frame .cap .t { font-family: var(--font-serif); font-weight: 700; font-size: var(--fs-title); margin: 2px 0 4px; }
+  .frame .cap p { margin: 0; font-size: var(--fs-sm); color: var(--text-muted); }
+
+  /* mini room for storyboard */
+  .mini-room { position: absolute; inset: 0; background: radial-gradient(90% 60% at 84% -6%, #FFF3D4, rgba(255,243,212,0) 46%), linear-gradient(180deg,#ECE0CC,#D8C6A9); }
+  .mini-shelf { position: absolute; left: 0; right: 0; bottom: 40px; height: 16px; background: linear-gradient(180deg,#BE9268,#67442B); box-shadow: 0 8px 14px rgba(36,32,28,.25); }
+  .mini-book { position: absolute; border-radius: 2px; box-shadow: var(--shadow-book); }
+  .overlay { position: absolute; inset: 0; background: var(--bg-overlay); backdrop-filter: blur(2px); }
+
+  .timeline { background: var(--gold-light); border: 1px solid #F0E4BE; border-radius: var(--r-md); padding: 14px 18px; margin-top: 16px; font-size: var(--fs-sm); color: #8A6D14; }
+  .timeline b { color: #6B540F; }
+  .rm { background: var(--accent-lime-light); border: 1px solid #D8E2D2; border-radius: var(--r-md); padding: 14px 18px; margin-top: 12px; font-size: var(--fs-sm); color: var(--accent-lime-deep); }
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="hero-in">
+    <div class="brand">
+      <svg width="30" height="30" viewBox="0 0 32 32"><rect x="3" y="5" width="26" height="22" rx="5" fill="var(--accent-lime)"/><rect x="3" y="5" width="13" height="22" rx="5" fill="var(--accent-lime-deep)"/><rect x="14.5" y="7" width="3" height="18" rx="1.5" fill="var(--bg-room)"/><circle cx="9.5" cy="16" r="2" fill="var(--gold-highlight)"/></svg>
+      DiLibris
+    </div>
+    <h1>Компоненти та сторіборд</h1>
+    <p>Технічні специфікації ключових компонентів і покадровий розбір fly-out анімації (з варіантом reduced-motion). Усі значення посилаються на <code>tokens.css</code>.</p>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- STORYBOARD -->
+  <section>
+    <div class="eyebrow">Анімація</div>
+    <h2 class="sec">Fly-out: книга летить до тебе</h2>
+    <div class="frames">
+      <div class="frame">
+        <div class="stage">
+          <div class="mini-room"></div>
+          <div class="mini-shelf"></div>
+          <div class="mini-book" style="width:42px;height:64px;left:38px;bottom:56px;background:linear-gradient(160deg,#46604E,#33453A)"></div>
+          <div class="mini-book" style="width:42px;height:62px;left:90px;bottom:56px;background:linear-gradient(180deg,#9A5563,#7C424F);outline:3px solid var(--gold-highlight);outline-offset:2px"></div>
+          <div class="mini-book" style="width:42px;height:66px;left:142px;bottom:56px;background:linear-gradient(180deg,#A37F33,#8A6A22)"></div>
+        </div>
+        <div class="cap"><div class="n">КАДР 0 · спокій</div><div class="t">На полиці</div><p>Книги стоять обличчям. Наведення піднімає на <code>-10px</code> з пружинкою.</p></div>
+      </div>
+      <div class="frame">
+        <div class="stage">
+          <div class="mini-room"></div>
+          <div class="mini-shelf"></div>
+          <div class="overlay"></div>
+          <div class="mini-book" style="width:64px;height:96px;left:50%;top:50%;transform:translate(-50%,-50%) scale(0.8);background:linear-gradient(180deg,#9A5563,#7C424F);box-shadow:var(--shadow-hero)"></div>
+        </div>
+        <div class="cap"><div class="n">КАДР 1 · політ</div><div class="t">Летить уперед</div><p>FLIP від rect полиці до центру. Фон затемнюється <code>--bg-overlay</code>. <code>--ease-back</code>, <code>--dur-fly 520ms</code>.</p></div>
+      </div>
+      <div class="frame">
+        <div class="stage">
+          <div class="mini-room"></div>
+          <div class="overlay"></div>
+          <div class="mini-book" style="width:74px;height:110px;left:50%;top:38%;transform:translate(-50%,-50%);background:linear-gradient(180deg,#9A5563,#7C424F);box-shadow:var(--shadow-hero)"></div>
+          <div style="position:absolute;left:0;right:0;top:64%;text-align:center;color:#FBF7F0"><div style="font-family:var(--font-serif);font-weight:700;font-size:14px">Польові дослідження</div><div style="font-family:var(--font-serif);font-style:italic;font-size:11px;opacity:.8">Оксана Забужко</div><div style="display:inline-flex;align-items:center;gap:5px;margin-top:7px;padding:3px 9px;border-radius:999px;background:var(--status-reading-bg);color:var(--status-reading);font-size:10px;font-weight:600"><span style="width:5px;height:5px;border-radius:999px;background:var(--status-reading)"></span>Читаю зараз</div></div>
+        </div>
+        <div class="cap"><div class="n">КАДР 2 · герой</div><div class="t">Збільшена обкладинка</div><p>Назва (серіф) + автор + статус-пігулка з’являються із затримкою <code>120ms</code>. Хінт: «Тицьни обкладинку…».</p></div>
+      </div>
+    </div>
+    <div class="timeline"><b>Таймлайн:</b> 0ms тап → FLIP-політь (0–520ms, --ease-back) → текст фейдиться 120–360ms → тап по героєві відкриває картку книги (bottom-sheet на мобільному, модалка на десктопі).</div>
+    <div class="rm"><b>Reduced motion:</b> за <code>prefers-reduced-motion: reduce</code> всі тривалості → 0ms. Книга й текст з’являються миттєво, без польоту — герой просто фейдиться. Жодних втрат функціональності.</div>
+  </section>
+
+  <!-- COMPONENT SPECS -->
+  <section>
+    <div class="eyebrow">Специфікації</div>
+    <h2 class="sec">Компоненти</h2>
+
+    <div class="spec">
+      <h3>Полиця (Shelf unit)</h3>
+      <p class="anatomy">2.5D дерево: карниз → корпус із задником і боковими стійками → відсік (книги + плінтус-дошка) → цоколь. Кожна дошка має нейм-плейт і «+ Книга».</p>
+      <table>
+        <tr><td class="k">структура</td><td class="v">cornice · case-body · post×2 · comp(books + plank) · base</td></tr>
+        <tr><td class="k">дошка (plank)</td><td class="v">висота <code>34px</code>, тришарова: <code>.face</code> градієнт + <code>.lip</code> (світлий кант) + <code>.grain</code></td></tr>
+        <tr><td class="k">нейм-плейт</td><td class="v">кремовий, <code>--r-md</code>, серіф <code>--fs-title</code> + опційна статус-пігулка</td></tr>
+        <tr><td class="k">прокрутка</td><td class="v">горизонтальна, прихований скролбар; книги <code>align-items: flex-end</code></td></tr>
+        <tr><td class="k">тінь корпусу</td><td class="v"><code>inset</code> з усіх боків — глибина ніші; <code>drop-shadow</code> на стіну</td></tr>
+      </table>
+    </div>
+
+    <div class="spec">
+      <h3>Обкладинка (Book tile)</h3>
+      <p class="anatomy">Front-facing, ніколи корінцем. Генеративна композиція + текстури тканини/паперу, заокруглений корінець зліва, видимий блок сторінок зверху, тінь форedge справа.</p>
+      <table>
+        <tr><td class="k">пропорції</td><td class="v">ширина × <code>ratio</code> (1.42–1.6, варіюється на книгу)</td></tr>
+        <tr><td class="k">art-стилі</td><td class="v"><code>split</code> · <code>band</code> · <code>arc</code> · <code>type</code> · <code>frame</code></td></tr>
+        <tr><td class="k">текстури</td><td class="v">cloth weave (soft-light) + paper grain (overlay) + vignette + sheen</td></tr>
+        <tr><td class="k">розміри</td><td class="v">Компактно 78 · Затишно 100 · Велично 124 (Tweak)</td></tr>
+        <tr><td class="k">hover</td><td class="v">lift <code>-10px</code>, <code>--ease-back</code>, тінь → <code>--shadow-book-hover</code></td></tr>
+        <tr><td class="k">placeholder</td><td class="v">кіт із ножем (SVG) на кремовому, серіф-назва знизу</td></tr>
+      </table>
+    </div>
+
+    <div class="spec">
+      <h3>Статус-пігулка · Стат-чип · Зорі</h3>
+      <table>
+        <tr><td class="k">пігулка</td><td class="v">крапка + лейбл, <code>--r-pill</code>, колір/фон за <code>--status-*</code> / <code>--status-*-bg</code></td></tr>
+        <tr><td class="k">стат-чип</td><td class="v">значення (серіф 1.3rem) + підпис; фон <code>--bg-card-soft</code>, <code>--r-md</code></td></tr>
+        <tr><td class="k">зорі</td><td class="v">1–5, крок <code>0.5</code> через <code>linearGradient</code> на 50%; ліва/права половина клікабельні</td></tr>
+      </table>
+    </div>
+
+    <div class="spec">
+      <h3>Картка книги · Bottom sheet</h3>
+      <p class="anatomy">Один цілісний обʼєкт. Шапка (обкладинка + назва + автор + статус) → стат-чипи → сегментні вкладки (Прогрес · Відгук · Нотатки · Сесії) → скрол-тіло → футер «Зберегти».</p>
+      <table>
+        <tr><td class="k">мобільний</td><td class="v">bottom sheet, <code>--r-xl</code> зверху, ручка, <code>--shadow-sheet</code>, анімація <code>dl-sheet-up</code></td></tr>
+        <tr><td class="k">десктоп</td><td class="v">центрована модалка <code>min(680px, 94vw)</code>, <code>dl-card-in</code></td></tr>
+        <tr><td class="k">spoiler</td><td class="v">відгук схований за «Показати відгук», поки увімкнено</td></tr>
+        <tr><td class="k">нотатки</td><td class="v">бейджі типу (Цитата/Думка/Загальна) + видимості (Особиста/Публічна)</td></tr>
+      </table>
+    </div>
+
+    <div class="spec">
+      <h3>Челендж-бар · Офлайн-банер</h3>
+      <table>
+        <tr><td class="k">челендж</td><td class="v">золота заливка на кремовій доріжці <code>--gold-light</code>, <code>transition: width</code></td></tr>
+        <tr><td class="k">банер</td><td class="v">золото-кремовий, <code>--gold-light</code> + <code>#F0E4BE</code> бордер, неагресивний; «Показано збережену копію…»</td></tr>
+      </table>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

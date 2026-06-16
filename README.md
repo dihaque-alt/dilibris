@@ -17,6 +17,7 @@
    - `http://localhost:5173/**` (Vite dev)
    - prod URL після деплою
 4. Authentication → Email → увімкни Magic Link.
+5. Google OAuth (опційно): [`docs/supabase-google-auth.md`](docs/supabase-google-auth.md)
 
 ## Env (web client, майбутній)
 
@@ -44,7 +45,7 @@ npm run dev
 ## Що вже є в кістяку
 
 - [x] Vite + React + TypeScript + Supabase
-- [x] Magic link auth
+- [x] Magic link auth + Google OAuth (кнопка в UI; провайдер — у Supabase Dashboard)
 - [x] CRUD полиць
 - [x] Додавання книги (Open Library + вручну)
 - [x] Placeholder обкладинки (кіт з ножиком)

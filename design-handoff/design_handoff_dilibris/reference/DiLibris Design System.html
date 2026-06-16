@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DiLibris — Дизайн-система</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;700&family=EB+Garamond:ital,wght@0,500;0,700;1,500&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="tokens.css" />
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); color: var(--text-main); background: var(--bg-room); line-height: var(--lh-body); -webkit-font-smoothing: antialiased; }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 0 24px 100px; }
+
+  /* hero */
+  .ds-hero { background: var(--lamp-glow); border-bottom: 1px solid var(--line); margin-bottom: 48px; }
+  .ds-hero-in { max-width: 1000px; margin: 0 auto; padding: 56px 24px 48px; }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand b { font-family: var(--font-brand); font-weight: 700; font-size: 1.8rem; }
+  .ds-hero h1 { font-family: var(--font-serif); font-weight: 700; font-size: var(--fs-display); margin: 22px 0 8px; line-height: var(--lh-tight); }
+  .ds-hero p { font-size: 1.15rem; color: var(--text-muted); max-width: 620px; margin: 0; }
+
+  section { margin-bottom: 64px; }
+  .eyebrow { font-size: var(--fs-sm); font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent-lime-deep); margin-bottom: 6px; }
+  h2.sec { font-family: var(--font-serif); font-weight: 700; font-size: var(--fs-h1); margin: 0 0 6px; }
+  .sec-note { color: var(--text-muted); margin: 0 0 26px; max-width: 640px; }
+  h3.sub { font-family: var(--font-sans); font-weight: 600; font-size: var(--fs-body); color: var(--text-muted); letter-spacing: 0.3px; margin: 28px 0 14px; }
+
+  .grid { display: grid; gap: 14px; }
+  .cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .cols-4 { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  @media (max-width: 680px) { .cols-2, .cols-3 { grid-template-columns: 1fr 1fr; } }
+
+  /* swatch */
+  .sw { border-radius: var(--r-md); overflow: hidden; border: 1px solid var(--line); background: var(--bg-card); }
+  .sw .chip { height: 78px; }
+  .sw .meta { padding: 10px 12px; }
+  .sw .nm { font-weight: 600; font-size: var(--fs-sm); }
+  .sw .vr { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: var(--fs-xs); color: var(--text-muted); margin-top: 2px; }
+
+  .panel { background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow-card); padding: 26px; }
+
+  /* type rows */
+  .type-row { display: flex; align-items: baseline; gap: 18px; padding: 16px 0; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  .type-row:last-child { border-bottom: none; }
+  .type-spec { font-family: ui-monospace, monospace; font-size: var(--fs-xs); color: var(--text-muted); min-width: 150px; }
+
+  /* tokens */
+  .tok { display: flex; align-items: center; gap: 14px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+  .tok:last-child { border-bottom: none; }
+  .tok .demo { flex: 0 0 auto; }
+  .tok .nm { font-family: ui-monospace, monospace; font-size: var(--fs-sm); }
+  .tok .vr { color: var(--text-muted); font-size: var(--fs-sm); margin-left: auto; }
+
+  /* component demos */
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: var(--r-pill); font-weight: 600; font-size: var(--fs-sm); }
+  .pill i { width: 7px; height: 7px; border-radius: 999px; }
+  .chip-stat { background: var(--bg-card-soft); border: 1px solid var(--line); border-radius: var(--r-md); padding: 10px 14px; min-width: 92px; }
+  .chip-stat b { font-family: var(--font-serif); font-weight: 700; font-size: 1.3rem; display: block; }
+  .chip-stat span { font-size: var(--fs-xs); color: var(--text-muted); }
+  .btn-primary { border: none; background: var(--accent-lime); color: #fff; font-weight: 600; font-size: var(--fs-sm); padding: 10px 18px; border-radius: var(--r-pill); box-shadow: 0 3px 8px rgba(94,126,84,0.28); cursor: pointer; }
+  .btn-ghost { border: 1.5px solid var(--line-strong); background: var(--bg-card); color: var(--text-muted); font-weight: 600; font-size: var(--fs-sm); padding: 9px 15px; border-radius: var(--r-pill); cursor: pointer; }
+  .demo-box { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<div class="ds-hero">
+  <div class="ds-hero-in">
+    <div class="brand">
+      <svg width="34" height="34" viewBox="0 0 32 32"><rect x="3" y="5" width="26" height="22" rx="5" fill="var(--accent-lime)"/><rect x="3" y="5" width="13" height="22" rx="5" fill="var(--accent-lime-deep)"/><rect x="14.5" y="7" width="3" height="18" rx="1.5" fill="var(--bg-room)"/><circle cx="9.5" cy="16" r="2" fill="var(--gold-highlight)"/></svg>
+      <b>DiLibris</b>
+    </div>
+    <h1>Дизайн-система</h1>
+    <p>Тепла особиста бібліотека — затишна кімната з дерев’яними полицями, де книги є героями. Світла тема, українська мова, mobile-first. Нижче — токени та компоненти, що тримають усе разом.</p>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- COLORS -->
+  <section>
+    <div class="eyebrow">01 · Колір</div>
+    <h2 class="sec">Палітра кімнати</h2>
+    <p class="sec-note">Тепла кремова кімната, об’ємне горіхове дерево та м’які природні акценти. Без холодних SaaS-сірих, без темної теми. Білі та чорні — підтоновані теплом.</p>
+
+    <h3 class="sub">Кімната та поверхні</h3>
+    <div class="grid cols-4">
+      <div class="sw"><div class="chip" style="background:var(--bg-room)"></div><div class="meta"><div class="nm">Стіна (кремова)</div><div class="vr">--bg-room · #F9F6F0</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--bg-room-deep)"></div><div class="meta"><div class="nm">Стіна глибша</div><div class="vr">--bg-room-deep</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--bg-card)"></div><div class="meta"><div class="nm">Картка</div><div class="vr">--bg-card · #FFF</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--bg-card-soft)"></div><div class="meta"><div class="nm">Картка м’яка</div><div class="vr">--bg-card-soft</div></div></div>
+    </div>
+
+    <h3 class="sub">Дерево (об’ємні полиці)</h3>
+    <div class="grid cols-4">
+      <div class="sw"><div class="chip" style="background:var(--wood-light)"></div><div class="meta"><div class="nm">Світло</div><div class="vr">--wood-light</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--wood-main)"></div><div class="meta"><div class="nm">Горіх</div><div class="vr">--wood-main</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--wood-depth)"></div><div class="meta"><div class="nm">Тінь</div><div class="vr">--wood-depth</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--wood-shadow)"></div><div class="meta"><div class="nm">Глибока тінь</div><div class="vr">--wood-shadow</div></div></div>
+    </div>
+
+    <h3 class="sub">Акценти</h3>
+    <div class="grid cols-4">
+      <div class="sw"><div class="chip" style="background:var(--accent-lime)"></div><div class="meta"><div class="nm">Олива</div><div class="vr">--accent-lime</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--accent-lime-light)"></div><div class="meta"><div class="nm">Олива світла</div><div class="vr">--accent-lime-light</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--gold-highlight)"></div><div class="meta"><div class="nm">Золото</div><div class="vr">--gold-highlight</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--gold-light)"></div><div class="meta"><div class="nm">Золото світле</div><div class="vr">--gold-light</div></div></div>
+    </div>
+
+    <h3 class="sub">Статуси читання</h3>
+    <div class="grid cols-3">
+      <div class="sw"><div class="chip" style="background:var(--status-want)"></div><div class="meta"><div class="nm">Хочу прочитати</div><div class="vr">--status-want</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--status-reading)"></div><div class="meta"><div class="nm">Читаю зараз</div><div class="vr">--status-reading</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--status-done)"></div><div class="meta"><div class="nm">Прочитано</div><div class="vr">--status-done</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--status-dnf)"></div><div class="meta"><div class="nm">Не дочитала</div><div class="vr">--status-dnf</div></div></div>
+      <div class="sw"><div class="chip" style="background:var(--status-reread)"></div><div class="meta"><div class="nm">Перечитую</div><div class="vr">--status-reread</div></div></div>
+      <div class="sw"><div class="chip" style="background:linear-gradient(180deg,var(--text-main),var(--text-muted))"></div><div class="meta"><div class="nm">Текст</div><div class="vr">--text-main / --text-muted</div></div></div>
+    </div>
+  </section>
+
+  <!-- TYPE -->
+  <section>
+    <div class="eyebrow">02 · Типографіка</div>
+    <h2 class="sec">Три голоси</h2>
+    <p class="sec-note">Comfortaa — округлий, дружній бренд. EB Garamond — серіф для назв книг і полиць, дає бібліотечну теплоту. Plus Jakarta Sans — чистий UI.</p>
+    <div class="panel">
+      <div class="type-row"><span class="type-spec">Comfortaa 700 · бренд</span><span style="font-family:var(--font-brand);font-weight:700;font-size:2.2rem">DiLibris</span></div>
+      <div class="type-row"><span class="type-spec">EB Garamond 700 · display</span><span style="font-family:var(--font-serif);font-weight:700;font-size:var(--fs-display)">Вечір удома з книгами</span></div>
+      <div class="type-row"><span class="type-spec">EB Garamond 700 · H1/H2</span><span style="font-family:var(--font-serif);font-weight:700;font-size:var(--fs-h2)">Тигролови</span></div>
+      <div class="type-row"><span class="type-spec">EB Garamond italic · автор</span><span style="font-family:var(--font-serif);font-style:italic;font-size:1.2rem;color:var(--text-muted)">Іван Багряний</span></div>
+      <div class="type-row"><span class="type-spec">Jakarta 600 · UI label</span><span style="font-family:var(--font-sans);font-weight:600;font-size:var(--fs-body)">Читати далі · Зберегти</span></div>
+      <div class="type-row"><span class="type-spec">Jakarta 400 · body</span><span style="font-family:var(--font-sans);font-size:var(--fs-body);max-width:440px">Твоя бібліотека живе як кімната — книги стоять обличчям до тебе, а не корінцями.</span></div>
+      <div class="type-row"><span class="type-spec">Jakarta 600 · caption</span><span style="font-family:var(--font-sans);font-weight:600;font-size:var(--fs-xs);letter-spacing:.5px;text-transform:uppercase;color:var(--text-faint)">12 з 24 книг</span></div>
+    </div>
+  </section>
+
+  <!-- SPACING / RADII / SHADOWS -->
+  <section>
+    <div class="eyebrow">03 · Простір, радіуси, тіні</div>
+    <h2 class="sec">Ритм і м’якість</h2>
+    <p class="sec-note">Базова сітка 4px. Радіуси заокруглені й привітні. Тіні теплі (коричневий підтон), ніколи не сіро-холодні.</p>
+    <div class="grid cols-2">
+      <div class="panel">
+        <h3 class="sub" style="margin-top:0">Spacing · база 4px</h3>
+        <div class="tok"><span class="demo" style="height:14px;width:4px;background:var(--accent-lime)"></span><span class="nm">--sp-1</span><span class="vr">4px</span></div>
+        <div class="tok"><span class="demo" style="height:14px;width:8px;background:var(--accent-lime)"></span><span class="nm">--sp-2</span><span class="vr">8px</span></div>
+        <div class="tok"><span class="demo" style="height:14px;width:16px;background:var(--accent-lime)"></span><span class="nm">--sp-4</span><span class="vr">16px</span></div>
+        <div class="tok"><span class="demo" style="height:14px;width:24px;background:var(--accent-lime)"></span><span class="nm">--sp-6</span><span class="vr">24px</span></div>
+        <div class="tok"><span class="demo" style="height:14px;width:40px;background:var(--accent-lime)"></span><span class="nm">--sp-10</span><span class="vr">40px</span></div>
+        <div class="tok"><span class="demo" style="height:14px;width:64px;background:var(--accent-lime)"></span><span class="nm">--sp-16</span><span class="vr">64px</span></div>
+      </div>
+      <div class="panel">
+        <h3 class="sub" style="margin-top:0">Radii</h3>
+        <div class="tok"><span class="demo" style="height:30px;width:46px;background:var(--accent-lime-light);border:1.5px solid var(--accent-lime);border-radius:var(--r-sm)"></span><span class="nm">--r-sm</span><span class="vr">10px</span></div>
+        <div class="tok"><span class="demo" style="height:30px;width:46px;background:var(--accent-lime-light);border:1.5px solid var(--accent-lime);border-radius:var(--r-md)"></span><span class="nm">--r-md</span><span class="vr">14px</span></div>
+        <div class="tok"><span class="demo" style="height:30px;width:46px;background:var(--accent-lime-light);border:1.5px solid var(--accent-lime);border-radius:var(--r-lg)"></span><span class="nm">--r-lg</span><span class="vr">20px</span></div>
+        <div class="tok"><span class="demo" style="height:30px;width:46px;background:var(--accent-lime-light);border:1.5px solid var(--accent-lime);border-radius:var(--r-xl)"></span><span class="nm">--r-xl</span><span class="vr">28px</span></div>
+        <div class="tok"><span class="demo" style="height:30px;width:46px;background:var(--accent-lime-light);border:1.5px solid var(--accent-lime);border-radius:var(--r-pill)"></span><span class="nm">--r-pill</span><span class="vr">999px</span></div>
+      </div>
+    </div>
+    <div class="grid cols-3" style="margin-top:14px">
+      <div class="panel" style="text-align:center"><div style="height:64px;background:var(--bg-card);border-radius:var(--r-md);box-shadow:var(--shadow-book);margin-bottom:12px"></div><div class="nm" style="font-family:ui-monospace,monospace;font-size:var(--fs-sm)">--shadow-book</div></div>
+      <div class="panel" style="text-align:center"><div style="height:64px;background:var(--bg-card);border-radius:var(--r-md);box-shadow:var(--shadow-card);margin-bottom:12px"></div><div class="nm" style="font-family:ui-monospace,monospace;font-size:var(--fs-sm)">--shadow-card</div></div>
+      <div class="panel" style="text-align:center"><div style="height:64px;background:var(--bg-card);border-radius:var(--r-md);box-shadow:var(--shadow-hero);margin-bottom:12px"></div><div class="nm" style="font-family:ui-monospace,monospace;font-size:var(--fs-sm)">--shadow-hero</div></div>
+    </div>
+  </section>
+
+  <!-- COMPONENTS -->
+  <section>
+    <div class="eyebrow">04 · Компоненти</div>
+    <h2 class="sec">Будівельні блоки</h2>
+    <p class="sec-note">Кожен компонент успадковує теплу палітру й заокруглення. Повні специфікації — у документі «Компоненти та сторіборд».</p>
+
+    <div class="panel" style="margin-bottom:14px">
+      <h3 class="sub" style="margin-top:0">Статус-пігулки</h3>
+      <div class="demo-box">
+        <span class="pill" style="color:var(--status-want);background:var(--status-want-bg)"><i style="background:var(--status-want)"></i>Хочу прочитати</span>
+        <span class="pill" style="color:var(--status-reading);background:var(--status-reading-bg)"><i style="background:var(--status-reading)"></i>Читаю зараз</span>
+        <span class="pill" style="color:var(--status-done);background:var(--status-done-bg)"><i style="background:var(--status-done)"></i>Прочитано</span>
+        <span class="pill" style="color:var(--status-dnf);background:var(--status-dnf-bg)"><i style="background:var(--status-dnf)"></i>Не дочитала</span>
+        <span class="pill" style="color:var(--status-reread);background:var(--status-reread-bg)"><i style="background:var(--status-reread)"></i>Перечитую</span>
+      </div>
+    </div>
+
+    <div class="grid cols-2">
+      <div class="panel">
+        <h3 class="sub" style="margin-top:0">Стат-чипи</h3>
+        <div class="demo-box">
+          <div class="chip-stat"><b style="color:var(--accent-lime-deep)">64%</b><span>прогрес</span></div>
+          <div class="chip-stat"><b>11</b><span>днів читання</span></div>
+          <div class="chip-stat"><b style="color:var(--gold-deep)">12 год</b><span>загалом</span></div>
+        </div>
+        <h3 class="sub">Зорі (крок 0.5)</h3>
+        <svg width="170" height="30" viewBox="0 0 170 30">
+          <defs><linearGradient id="half"><stop offset="50%" stop-color="var(--gold-highlight)"/><stop offset="50%" stop-color="#E7DFD0"/></linearGradient></defs>
+          <g fill="var(--gold-highlight)" stroke="var(--gold-deep)" stroke-opacity=".5">
+            <path transform="translate(2,3)" d="M12 2.5l2.7 5.9 6.3.7-4.7 4.3 1.3 6.3L12 16.9 6.1 19.9l1.3-6.3L2.7 9.1l6.3-.7z"/>
+            <path transform="translate(34,3)" d="M12 2.5l2.7 5.9 6.3.7-4.7 4.3 1.3 6.3L12 16.9 6.1 19.9l1.3-6.3L2.7 9.1l6.3-.7z"/>
+            <path transform="translate(66,3)" d="M12 2.5l2.7 5.9 6.3.7-4.7 4.3 1.3 6.3L12 16.9 6.1 19.9l1.3-6.3L2.7 9.1l6.3-.7z"/>
+            <path transform="translate(98,3)" d="M12 2.5l2.7 5.9 6.3.7-4.7 4.3 1.3 6.3L12 16.9 6.1 19.9l1.3-6.3L2.7 9.1l6.3-.7z"/>
+            <path transform="translate(130,3)" fill="url(#half)" d="M12 2.5l2.7 5.9 6.3.7-4.7 4.3 1.3 6.3L12 16.9 6.1 19.9l1.3-6.3L2.7 9.1l6.3-.7z"/>
+          </g>
+        </svg>
+      </div>
+      <div class="panel">
+        <h3 class="sub" style="margin-top:0">Кнопки</h3>
+        <div class="demo-box"><button class="btn-primary">Зберегти</button><button class="btn-ghost">+ Книга</button></div>
+        <h3 class="sub">Челендж-бар</h3>
+        <div style="height:16px;border-radius:999px;background:var(--gold-light);border:1px solid #F0E4BE;overflow:hidden">
+          <div style="height:100%;width:50%;border-radius:999px;background:linear-gradient(180deg,#FBD94E,var(--gold-highlight) 55%,#ECBE1F)"></div>
+        </div>
+        <div style="font-size:var(--fs-xs);color:#8A6D14;margin-top:8px">12 з 24 книг · 50%</div>
+        <h3 class="sub">Полиця-нейм-плейт</h3>
+        <div style="display:inline-flex;align-items:center;gap:9px;padding:5px 12px;border-radius:var(--r-md);background:linear-gradient(180deg,#FFFDF9,#F4ECDE);box-shadow:0 4px 10px rgba(36,32,28,.22);border:1px solid rgba(94,64,41,.18)">
+          <span style="font-family:var(--font-serif);font-weight:700;font-size:var(--fs-title)">Читаю зараз</span>
+          <span class="pill" style="color:var(--status-reading);background:var(--status-reading-bg);font-size:var(--fs-xs);padding:3px 9px"><i style="background:var(--status-reading)"></i>Читаю зараз</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>

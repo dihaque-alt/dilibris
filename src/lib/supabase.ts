@@ -7,4 +7,10 @@ if (!url || !anonKey) {
   throw new Error('Додай VITE_SUPABASE_URL і VITE_SUPABASE_ANON_KEY у .env.local');
 }
 
-export const supabase = createClient(url, anonKey);
+export const supabase = createClient(url, anonKey, {
+  auth: {
+    flowType: 'pkce',
+    detectSessionInUrl: true,
+    persistSession: true,
+  },
+});

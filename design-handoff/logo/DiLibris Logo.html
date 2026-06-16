@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DiLibris — лого</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;700&family=Plus+Jakarta+Sans:wght@500;600&display=swap" rel="stylesheet" />
+<style>
+  :root{ --ink:#2E4226; --text:#46412F; --muted:#8A8067; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; font-family:'Plus Jakarta Sans',system-ui,sans-serif; color:var(--text);
+    background:radial-gradient(120% 80% at 50% 0%, #FBF7EE 0%, #EFE7D6 55%, #E5DAC2 100%); min-height:100vh; padding:56px 32px 90px; }
+  .wrap{ max-width:1000px; margin:0 auto; }
+  h1{ font-family:'Comfortaa',sans-serif; font-weight:700; font-size:1.7rem; color:var(--ink); margin:0 0 4px; letter-spacing:.3px; }
+  .sub{ color:var(--muted); font-size:.95rem; margin:0 0 44px; }
+  .hero{ display:flex; gap:48px; align-items:center; flex-wrap:wrap; justify-content:center; margin-bottom:48px; }
+  .badge{ width:300px; height:300px; border-radius:50%; overflow:hidden; box-shadow:0 30px 60px rgba(46,66,38,.26), inset 0 1px 0 rgba(255,255,255,.6); }
+  .badge img{ width:100%; height:100%; display:block; }
+  .panel{ background:rgba(255,255,255,.5); border:1px solid rgba(94,126,84,.18); border-radius:22px; padding:28px 30px; }
+  .lbl{ font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); font-weight:600; margin:0 0 18px; }
+  .sizes{ display:flex; align-items:flex-end; gap:30px; }
+  .size{ display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .size img{ border-radius:50%; display:block; box-shadow:0 6px 16px rgba(46,66,38,.2); }
+  .size span{ font-size:.74rem; color:var(--muted); }
+  .row{ display:grid; grid-template-columns:1fr 1fr; gap:22px; margin-top:26px; }
+  .ctx{ display:flex; align-items:center; gap:14px; padding:18px 20px; border-radius:16px; }
+  .ctx.light{ background:#fff; border:1px solid rgba(94,126,84,.16); }
+  .ctx.dark{ background:#262019; }
+  .ctx img{ width:52px; height:52px; border-radius:50%; }
+  .ctx .t{ font-size:.92rem; font-weight:600; }
+  .ctx.light .t{ color:#46412F; } .ctx.light .t small{ color:#8A8067; }
+  .ctx.dark .t{ color:#F2ECDD; } .ctx.dark .t small{ color:#A89F8A; }
+  .ctx .t small{ display:block; font-weight:500; font-size:.78rem; margin-top:2px; }
+  .alt{ display:flex; gap:34px; align-items:center; flex-wrap:wrap; }
+  .alt .a-badge{ width:150px; height:150px; border-radius:50%; overflow:hidden; flex:0 0 auto; box-shadow:0 12px 28px rgba(46,66,38,.2); }
+  .alt .a-badge img{ width:100%; height:100%; display:block; }
+  .alt p{ margin:0; font-size:.9rem; color:var(--muted); line-height:1.6; max-width:520px; }
+  .alt b{ color:var(--text); }
+  .gfile{ max-width:600px; margin:40px auto 0; text-align:center; }
+  .gfile img{ border-radius:18px; box-shadow:0 8px 22px rgba(46,66,38,.22); }
+  .note{ font-size:.86rem; color:var(--muted); line-height:1.55; }
+  .sechead{ font-family:'Comfortaa',sans-serif; font-weight:700; color:var(--ink); font-size:1.05rem; margin:0 0 16px; }
+  hr{ border:none; border-top:1px solid rgba(94,126,84,.16); margin:54px 0; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>DiLibris — знак застосунку</h1>
+    <p class="sub">Кіт біля свічки · лінійна гравюра, оливковий монохром на кремі</p>
+
+    <div class="hero">
+      <div class="badge"><img src="dilibris-cat-engraving.svg" alt="DiLibris logo" /></div>
+      <div class="panel">
+        <p class="lbl">Як читається у малих розмірах</p>
+        <div class="sizes">
+          <div class="size"><img src="dilibris-cat-engraving.svg" width="120" height="120" /><span>120 px · Google</span></div>
+          <div class="size"><img src="dilibris-cat-engraving.svg" width="64" height="64" /><span>64 px</span></div>
+          <div class="size"><img src="dilibris-cat-engraving.svg" width="40" height="40" /><span>40 px</span></div>
+        </div>
+        <div class="row">
+          <div class="ctx light"><img src="dilibris-cat-engraving.svg" /><div class="t">DiLibris<small>хоче отримати доступ</small></div></div>
+          <div class="ctx dark"><img src="dilibris-cat-engraving.svg" /><div class="t">DiLibris<small>на темному тлі</small></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gfile panel">
+      <p class="lbl">Файл для екрана згоди Google</p>
+      <img src="dilibris-cat-google.png" width="168" height="168" />
+      <p class="note" style="margin-top:18px">Завантаж <b>dilibris-cat-google.png</b> — квадрат 512×512 з кремовим тлом (кутики не прозорі), &lt;1 МБ.</p>
+    </div>
+
+    <hr />
+
+    <p class="sechead">Запасний знак для крихітних розмірів</p>
+    <div class="alt">
+      <div class="a-badge"><img src="dilibris-cat-silhouette.svg" alt="silhouette" /></div>
+      <p>На фавіконі чи 16–32 px тонкі штрихи гравюри зливаються. Для таких місць є <b>силует-версія</b> (dilibris-cat-silhouette.svg) — простіша форма, що лишається чіткою навіть крихітною. Гравюра — основний знак; силует — резерв.</p>
+    </div>
+  </div>
+</body>
+</html>

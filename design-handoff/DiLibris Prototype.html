@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>DiLibris — Бібліотека</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@500;700&family=EB+Garamond:ital,wght@0,500;0,700;1,500&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="tokens.css" />
+<link rel="stylesheet" href="prototype/library.css" />
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-sans);
+    color: var(--text-main);
+    background: var(--bg-room);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection { background: var(--accent-lime-light); }
+  .dl-shelf-scroll::-webkit-scrollbar { height: 0; display: none; }
+
+  button { font-family: var(--font-sans); }
+
+  .dl-primary {
+    border: none; cursor: pointer; white-space: nowrap;
+    background: var(--accent-lime); color: #fff;
+    font-weight: 600; font-size: var(--fs-sm);
+    padding: 10px 18px; border-radius: var(--r-pill);
+    box-shadow: 0 3px 8px rgba(94,126,84,0.28);
+    transition: transform var(--dur-fast) var(--ease-warm), background var(--dur-fast) ease, box-shadow var(--dur-fast) ease;
+  }
+  .dl-primary:hover { background: var(--accent-lime-deep); transform: translateY(-1px); box-shadow: 0 6px 14px rgba(94,126,84,0.32); }
+  .dl-primary:active { transform: translateY(0); }
+
+  .dl-ghost {
+    border: 1.5px solid var(--line-strong); cursor: pointer; white-space: nowrap;
+    background: var(--bg-card); color: var(--text-muted);
+    font-weight: 600; font-size: var(--fs-sm);
+    padding: 9px 15px; border-radius: var(--r-pill);
+    transition: all var(--dur-fast) ease;
+  }
+  .dl-ghost:hover { color: var(--text-main); border-color: var(--text-faint); background: var(--bg-card-soft); }
+
+  .dl-close {
+    border: none; background: var(--bg-card-soft); cursor: pointer;
+    width: 34px; height: 34px; border-radius: 999px; flex: 0 0 auto;
+    color: var(--text-muted); font-size: 14px;
+    transition: all var(--dur-fast) ease;
+  }
+  .dl-close:hover { background: var(--line); color: var(--text-main); }
+
+  @keyframes dl-fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes dl-sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  @keyframes dl-card-in { from { opacity: 0; transform: translateY(14px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  @keyframes dl-toast-in { from { opacity: 0; transform: translate(-50%, 16px); } to { opacity: 1; transform: translate(-50%, 0); } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script src="prototype/data.js"></script>
+<script type="text/babel" src="prototype/store.jsx"></script>
+<script type="text/babel" src="prototype/tweaks-panel.jsx"></script>
+<script type="text/babel" src="prototype/components.jsx"></script>
+<script type="text/babel" src="prototype/library.jsx"></script>
+<script type="text/babel" src="prototype/bookcard.jsx"></script>
+<script type="text/babel" src="prototype/reader.jsx"></script>
+<script type="text/babel" src="prototype/notes.jsx"></script>
+<script type="text/babel" src="prototype/notifs.jsx"></script>
+<script type="text/babel" src="prototype/onboarding.jsx"></script>
+<script type="text/babel" src="prototype/screens.jsx"></script>
+<script type="text/babel" src="prototype/app.jsx"></script>
+</body>
+</html>

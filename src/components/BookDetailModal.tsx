@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { useOffline } from './OfflineProvider';
 import { DetailTabs, type DetailTab } from './DetailTabs';
-import { daysBetween, formatDateTimeUk, todayIsoDate } from '../lib/dates';
+import { StatChip } from './StatChip';
+import { StatusPill } from './StatusPill';
+import { daysBetween, todayIsoDate } from '../lib/dates';
 import {
   addSession,
   deleteSession,
@@ -10,6 +12,7 @@ import {
 } from '../lib/offline/librarySync';
 import { formatAuthors, STATUS_LABELS } from '../lib/labels';
 import { formatMinutes, parseRating, RATING_OPTIONS } from '../lib/rating';
+import { useIsMobile } from '../hooks/useIsMobile';
 import type { BookEntryStatus, ReadingFormat, ReadingSession, UserBookEntry } from '../types/database';
 import { BookCover } from './BookCover';
 import { BookNotesSection } from './BookNotesSection';
@@ -20,6 +23,8 @@ interface BookDetailModalProps {
   userId: string;
   onClose: () => void;
   onUpdated: () => void;
+  onRead?: () => void;
+  onSession?: () => void;
 }
 
 const FORMAT_LABELS: Record<ReadingFormat, string> = {
@@ -27,7 +32,17 @@ const FORMAT_LABELS: Record<ReadingFormat, string> = {
   ebook: 'Електронна',
 };
 
-export function BookDetailModal({ entry, userId, onClose, onUpdated }: BookDetailModalProps) {
+const STATUS_KEYS = Object.keys(STATUS_LABELS) as BookEntryStatus[];
+
+export function BookDetailModal({
+  entry,
+  userId,
+  onClose,
+  onUpdated,
+  onRead,
+  onSession,
+}: BookDetailModalProps) {
+  const mobile = useIsMobile();
   const { refreshPending } = useOffline();
   const book = entry.book;
   const [tab, setTab] = useState<DetailTab>('progress');
@@ -75,6 +90,11 @@ export function BookDetailModal({ entry, userId, onClose, onUpdated }: BookDetai
       ? Math.min(100, Math.round((currentPageNum / totalPagesNum) * 100))
       : null;
   const readingDays = daysBetween(startedOn || null, finishedOn || null);
+  const showReadingActions =
+    status !== 'want_to_read' &&
+    status !== 'finished' &&
+    (onRead || onSession);
+  const isEbook = format === 'ebook';
 
   async function handleSave(e: FormEvent) {
     e.preventDefault();
@@ -116,6 +136,7 @@ export function BookDetailModal({ entry, userId, onClose, onUpdated }: BookDetai
     await refreshPending();
     onUpdated();
     setSaving(false);
+    onClose();
   }
 
   async function handleAddSession(e: FormEvent) {
@@ -174,239 +195,330 @@ export function BookDetailModal({ entry, userId, onClose, onUpdated }: BookDetai
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose} role="presentation">
+    <div className="dl-modal-backdrop" onClick={onClose} role="presentation">
       <div
-        className="modal modal--detail modal--sheet"
+        className={`dl-detailcard ${mobile ? 'is-sheet' : 'is-modal'}`}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-labelledby="book-detail-title"
       >
-        <header className="modal-header">
-          <div className="book-detail-hero book-detail-hero--compact">
-            <BookCover title={book?.title ?? 'Книга'} coverUrl={book?.cover_url} size="md" />
-            <div className="book-detail-meta">
-              <h2 id="book-detail-title">{book?.title}</h2>
-              <p>{formatAuthors(book?.authors)}</p>
-              <span className="status-pill">{STATUS_LABELS[status]}</span>
-            </div>
+        {mobile && <div className="dl-sheet-handle" aria-hidden="true" />}
+
+        <header className="dl-detail-header">
+          <div className="dl-detail-cover-wrap">
+            <BookCover
+              title={book?.title ?? 'Книга'}
+              authors={book?.authors}
+              coverUrl={book?.cover_url}
+              entryId={entry.id}
+              size="md"
+            />
+            <span className="dl-detail-cover-shadow" aria-hidden="true" />
           </div>
-          <button type="button" className="btn-icon" onClick={onClose} aria-label="Закрити">
-            ×
+          <div className="dl-detail-meta">
+            <h2 id="book-detail-title">{book?.title}</h2>
+            <p>{formatAuthors(book?.authors)}</p>
+            <StatusPill status={status} size="sm" />
+          </div>
+          <button type="button" className="dl-close" onClick={onClose} aria-label="Закрити">
+            ✕
           </button>
         </header>
 
-        <div className="stats-row stats-row--compact">
-          {progressPct !== null && (
-            <div className="stat-chip">
-              <span className="stat-label">Прогрес</span>
-              <strong>{progressPct}%</strong>
-            </div>
-          )}
-          {readingDays !== null && (
-            <div className="stat-chip">
-              <span className="stat-label">Днів</span>
-              <strong>{readingDays}</strong>
-            </div>
-          )}
-          <div className="stat-chip">
-            <span className="stat-label">Час</span>
-            <strong>{formatMinutes(totalMinutes)}</strong>
-          </div>
+        <div className="dl-detail-stats">
+          <StatChip
+            label="прогрес"
+            value={progressPct !== null ? `${progressPct}%` : '—'}
+            accent="var(--accent-lime-deep)"
+          />
+          <StatChip label="днів читання" value={readingDays !== null ? String(readingDays) : '—'} />
+          <StatChip
+            label="загалом"
+            value={totalMinutes > 0 ? formatMinutes(totalMinutes) : '—'}
+            accent="var(--gold-deep)"
+          />
         </div>
 
-        <DetailTabs active={tab} onChange={setTab} />
-
-        {tab === 'progress' && (
-          <form className="book-detail-form" onSubmit={handleSave}>
-            <div className="form-row">
-              <label>
-                Статус
-                <select value={status} onChange={(e) => setStatus(e.target.value as BookEntryStatus)}>
-                  {(Object.entries(STATUS_LABELS) as [BookEntryStatus, string][]).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Формат
-                <select value={format} onChange={(e) => setFormat(e.target.value as ReadingFormat | '')}>
-                  <option value="">Не вказано</option>
-                  {(Object.entries(FORMAT_LABELS) as [ReadingFormat, string][]).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-
-            <label>
-              Особиста оцінка
-              <select value={rating} onChange={(e) => setRating(e.target.value)}>
-                {RATING_OPTIONS.map((opt) => (
-                  <option key={opt.value || 'none'} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <div className="form-row">
-              <label>
-                Початок
-                <input type="date" value={startedOn} onChange={(e) => setStartedOn(e.target.value)} />
-              </label>
-              <label>
-                Завершення
-                <input
-                  type="date"
-                  value={finishedOn}
-                  onChange={(e) => setFinishedOn(e.target.value)}
-                  disabled={status !== 'finished' && status !== 'dnf'}
-                />
-              </label>
-            </div>
-
-            <div className="form-row">
-              <label>
-                Поточна сторінка
-                <input
-                  type="number"
-                  min={0}
-                  value={currentPage}
-                  onChange={(e) => setCurrentPage(e.target.value)}
-                />
-              </label>
-              <label>
-                Всього сторінок
-                <input
-                  type="number"
-                  min={1}
-                  value={totalPages}
-                  onChange={(e) => setTotalPages(e.target.value)}
-                />
-              </label>
-            </div>
-
-            {(status === 'finished' || status === 're_reading') && (
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={countsTowardStats}
-                  onChange={(e) => setCountsTowardStats(e.target.checked)}
-                />
-                Рахувати в challenge
-              </label>
+        {showReadingActions && (
+          <div className="dl-detail-reading-actions">
+            {isEbook ? (
+              <button type="button" className="dl-primary dl-detail-read-primary" onClick={onRead}>
+                ▷ Читати далі
+              </button>
+            ) : (
+              <button type="button" className="dl-primary dl-detail-read-primary" onClick={onSession}>
+                ⏱ Почати сесію
+              </button>
             )}
+            {isEbook ? (
+              <button type="button" className="dl-ghost" onClick={onSession}>
+                ⏱ Сесія
+              </button>
+            ) : (
+              <button type="button" className="dl-ghost" onClick={onRead}>
+                ▷ Уривок
+              </button>
+            )}
+          </div>
+        )}
 
-            <button type="submit" disabled={saving}>
+        <div className="dl-detail-tabs-wrap">
+          <DetailTabs active={tab} onChange={setTab} />
+        </div>
+
+        <div className="dl-detail-body">
+          {tab === 'progress' && (
+            <form id="book-progress-form" onSubmit={handleSave}>
+              <div className="dl-field">
+                <span className="dl-field-label">Статус</span>
+                <div className="dl-choice-row">
+                  {STATUS_KEYS.map((key) => (
+                    <button
+                      key={key}
+                      type="button"
+                      className={status === key ? 'dl-choice is-active' : 'dl-choice'}
+                      onClick={() => setStatus(key)}
+                    >
+                      {STATUS_LABELS[key]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="dl-field">
+                <span className="dl-field-label">Формат</span>
+                <div className="dl-choice-row">
+                  <button
+                    type="button"
+                    className={format === '' ? 'dl-choice is-active' : 'dl-choice'}
+                    onClick={() => setFormat('')}
+                  >
+                    Не вказано
+                  </button>
+                  {(Object.entries(FORMAT_LABELS) as [ReadingFormat, string][]).map(([value, label]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      className={format === value ? 'dl-choice is-active' : 'dl-choice'}
+                      onClick={() => setFormat(value)}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="dl-field">
+                <label className="dl-field-label" htmlFor="book-rating">
+                  Оцінка
+                </label>
+                <select id="book-rating" value={rating} onChange={(e) => setRating(e.target.value)}>
+                  {RATING_OPTIONS.map((opt) => (
+                    <option key={opt.value || 'none'} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="dl-form-row">
+                <label>
+                  Початок
+                  <input type="date" value={startedOn} onChange={(e) => setStartedOn(e.target.value)} />
+                </label>
+                <label>
+                  Завершення
+                  <input
+                    type="date"
+                    value={finishedOn}
+                    onChange={(e) => setFinishedOn(e.target.value)}
+                    disabled={status !== 'finished' && status !== 'dnf'}
+                  />
+                </label>
+              </div>
+
+              <div className="dl-form-row">
+                <label>
+                  Поточна сторінка
+                  <input
+                    type="number"
+                    min={0}
+                    value={currentPage}
+                    onChange={(e) => setCurrentPage(e.target.value)}
+                  />
+                </label>
+                <label>
+                  Всього сторінок
+                  <input
+                    type="number"
+                    min={1}
+                    value={totalPages}
+                    onChange={(e) => setTotalPages(e.target.value)}
+                  />
+                </label>
+              </div>
+
+              {(status === 'finished' || status === 're_reading') && (
+                <div
+                  className="dl-toggle-row"
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setCountsTowardStats((v) => !v)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      setCountsTowardStats((v) => !v);
+                    }
+                  }}
+                >
+                  <div className={`dl-toggle-track${countsTowardStats ? ' is-on' : ''}`}>
+                    <div className="dl-toggle-thumb" />
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: 'var(--fs-body)' }}>Рахувати в challenge</div>
+                    <div style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-muted)', marginTop: 2 }}>
+                      Книга зараховується у твою річну ціль
+                    </div>
+                  </div>
+                </div>
+              )}
+            </form>
+          )}
+
+          {tab === 'review' && book && (
+            <BookReviewsSection
+              embedded
+              bookId={book.id}
+              entryId={entry.id}
+              userId={userId}
+              entryRating={parseRating(rating)}
+            />
+          )}
+
+          {tab === 'notes' && book && (
+            <BookNotesSection embedded bookId={book.id} entryId={entry.id} userId={userId} />
+          )}
+
+          {tab === 'sessions' && (
+            <section>
+              {!showSessionForm && (
+                <button
+                  type="button"
+                  className="dl-ghost"
+                  style={{ marginBottom: 12 }}
+                  onClick={() => setShowSessionForm(true)}
+                >
+                  + Сесія
+                </button>
+              )}
+
+              {showSessionForm && (
+                <form
+                  className="inline-form session-form"
+                  onSubmit={handleAddSession}
+                  style={{ marginBottom: 16 }}
+                >
+                  <div className="dl-form-row">
+                    <label>
+                      Дата
+                      <input
+                        type="date"
+                        value={sessionDate}
+                        onChange={(e) => setSessionDate(e.target.value)}
+                        required
+                      />
+                    </label>
+                    <label>
+                      Сторінок
+                      <input
+                        type="number"
+                        min={0}
+                        value={sessionPages}
+                        onChange={(e) => setSessionPages(e.target.value)}
+                      />
+                    </label>
+                    <label>
+                      Хвилин
+                      <input
+                        type="number"
+                        min={0}
+                        value={sessionMinutes}
+                        onChange={(e) => setSessionMinutes(e.target.value)}
+                      />
+                    </label>
+                  </div>
+                  <label>
+                    Нотатка
+                    <input value={sessionNote} onChange={(e) => setSessionNote(e.target.value)} />
+                  </label>
+                  <div className="form-actions">
+                    <button type="button" className="dl-ghost" onClick={() => setShowSessionForm(false)}>
+                      Скасувати
+                    </button>
+                    <button type="submit" className="dl-primary" disabled={sessionSaving}>
+                      {sessionSaving ? 'Додаємо…' : 'Записати'}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {loadingSessions ? (
+                <p className="form-hint">Завантажуємо…</p>
+              ) : sessions.length === 0 ? (
+                <p className="empty-hint">Ще немає сесій читання.</p>
+              ) : (
+                <ul className="dl-session-list">
+                  {sessions.map((session) => (
+                    <li key={session.id} className="dl-session-item">
+                      <div className="dl-session-date">
+                        {new Date(session.started_at).toLocaleDateString('uk-UA', {
+                          day: 'numeric',
+                          month: 'short',
+                        })}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 'var(--fs-sm)' }}>
+                          {session.pages_read > 0 && `${session.pages_read} стор. · `}
+                          {formatMinutes(session.minutes)}
+                        </div>
+                        {session.note && (
+                          <div style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-muted)', marginTop: 2 }}>
+                            {session.note}
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        className="dl-close"
+                        aria-label="Видалити"
+                        onClick={() => handleDeleteSession(session.id)}
+                      >
+                        ×
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          )}
+
+          {error && <p className="form-error">{error}</p>}
+        </div>
+
+        <footer className="dl-detail-footer">
+          <button type="button" className="dl-ghost" onClick={onClose}>
+            Скасувати
+          </button>
+          {tab === 'progress' ? (
+            <button type="submit" form="book-progress-form" className="dl-primary" disabled={saving}>
               {saving ? 'Зберігаємо…' : 'Зберегти'}
             </button>
-          </form>
-        )}
-
-        {tab === 'review' && book && (
-          <BookReviewsSection
-            embedded
-            bookId={book.id}
-            entryId={entry.id}
-            userId={userId}
-            entryRating={parseRating(rating)}
-          />
-        )}
-
-        {tab === 'notes' && book && (
-          <BookNotesSection embedded bookId={book.id} entryId={entry.id} userId={userId} />
-        )}
-
-        {tab === 'sessions' && (
-          <section className="sessions-section sessions-section--embedded">
-            <div className="embedded-actions">
-              <button type="button" className="btn-small" onClick={() => setShowSessionForm((v) => !v)}>
-                + Сесія
-              </button>
-            </div>
-
-            {showSessionForm && (
-              <form className="inline-form session-form" onSubmit={handleAddSession}>
-                <div className="form-row">
-                  <label>
-                    Дата
-                    <input
-                      type="date"
-                      value={sessionDate}
-                      onChange={(e) => setSessionDate(e.target.value)}
-                      required
-                    />
-                  </label>
-                  <label>
-                    Сторінок
-                    <input
-                      type="number"
-                      min={0}
-                      value={sessionPages}
-                      onChange={(e) => setSessionPages(e.target.value)}
-                    />
-                  </label>
-                  <label>
-                    Хвилин
-                    <input
-                      type="number"
-                      min={0}
-                      value={sessionMinutes}
-                      onChange={(e) => setSessionMinutes(e.target.value)}
-                    />
-                  </label>
-                </div>
-                <label>
-                  Нотатка
-                  <input value={sessionNote} onChange={(e) => setSessionNote(e.target.value)} />
-                </label>
-                <div className="form-actions">
-                  <button type="button" className="btn-secondary" onClick={() => setShowSessionForm(false)}>
-                    Скасувати
-                  </button>
-                  <button type="submit" disabled={sessionSaving}>
-                    {sessionSaving ? 'Додаємо…' : 'Додати'}
-                  </button>
-                </div>
-              </form>
-            )}
-
-            {loadingSessions ? (
-              <p className="form-hint">Завантажуємо…</p>
-            ) : sessions.length === 0 ? (
-              <p className="empty-hint">Ще немає сесій читання.</p>
-            ) : (
-              <ul className="session-list">
-                {sessions.map((session) => (
-                  <li key={session.id} className="session-item">
-                    <div>
-                      <strong>{formatDateTimeUk(session.started_at)}</strong>
-                      <span>
-                        {session.pages_read > 0 && `${session.pages_read} стор. · `}
-                        {formatMinutes(session.minutes)}
-                      </span>
-                      {session.note && <p className="session-note">{session.note}</p>}
-                    </div>
-                    <button
-                      type="button"
-                      className="shelf-delete"
-                      aria-label="Видалити"
-                      onClick={() => handleDeleteSession(session.id)}
-                    >
-                      ×
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </section>
-        )}
-
-        {error && <p className="form-error">{error}</p>}
+          ) : (
+            <button type="button" className="dl-primary" onClick={onClose}>
+              Готово
+            </button>
+          )}
+        </footer>
       </div>
     </div>
   );

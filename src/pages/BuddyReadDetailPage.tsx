@@ -2,10 +2,12 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AppNav } from '../components/AppNav';
 import { BookCover } from '../components/BookCover';
-import { supabase } from '../lib/supabase';
-import { inviteUrl, pickMemberProgress, progressLabel } from '../lib/buddyRead';
+import { MemberAvatar } from '../components/MemberAvatar';
+import { RoomBackdrop } from '../components/RoomBackdrop';
+import { inviteUrl, pickMemberProgress, progressLabel, progressPercent } from '../lib/buddyRead';
 import { formatDateUk, formatDateTimeUk } from '../lib/dates';
-import { formatAuthors, NOTE_TYPE_LABELS, STATUS_LABELS } from '../lib/labels';
+import { NOTE_TYPE_LABELS, STATUS_LABELS } from '../lib/labels';
+import { supabase } from '../lib/supabase';
 import type {
   BookEntryStatus,
   BuddyRead,
@@ -14,10 +16,25 @@ import type {
   Note,
   NoteType,
 } from '../types/database';
+import '../styles/library.css';
+import '../styles/screens-ui.css';
 
 interface BuddyReadDetailPageProps {
   userId: string;
   userEmail: string;
+}
+
+const MEMBER_BAR_COLORS = [
+  'var(--status-reading)',
+  'var(--status-dnf)',
+  'var(--status-done)',
+  'var(--accent-lime)',
+];
+
+function memberBarColor(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) hash = (hash * 17 + name.charCodeAt(i)) >>> 0;
+  return MEMBER_BAR_COLORS[hash % MEMBER_BAR_COLORS.length];
 }
 
 export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPageProps) {
@@ -215,187 +232,225 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
 
   if (loading) {
     return (
-      <div className="app-shell app-shell--room">
-        <AppNav userEmail={userEmail} active="buddy-reads" />
-        <div className="center-page">Завантажуємо…</div>
+      <div className="app-shell">
+        <RoomBackdrop />
+        <AppNav userEmail={userEmail} userId={userId} active="buddy-reads" />
+        <div className="center-page" style={{ color: 'var(--ink-room-soft)' }}>
+          Завантажуємо…
+        </div>
       </div>
     );
   }
 
   if (!buddyRead) {
     return (
-      <div className="app-shell app-shell--room">
-        <AppNav userEmail={userEmail} active="buddy-reads" />
+      <div className="app-shell">
+        <RoomBackdrop />
+        <AppNav userEmail={userEmail} userId={userId} active="buddy-reads" />
         <div className="center-page">
-          <p className="form-error">Buddy read не знайдено</p>
-          <Link to="/buddy-reads">Назад</Link>
+          <p className="form-error">Клуб не знайдено</p>
+          <Link to="/buddy-reads" className="dl-back-link">
+            ← Назад
+          </Link>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="app-shell app-shell--room">
-      <AppNav userEmail={userEmail} active="buddy-reads" />
+  const deadlineLabel = buddyRead.target_finish_on
+    ? `Читаємо до ${formatDateUk(buddyRead.target_finish_on)}`
+    : 'Спільне читання';
 
-      <main className="buddy-read-detail">
-        <p className="breadcrumb">
-          <Link to="/buddy-reads">Buddy reads</Link> / {buddyRead.title}
-        </p>
+  return (
+    <div className="app-shell">
+      <RoomBackdrop />
+      <AppNav userEmail={userEmail} userId={userId} active="buddy-reads" />
+
+      <main className="dl-page buddy-read-detail">
+        <Link to="/buddy-reads" className="dl-back-link">
+          ← Спільне читання
+        </Link>
 
         {error && <p className="banner-error">{error}</p>}
 
-        <section className="dashboard-card buddy-read-hero">
-          <div className="book-detail-hero">
-            <BookCover title={buddyRead.book?.title ?? buddyRead.title} coverUrl={buddyRead.book?.cover_url} size="lg" />
-            <div className="book-detail-meta">
-              <h2>{buddyRead.title}</h2>
-              <p>{formatAuthors(buddyRead.book?.authors)}</p>
-              {buddyRead.description && <p>{buddyRead.description}</p>}
-              {buddyRead.target_finish_on && (
-                <p className="form-hint">Дедлайн: {formatDateUk(buddyRead.target_finish_on)}</p>
-              )}
-              {buddyRead.is_archived && <span className="status-pill">Архів</span>}
-            </div>
+        <div className="dl-buddy-detail-hero">
+          <BookCover
+            title={buddyRead.book?.title ?? buddyRead.title}
+            coverUrl={buddyRead.book?.cover_url}
+            width={56}
+            size="sm"
+          />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p className="dl-buddy-detail-kicker">
+              {buddyRead.title} · «{buddyRead.book?.title ?? 'Книга'}»
+            </p>
+            <h1>{deadlineLabel}</h1>
+            {buddyRead.description && (
+              <p className="dl-buddy-detail-kicker" style={{ marginTop: 6 }}>
+                {buddyRead.description}
+              </p>
+            )}
           </div>
-
-          <div className="invite-row">
-            <code className="invite-code">{inviteUrl(buddyRead.invite_token)}</code>
-            <button type="button" className="btn-small" onClick={copyInviteLink}>
+          <div className="dl-buddy-detail-actions">
+            <button type="button" className="dl-ghost" onClick={copyInviteLink}>
               {copied ? 'Скопійовано!' : 'Копіювати лінк'}
             </button>
             {isOwner && (
-              <button type="button" className="btn-small btn-secondary" onClick={toggleArchive}>
-                {buddyRead.is_archived ? 'Повернути з архіву' : 'В архів'}
+              <button type="button" className="dl-ghost" onClick={toggleArchive}>
+                {buddyRead.is_archived ? 'Повернути з архіву' : 'Архів'}
               </button>
             )}
           </div>
-        </section>
+        </div>
 
-        <section className="dashboard-card">
-          <h3>Прогрес учасників</h3>
-          <ul className="member-progress-list">
-            {members.map((member) => {
-              const progress = pickMemberProgress(bookEntries, member.user_id);
-              return (
-                <li key={member.id} className="member-progress-item">
-                  <div>
-                    <strong>{member.profile?.display_name || 'Читач'}</strong>
-                    <span className="status-pill">{member.role === 'owner' ? 'Організатор' : 'Учасник'}</span>
+        <div className="dl-buddy-columns">
+          <section className="dl-panel">
+            <h2 className="dl-panel-title">Прогрес учасників</h2>
+            <div className="dl-member-list">
+              {members.map((member) => {
+                const name = member.profile?.display_name || 'Читач';
+                const progress = pickMemberProgress(bookEntries, member.user_id);
+                const pct = progressPercent(progress);
+                const barColor = memberBarColor(name);
+                return (
+                  <div key={member.id} className="dl-member-row">
+                    <MemberAvatar name={name} />
+                    <div className="dl-member-row-body">
+                      <div className="dl-member-row-head">
+                        <span>
+                          {name}
+                          {member.role === 'owner' && (
+                            <span style={{ marginLeft: 6, color: 'var(--text-muted)', fontSize: 'var(--fs-xs)' }}>
+                              · організатор
+                            </span>
+                          )}
+                        </span>
+                        <span className="dl-member-row-pct">{pct}%</span>
+                      </div>
+                      <div className="dl-member-progress-track">
+                        <div
+                          className="dl-member-progress-fill"
+                          style={{ width: `${pct}%`, background: barColor }}
+                        />
+                      </div>
+                      <p className="dl-buddy-progress-note">
+                        {progress.status ? STATUS_LABELS[progress.status] : '—'} · {progressLabel(progress)}
+                      </p>
+                    </div>
                   </div>
-                  <p>
-                    {progress.status ? STATUS_LABELS[progress.status] : '—'} · {progressLabel(progress)}
-                  </p>
-                </li>
-              );
-            })}
-          </ul>
-        </section>
+                );
+              })}
+            </div>
+          </section>
 
-        <div className="buddy-read-columns">
-          <section className="dashboard-card">
-            <h3>Чат</h3>
-            <ul className="chat-list">
+          <section className="dl-panel" style={{ display: 'flex', flexDirection: 'column' }}>
+            <h2 className="dl-panel-title">Чат</h2>
+            <div className="dl-chat-feed">
               {messages.length === 0 ? (
-                <li className="empty-hint">Поки тихо. Напиши перше повідомлення.</li>
+                <p className="empty-hint">Поки тихо. Напиши перше повідомлення.</p>
               ) : (
                 messages.map((msg) => (
-                  <li key={msg.id} className={msg.user_id === userId ? 'chat-item chat-item--own' : 'chat-item'}>
-                    <strong>{msg.user_id === userId ? 'Ти' : msg.profile?.display_name || 'Читач'}</strong>
-                    <p>{msg.body}</p>
-                    <time>{formatDateTimeUk(msg.created_at)}</time>
-                  </li>
+                  <div key={msg.id} className="dl-chat-bubble">
+                    <div className="dl-chat-author">
+                      {msg.user_id === userId ? 'Ти' : msg.profile?.display_name || 'Читач'}
+                    </div>
+                    <div className="dl-chat-body">{msg.body}</div>
+                    <time className="dl-chat-time">{formatDateTimeUk(msg.created_at)}</time>
+                  </div>
                 ))
               )}
-            </ul>
-            <form className="chat-form" onSubmit={handleSendMessage}>
+            </div>
+            <form className="dl-chat-compose" onSubmit={handleSendMessage}>
               <input
                 value={chatBody}
                 onChange={(e) => setChatBody(e.target.value)}
-                placeholder="Повідомлення…"
+                placeholder="Написати повідомлення…"
                 required
               />
-              <button type="submit" disabled={chatSaving}>
+              <button type="submit" className="dl-ghost" disabled={chatSaving}>
                 {chatSaving ? '…' : 'Надіслати'}
               </button>
             </form>
           </section>
-
-          <section className="dashboard-card">
-            <h3>Спільні нотатки</h3>
-            {!myEntryId && (
-              <p className="form-hint">
-                Додай книгу в <Link to="/">бібліотеку</Link>, щоб писати нотатки в групі.
-              </p>
-            )}
-            <form className="inline-form" onSubmit={handleAddNote}>
-              <label>
-                Тип
-                <select value={noteType} onChange={(e) => setNoteType(e.target.value as NoteType)}>
-                  {(Object.entries(NOTE_TYPE_LABELS) as [NoteType, string][]).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <div className="form-row">
-                <label>
-                  Сторінка
-                  <input type="number" min={1} value={notePage} onChange={(e) => setNotePage(e.target.value)} />
-                </label>
-                <label>
-                  Глава
-                  <input value={noteChapter} onChange={(e) => setNoteChapter(e.target.value)} />
-                </label>
-              </div>
-              <label>
-                Текст
-                <textarea
-                  value={noteBody}
-                  onChange={(e) => setNoteBody(e.target.value)}
-                  rows={3}
-                  required
-                  disabled={!myEntryId}
-                />
-              </label>
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={noteSpoilers}
-                  onChange={(e) => setNoteSpoilers(e.target.checked)}
-                  disabled={!myEntryId}
-                />
-                Спойлери
-              </label>
-              <button type="submit" disabled={noteSaving || !myEntryId}>
-                {noteSaving ? 'Додаємо…' : 'Додати нотатку'}
-              </button>
-            </form>
-
-            <ul className="note-list">
-              {sharedNotes.length === 0 ? (
-                <li className="empty-hint">Спільних нотаток ще немає.</li>
-              ) : (
-                sharedNotes.map((note) => (
-                  <li key={note.id}>
-                    <article className="note-card">
-                      <header className="review-header">
-                        <strong>{note.user_id === userId ? 'Ти' : note.profile?.display_name || 'Читач'}</strong>
-                        <span className="status-pill">{NOTE_TYPE_LABELS[note.note_type]}</span>
-                      </header>
-                      <p className="note-meta">
-                        {[note.page_number && `стор. ${note.page_number}`, note.chapter].filter(Boolean).join(' · ')}
-                      </p>
-                      <p className="review-body">{note.contains_spoilers ? '⚠️ Спойлери — ' : ''}{note.body}</p>
-                      <time className="review-date">{formatDateTimeUk(note.created_at)}</time>
-                    </article>
-                  </li>
-                ))
-              )}
-            </ul>
-          </section>
         </div>
+
+        <section className="dl-panel" style={{ marginTop: 16 }}>
+          <h2 className="dl-panel-title">Спільні нотатки</h2>
+          {!myEntryId && (
+            <p className="empty-hint">
+              Додай «{buddyRead.book?.title}» в <Link to="/">бібліотеку</Link>, щоб писати нотатки в групі.
+            </p>
+          )}
+          <form className="inline-form" onSubmit={handleAddNote}>
+            <label>
+              Тип
+              <select value={noteType} onChange={(e) => setNoteType(e.target.value as NoteType)}>
+                {(Object.entries(NOTE_TYPE_LABELS) as [NoteType, string][]).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <div className="form-row">
+              <label>
+                Сторінка
+                <input type="number" min={1} value={notePage} onChange={(e) => setNotePage(e.target.value)} />
+              </label>
+              <label>
+                Глава
+                <input value={noteChapter} onChange={(e) => setNoteChapter(e.target.value)} />
+              </label>
+            </div>
+            <label>
+              Текст
+              <textarea
+                value={noteBody}
+                onChange={(e) => setNoteBody(e.target.value)}
+                rows={3}
+                required
+                disabled={!myEntryId}
+              />
+            </label>
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={noteSpoilers}
+                onChange={(e) => setNoteSpoilers(e.target.checked)}
+                disabled={!myEntryId}
+              />
+              Спойлери
+            </label>
+            <button type="submit" className="dl-primary" disabled={noteSaving || !myEntryId}>
+              {noteSaving ? 'Додаємо…' : 'Додати нотатку'}
+            </button>
+          </form>
+
+          <ul className="note-list" style={{ marginTop: 16 }}>
+            {sharedNotes.length === 0 ? (
+              <li className="empty-hint">Спільних нотаток ще немає.</li>
+            ) : (
+              sharedNotes.map((note) => (
+                <li key={note.id}>
+                  <article className="note-card">
+                    <header className="review-header">
+                      <strong>{note.user_id === userId ? 'Ти' : note.profile?.display_name || 'Читач'}</strong>
+                      <span className="status-pill">{NOTE_TYPE_LABELS[note.note_type]}</span>
+                    </header>
+                    <p className="note-meta">
+                      {[note.page_number && `стор. ${note.page_number}`, note.chapter].filter(Boolean).join(' · ')}
+                    </p>
+                    <p className="review-body">
+                      {note.contains_spoilers ? '⚠️ Спойлери — ' : ''}
+                      {note.body}
+                    </p>
+                    <time className="review-date">{formatDateTimeUk(note.created_at)}</time>
+                  </article>
+                </li>
+              ))
+            )}
+          </ul>
+        </section>
       </main>
     </div>
   );

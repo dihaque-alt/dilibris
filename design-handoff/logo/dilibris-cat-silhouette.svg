@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="DiLibris — силует кота навколо свічки">
+  <defs>
+    <radialGradient id="bg2" cx="50%" cy="38%" r="78%">
+      <stop offset="0%" stop-color="#FBF6EB"></stop>
+      <stop offset="46%" stop-color="#EFE7D4"></stop>
+      <stop offset="100%" stop-color="#D8CCB0"></stop>
+    </radialGradient>
+    <radialGradient id="halo" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FCE6A6" stop-opacity="0.92"></stop>
+      <stop offset="40%" stop-color="#F4CF77" stop-opacity="0.45"></stop>
+      <stop offset="100%" stop-color="#F4CF77" stop-opacity="0"></stop>
+    </radialGradient>
+    <linearGradient id="cat2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4C6342"></stop>
+      <stop offset="50%" stop-color="#374B2F"></stop>
+      <stop offset="100%" stop-color="#26331F"></stop>
+    </linearGradient>
+    <linearGradient id="candle2" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#33462B"></stop>
+      <stop offset="42%" stop-color="#5E7A50"></stop>
+      <stop offset="60%" stop-color="#465C39"></stop>
+      <stop offset="100%" stop-color="#26331F"></stop>
+    </linearGradient>
+    <linearGradient id="flame2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFF6D6"></stop>
+      <stop offset="42%" stop-color="#FBD96B"></stop>
+      <stop offset="100%" stop-color="#E89A28"></stop>
+    </linearGradient>
+    <filter id="b1" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9"></feGaussianBlur></filter>
+    <clipPath id="c2"><circle cx="256" cy="256" r="256"></circle></clipPath>
+  </defs>
+
+  <g clip-path="url(#c2)">
+    <rect width="512" height="512" fill="url(#bg2)"></rect>
+    <circle cx="256" cy="182" r="150" fill="url(#halo)"></circle>
+
+    
+    <rect x="240" y="206" width="32" height="132" rx="14" fill="url(#candle2)"></rect>
+    <ellipse cx="256" cy="210" rx="16" ry="5.5" fill="#6E8A60"></ellipse>
+    <rect x="253.5" y="184" width="5" height="26" rx="2.5" fill="#26331F"></rect>
+    <path d="M256 130 C 273 158, 278 184, 256 200 C 234 184, 239 158, 256 130 Z" fill="url(#flame2)"></path>
+    <path d="M256 152 C 265 168, 267 184, 256 194 C 245 184, 247 168, 256 152 Z" fill="#FFF7DC" opacity="0.95"></path>
+
+    <ellipse cx="258" cy="432" rx="172" ry="30" fill="#2A371F" opacity="0.30" filter="url(#b1)"></ellipse>
+
+    
+    <path d="M120 394 C 102 376, 106 348, 122 334 C 120 318, 120 302, 128 294 C 130 274, 144 268, 150 286 C 154 298, 154 310, 150 318 C 164 310, 182 310, 196 318 C 196 300, 208 290, 216 296 C 224 302, 224 314, 218 324 C 250 320, 278 314, 304 306 C 348 298, 384 308, 406 336 C 428 362, 426 402, 400 424 C 372 446, 298 452, 238 450 C 188 448, 150 442, 138 426 C 128 416, 130 402, 120 394 Z" fill="url(#cat2)"></path>
+
+    
+    <path d="M400 388 C 424 412, 414 448, 360 452 C 284 458, 208 452, 174 433 C 153 421, 162 399, 189 403 C 250 412, 320 415, 361 400 C 382 392, 392 388, 400 388 Z" fill="#2C3B22"></path>
+    <path d="M174 433 C 156 423, 154 404, 172 400 C 187 397, 197 410, 191 423 C 188 430, 182 434, 174 433 Z" fill="#243019"></path>
+
+    
+    <path d="M122 334 C 120 316, 121 300, 129 294" fill="none" stroke="#D8CC9A" stroke-width="3" stroke-linecap="round" opacity="0.55"></path>
+    <path d="M129 292 C 132 274, 144 269, 150 285" fill="none" stroke="#ECDBA0" stroke-width="2.8" stroke-linecap="round" opacity="0.6"></path>
+    <path d="M197 317 C 197 300, 208 291, 216 296" fill="none" stroke="#ECDBA0" stroke-width="2.8" stroke-linecap="round" opacity="0.55"></path>
+    <path d="M222 320 C 250 313, 280 311, 304 306 C 350 298, 385 309, 406 336" fill="none" stroke="#C5CFA0" stroke-width="3.2" stroke-linecap="round" opacity="0.42"></path>
+
+    
+    <path d="M150 360 C 160 367, 173 367, 182 360" stroke="#1C2616" stroke-width="3" stroke-linecap="round" fill="none" opacity="0.5"></path>
+
+    <circle cx="256" cy="256" r="252" fill="none" stroke="#374B2F" stroke-width="5" opacity="0.2"></circle>
+  </g>
+</svg>

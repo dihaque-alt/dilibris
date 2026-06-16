@@ -1,4 +1,4 @@
-type DetailTab = 'progress' | 'review' | 'notes' | 'sessions';
+export type DetailTab = 'progress' | 'review' | 'notes' | 'sessions';
 
 interface DetailTabsProps {
   active: DetailTab;
@@ -14,14 +14,14 @@ const TABS: { id: DetailTab; label: string }[] = [
 
 export function DetailTabs({ active, onChange }: DetailTabsProps) {
   return (
-    <div className="detail-tabs" role="tablist">
+    <div className="dl-segmented" role="tablist">
       {TABS.map((tab) => (
         <button
           key={tab.id}
           type="button"
           role="tab"
           aria-selected={active === tab.id}
-          className={active === tab.id ? 'detail-tab active' : 'detail-tab'}
+          className={active === tab.id ? 'dl-segmented-btn is-active' : 'dl-segmented-btn'}
           onClick={() => onChange(tab.id)}
         >
           {tab.label}
@@ -30,5 +30,3 @@ export function DetailTabs({ active, onChange }: DetailTabsProps) {
     </div>
   );
 }
-
-export type { DetailTab };
