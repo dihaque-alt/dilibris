@@ -16,6 +16,12 @@ export const BOOK_WIDTH_BY_SIZE: Record<BookSizePreset, number> = {
   grand: 124,
 };
 
+export const BOOK_SIZE_LABELS: Record<BookSizePreset, string> = {
+  compact: 'Компактно',
+  cozy: 'Затишно',
+  grand: 'Велично',
+};
+
 const DEFAULTS: LibraryDisplayPrefs = {
   bookView: 'spine',
   bookSize: 'cozy',

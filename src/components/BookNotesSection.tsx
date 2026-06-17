@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { supabase } from '../lib/supabase';
 import { formatDateTimeUk } from '../lib/dates';
 import { NOTE_TYPE_LABELS, NOTE_VISIBILITY_LABELS } from '../lib/labels';
+import { loadLocalPrefs } from '../lib/userSettings';
 import type { Note, NoteType, NoteVisibility } from '../types/database';
 
 interface BookNotesSectionProps {
@@ -95,8 +96,9 @@ export function BookNotesSection({ bookId, entryId, userId, embedded }: BookNote
 
   function openCreateForm() {
     const defaults = emptyForm();
+    const prefs = loadLocalPrefs(userId);
     setNoteType(defaults.noteType);
-    setVisibility(defaults.visibility);
+    setVisibility(prefs.defaultPrivate === false ? 'public' : 'private');
     setBody(defaults.body);
     setPageNumber(defaults.pageNumber);
     setChapter(defaults.chapter);
@@ -197,11 +199,18 @@ export function BookNotesSection({ bookId, entryId, userId, embedded }: BookNote
         </div>
       )}
 
-      {embedded && !showForm && (
-        <div className="embedded-actions">
-          <button type="button" className="btn-small" onClick={openCreateForm}>
-            + Нова нотатка
-          </button>
+      {embedded && (
+        <div className="dl-panel-title-row">
+          {!showForm && (
+            <button type="button" className="dl-ghost" onClick={openCreateForm}>
+              + Нотатка
+            </button>
+          )}
+          {showForm && (
+            <button type="button" className="dl-ghost" onClick={closeForm}>
+              Згорнути
+            </button>
+          )}
         </div>
       )}
 

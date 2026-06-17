@@ -41,7 +41,7 @@ export function BookCover({
   };
   const w = width ?? presetWidths[size] ?? 92;
   const ratio = visual?.ratio ?? bookRatio(entryId, title);
-  const h = Math.round(w * (hero ? 1.5 : ratio));
+  const h = Math.round(w * (hero && size !== 'flyout' ? 1.5 : ratio));
   const palette = visual?.cover ?? coverPalette(entryId, title);
   const art = visual?.art ?? bookArt(entryId, title);
   const hasImage = Boolean(coverUrl);

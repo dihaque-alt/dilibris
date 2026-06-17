@@ -69,6 +69,7 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
   const [noteChapter, setNoteChapter] = useState('');
   const [noteSpoilers, setNoteSpoilers] = useState(false);
   const [noteSaving, setNoteSaving] = useState(false);
+  const [noteComposerOpen, setNoteComposerOpen] = useState(false);
 
   const loadDetail = useCallback(async () => {
     if (!id) return;
@@ -226,6 +227,7 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
     setNotePage('');
     setNoteChapter('');
     setNoteSpoilers(false);
+    setNoteComposerOpen(false);
     await loadDetail();
     setNoteSaving(false);
   }
@@ -304,53 +306,151 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
         </div>
 
         <div className="dl-buddy-columns">
-          <section className="dl-panel">
-            <h2 className="dl-panel-title">Прогрес учасників</h2>
-            <div className="dl-member-list">
-              {members.map((member) => {
-                const name = member.profile?.display_name || 'Читач';
-                const progress = pickMemberProgress(bookEntries, member.user_id);
-                const pct = progressPercent(progress);
-                const barColor = memberBarColor(name);
-                return (
-                  <div key={member.id} className="dl-member-row">
-                    <MemberAvatar name={name} />
-                    <div className="dl-member-row-body">
-                      <div className="dl-member-row-head">
-                        <span>
-                          {name}
-                          {member.role === 'owner' && (
-                            <span style={{ marginLeft: 6, color: 'var(--text-muted)', fontSize: 'var(--fs-xs)' }}>
-                              · організатор
-                            </span>
-                          )}
-                        </span>
-                        <span className="dl-member-row-pct">{pct}%</span>
+          <div className="dl-buddy-stack">
+            <section className="dl-panel">
+              <h2 className="dl-panel-title">Прогрес учасників</h2>
+              <div className="dl-member-list">
+                {members.map((member) => {
+                  const name = member.profile?.display_name || 'Читач';
+                  const progress = pickMemberProgress(bookEntries, member.user_id);
+                  const pct = progressPercent(progress);
+                  const barColor = memberBarColor(name);
+                  return (
+                    <div key={member.id} className="dl-member-row">
+                      <MemberAvatar name={name} />
+                      <div className="dl-member-row-body">
+                        <div className="dl-member-row-head">
+                          <span>
+                            {name}
+                            {member.role === 'owner' && (
+                              <span style={{ marginLeft: 6, color: 'var(--text-muted)', fontSize: 'var(--fs-xs)' }}>
+                                · організатор
+                              </span>
+                            )}
+                          </span>
+                          <span className="dl-member-row-pct">{pct}%</span>
+                        </div>
+                        <div className="dl-member-progress-track">
+                          <div
+                            className="dl-member-progress-fill"
+                            style={{ width: `${pct}%`, background: barColor }}
+                          />
+                        </div>
+                        <p className="dl-buddy-progress-note">
+                          {progress.status ? STATUS_LABELS[progress.status] : '—'} · {progressLabel(progress)}
+                        </p>
                       </div>
-                      <div className="dl-member-progress-track">
-                        <div
-                          className="dl-member-progress-fill"
-                          style={{ width: `${pct}%`, background: barColor }}
-                        />
-                      </div>
-                      <p className="dl-buddy-progress-note">
-                        {progress.status ? STATUS_LABELS[progress.status] : '—'} · {progressLabel(progress)}
-                      </p>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
+                  );
+                })}
+              </div>
+            </section>
 
-          <section className="dl-panel" style={{ display: 'flex', flexDirection: 'column' }}>
+            <section className="dl-panel">
+              <div className="dl-panel-title-row">
+                <h2 className="dl-panel-title">Спільні нотатки</h2>
+                {myEntryId && (
+                  <button
+                    type="button"
+                    className="dl-ghost"
+                    onClick={() => setNoteComposerOpen((o) => !o)}
+                  >
+                    {noteComposerOpen ? 'Згорнути' : '+ Нотатка'}
+                  </button>
+                )}
+              </div>
+              {!myEntryId && (
+                <p className="empty-hint">
+                  Додай «{buddyRead.book?.title}» в <Link to="/">бібліотеку</Link>, щоб писати нотатки в групі.
+                </p>
+              )}
+              {noteComposerOpen && myEntryId && (
+                <form className="dl-composer-box inline-form" onSubmit={handleAddNote}>
+                  <label>
+                    Тип
+                    <select value={noteType} onChange={(e) => setNoteType(e.target.value as NoteType)}>
+                      {(Object.entries(NOTE_TYPE_LABELS) as [NoteType, string][]).map(([value, label]) => (
+                        <option key={value} value={value}>
+                          {label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <div className="form-row">
+                    <label>
+                      Сторінка
+                      <input type="number" min={1} value={notePage} onChange={(e) => setNotePage(e.target.value)} />
+                    </label>
+                    <label>
+                      Глава
+                      <input value={noteChapter} onChange={(e) => setNoteChapter(e.target.value)} />
+                    </label>
+                  </div>
+                  <label>
+                    Текст
+                    <textarea
+                      value={noteBody}
+                      onChange={(e) => setNoteBody(e.target.value)}
+                      rows={3}
+                      required
+                      placeholder="Думка, цитата, спостереження для клубу…"
+                    />
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={noteSpoilers}
+                      onChange={(e) => setNoteSpoilers(e.target.checked)}
+                    />
+                    Спойлери
+                  </label>
+                  <button type="submit" className="dl-primary" disabled={noteSaving}>
+                    {noteSaving ? 'Додаємо…' : 'Додати нотатку'}
+                  </button>
+                </form>
+              )}
+
+              <ul className="note-list dl-shared-notes-list">
+                {sharedNotes.length === 0 ? (
+                  <li className="empty-hint">Ще немає спільних нотаток — поділися першою думкою про книгу</li>
+                ) : (
+                  sharedNotes.map((note) => {
+                    const name = note.user_id === userId ? 'Ти' : note.profile?.display_name || 'Читач';
+                    return (
+                      <li key={note.id} className="dl-shared-note-item">
+                        <MemberAvatar name={name} size={30} />
+                        <div className="dl-shared-note-body">
+                          <div className="dl-shared-note-head">
+                            <span className="dl-shared-note-author">{name}</span>
+                            {note.page_number != null && (
+                              <span className="dl-page-badge">с. {note.page_number}</span>
+                            )}
+                          </div>
+                          <p className="dl-shared-note-text">
+                            {note.contains_spoilers ? '⚠️ ' : ''}
+                            {note.body}
+                          </p>
+                          <time className="review-date">{formatDateTimeUk(note.created_at)}</time>
+                        </div>
+                      </li>
+                    );
+                  })
+                )}
+              </ul>
+            </section>
+          </div>
+
+          <section className="dl-panel dl-panel--chat">
             <h2 className="dl-panel-title">Чат</h2>
             <div className="dl-chat-feed">
               {messages.length === 0 ? (
                 <p className="empty-hint">Поки тихо. Напиши перше повідомлення.</p>
               ) : (
                 messages.map((msg) => (
-                  <div key={msg.id} className="dl-chat-bubble">
+                  <div
+                    key={msg.id}
+                    className={`dl-chat-bubble${msg.user_id === userId ? ' is-mine' : ''}`}
+                  >
                     <div className="dl-chat-author">
                       {msg.user_id === userId ? 'Ти' : msg.profile?.display_name || 'Читач'}
                     </div>
@@ -367,90 +467,12 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
                 placeholder="Написати повідомлення…"
                 required
               />
-              <button type="submit" className="dl-ghost" disabled={chatSaving}>
+              <button type="submit" className="dl-primary" disabled={chatSaving}>
                 {chatSaving ? '…' : 'Надіслати'}
               </button>
             </form>
           </section>
         </div>
-
-        <section className="dl-panel" style={{ marginTop: 16 }}>
-          <h2 className="dl-panel-title">Спільні нотатки</h2>
-          {!myEntryId && (
-            <p className="empty-hint">
-              Додай «{buddyRead.book?.title}» в <Link to="/">бібліотеку</Link>, щоб писати нотатки в групі.
-            </p>
-          )}
-          <form className="inline-form" onSubmit={handleAddNote}>
-            <label>
-              Тип
-              <select value={noteType} onChange={(e) => setNoteType(e.target.value as NoteType)}>
-                {(Object.entries(NOTE_TYPE_LABELS) as [NoteType, string][]).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <div className="form-row">
-              <label>
-                Сторінка
-                <input type="number" min={1} value={notePage} onChange={(e) => setNotePage(e.target.value)} />
-              </label>
-              <label>
-                Глава
-                <input value={noteChapter} onChange={(e) => setNoteChapter(e.target.value)} />
-              </label>
-            </div>
-            <label>
-              Текст
-              <textarea
-                value={noteBody}
-                onChange={(e) => setNoteBody(e.target.value)}
-                rows={3}
-                required
-                disabled={!myEntryId}
-              />
-            </label>
-            <label className="checkbox-label">
-              <input
-                type="checkbox"
-                checked={noteSpoilers}
-                onChange={(e) => setNoteSpoilers(e.target.checked)}
-                disabled={!myEntryId}
-              />
-              Спойлери
-            </label>
-            <button type="submit" className="dl-primary" disabled={noteSaving || !myEntryId}>
-              {noteSaving ? 'Додаємо…' : 'Додати нотатку'}
-            </button>
-          </form>
-
-          <ul className="note-list" style={{ marginTop: 16 }}>
-            {sharedNotes.length === 0 ? (
-              <li className="empty-hint">Спільних нотаток ще немає.</li>
-            ) : (
-              sharedNotes.map((note) => (
-                <li key={note.id}>
-                  <article className="note-card">
-                    <header className="review-header">
-                      <strong>{note.user_id === userId ? 'Ти' : note.profile?.display_name || 'Читач'}</strong>
-                      <span className="status-pill">{NOTE_TYPE_LABELS[note.note_type]}</span>
-                    </header>
-                    <p className="note-meta">
-                      {[note.page_number && `стор. ${note.page_number}`, note.chapter].filter(Boolean).join(' · ')}
-                    </p>
-                    <p className="review-body">
-                      {note.contains_spoilers ? '⚠️ Спойлери — ' : ''}
-                      {note.body}
-                    </p>
-                    <time className="review-date">{formatDateTimeUk(note.created_at)}</time>
-                  </article>
-                </li>
-              ))
-            )}
-          </ul>
-        </section>
       </main>
     </div>
   );

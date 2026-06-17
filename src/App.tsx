@@ -7,6 +7,7 @@ import {
 } from './components/OnboardingWelcome';
 import { AppearancePrefsEffect } from './components/AppearancePrefsEffect';
 import { AppOverlaysProvider } from './components/AppOverlays';
+import { NotificationSyncEffect } from './components/NotificationSyncEffect';
 import { OfflineProvider } from './components/OfflineProvider';
 import { RoomBackdrop } from './components/RoomBackdrop';
 import { useAuth } from './hooks/useAuth';
@@ -34,6 +35,7 @@ function AuthenticatedRoutes({ userId, userEmail }: { userId: string; userEmail:
   return (
     <OfflineProvider userId={userId}>
       <AppearancePrefsEffect userId={userId} />
+      <NotificationSyncEffect userId={userId} />
       <AppOverlaysProvider userId={userId} userEmail={userEmail}>
         <Routes>
           <Route path="/" element={<LibraryPage userId={userId} userEmail={userEmail} />} />

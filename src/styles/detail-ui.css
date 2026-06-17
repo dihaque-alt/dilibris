@@ -109,16 +109,39 @@
 .dl-modal-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  z-index: 110;
   background:
     radial-gradient(58% 48% at 50% 40%, rgba(255, 180, 92, 0.17), rgba(255, 176, 86, 0) 62%),
     var(--bg-overlay);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: dl-fade var(--dur-base) ease;
+}
+
+.dl-modal-backdrop-inner {
+  min-height: 100dvh;
+  min-height: 100svh;
   display: flex;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(3px);
-  animation: dl-fade var(--dur-base) ease;
-  padding: 16px;
+  padding:
+    max(16px, env(safe-area-inset-top, 0px))
+    max(16px, env(safe-area-inset-right, 0px))
+    max(16px, env(safe-area-inset-bottom, 0px))
+    max(16px, env(safe-area-inset-left, 0px));
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.dl-modal-backdrop.is-sheet-backdrop .dl-modal-backdrop-inner {
+  align-items: flex-end;
+  padding:
+    0
+    max(0px, env(safe-area-inset-right, 0px))
+    max(0px, env(safe-area-inset-bottom, 0px))
+    max(0px, env(safe-area-inset-left, 0px));
 }
 
 .dl-detailcard {
@@ -126,6 +149,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  pointer-events: auto;
   background:
     radial-gradient(130% 55% at 50% 0%, rgba(255, 238, 202, 0.55), rgba(255, 238, 202, 0) 58%),
     linear-gradient(180deg, #fbf5e9 0%, #f5eddb 100%);
@@ -139,20 +163,18 @@
 
 .dl-detailcard.is-modal {
   width: min(680px, 94vw);
-  max-height: 90vh;
+  max-height: min(90vh, 900px);
   border-radius: var(--r-xl);
 }
 
 .dl-detailcard.is-sheet {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  max-height: 92vh;
+  width: 100%;
+  max-width: 100%;
+  max-height: min(92svh, 900px);
   border-radius: var(--r-xl) var(--r-xl) 0 0;
   box-shadow: 0 -16px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.7);
   animation: dl-sheet-up var(--dur-base) var(--ease-warm);
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 .dl-sheet-handle {
@@ -357,11 +379,6 @@
 }
 
 @media (max-width: 720px) {
-  .dl-modal-backdrop {
-    align-items: flex-end;
-    padding: 0;
-  }
-
   .dl-detail-header {
     padding: 16px 18px 14px;
   }
@@ -1401,5 +1418,45 @@
     padding-left: 18px;
     padding-right: 18px;
   }
+}
+
+/* Star rating (handoff) */
+.dl-star-rating {
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.dl-star-rating-star {
+  position: relative;
+  display: inline-flex;
+  line-height: 0;
+}
+
+.dl-star-hit {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.dl-star-hit--left {
+  left: 0;
+  width: 50%;
+}
+
+.dl-star-hit--right {
+  right: 0;
+  width: 50%;
+}
+
+.dl-star-rating-value {
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+  margin-left: 6px;
 }
 

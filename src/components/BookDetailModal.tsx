@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { createPortal } from 'react-dom';
 import { useOffline } from './OfflineProvider';
 import { DetailTabs, type DetailTab } from './DetailTabs';
 import { StatChip } from './StatChip';
@@ -11,12 +12,13 @@ import {
   updateEntry,
 } from '../lib/offline/librarySync';
 import { formatAuthors, STATUS_LABELS } from '../lib/labels';
-import { formatMinutes, parseRating, RATING_OPTIONS } from '../lib/rating';
+import { formatMinutes, parseRating } from '../lib/rating';
 import { useIsMobile } from '../hooks/useIsMobile';
 import type { BookEntryStatus, ReadingFormat, ReadingSession, UserBookEntry } from '../types/database';
 import { BookCover } from './BookCover';
 import { BookNotesSection } from './BookNotesSection';
 import { BookReviewsSection } from './BookReviewsSection';
+import { StarRating } from './StarRating';
 
 interface BookDetailModalProps {
   entry: UserBookEntry;
@@ -82,6 +84,14 @@ export function BookDetailModal({
       })
       .finally(() => setLoadingSessions(false));
   }, [loadSessions]);
+
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, []);
 
   const totalPagesNum = totalPages ? Number(totalPages) : null;
   const currentPageNum = Number(currentPage) || 0;
@@ -194,14 +204,20 @@ export function BookDetailModal({
     onUpdated();
   }
 
-  return (
-    <div className="dl-modal-backdrop" onClick={onClose} role="presentation">
-      <div
-        className={`dl-detailcard ${mobile ? 'is-sheet' : 'is-modal'}`}
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-labelledby="book-detail-title"
-      >
+  return createPortal(
+    <div
+      className={`dl-modal-backdrop${mobile ? ' is-sheet-backdrop' : ''}`}
+      onClick={onClose}
+      role="presentation"
+    >
+      <div className="dl-modal-backdrop-inner">
+        <div
+          className={`dl-detailcard ${mobile ? 'is-sheet' : 'is-modal'}`}
+          onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="book-detail-title"
+        >
         {mobile && <div className="dl-sheet-handle" aria-hidden="true" />}
 
         <header className="dl-detail-header">
@@ -242,21 +258,17 @@ export function BookDetailModal({
         {showReadingActions && (
           <div className="dl-detail-reading-actions">
             {isEbook ? (
-              <button type="button" className="dl-primary dl-detail-read-primary" onClick={onRead}>
-                ▷ Читати далі
-              </button>
+              <>
+                <button type="button" className="dl-primary dl-detail-read-primary" onClick={onRead}>
+                  ▷ Читати далі
+                </button>
+                <button type="button" className="dl-ghost" onClick={onSession}>
+                  ⏱ Сесія
+                </button>
+              </>
             ) : (
               <button type="button" className="dl-primary dl-detail-read-primary" onClick={onSession}>
                 ⏱ Почати сесію
-              </button>
-            )}
-            {isEbook ? (
-              <button type="button" className="dl-ghost" onClick={onSession}>
-                ⏱ Сесія
-              </button>
-            ) : (
-              <button type="button" className="dl-ghost" onClick={onRead}>
-                ▷ Уривок
               </button>
             )}
           </div>
@@ -309,16 +321,12 @@ export function BookDetailModal({
               </div>
 
               <div className="dl-field">
-                <label className="dl-field-label" htmlFor="book-rating">
-                  Оцінка
-                </label>
-                <select id="book-rating" value={rating} onChange={(e) => setRating(e.target.value)}>
-                  {RATING_OPTIONS.map((opt) => (
-                    <option key={opt.value || 'none'} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
+                <span className="dl-field-label">Оцінка</span>
+                <StarRating
+                  value={parseRating(rating) ?? 0}
+                  size={28}
+                  onChange={(v) => setRating(v > 0 ? String(v) : '')}
+                />
               </div>
 
               <div className="dl-form-row">
@@ -410,6 +418,17 @@ export function BookDetailModal({
                 >
                   + Сесія
                 </button>
+              )}
+
+              {showSessionForm && (
+                <>
+                  <div className="dl-panel-title-row" style={{ marginBottom: 12 }}>
+                    <span className="dl-field-label">Нова сесія</span>
+                    <button type="button" className="dl-ghost" onClick={() => setShowSessionForm(false)}>
+                      Згорнути
+                    </button>
+                  </div>
+                </>
               )}
 
               {showSessionForm && (
@@ -519,7 +538,9 @@ export function BookDetailModal({
             </button>
           )}
         </footer>
+        </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

@@ -2,12 +2,21 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useState,
   type ReactNode,
 } from 'react';
 import { todayIsoDate } from '../lib/dates';
-import { addSession } from '../lib/offline/librarySync';
-import type { UserBookEntry } from '../types/database';
+import {
+  clearActiveSession,
+  elapsedSeconds,
+  fetchActiveSession,
+  formatSessionClock,
+  subscribeActiveSession,
+} from '../lib/offline/activeSessionSync';
+import { addSession, fetchEntry } from '../lib/offline/librarySync';
+import type { ActiveReadingSession, UserBookEntry } from '../types/database';
+import { ActiveSessionBanner } from './ActiveSessionBanner';
 import { useOffline } from './OfflineProvider';
 import { GoodreadsImportSheet } from './GoodreadsImportSheet';
 import { ReaderView } from './ReaderView';
@@ -43,6 +52,45 @@ export function AppOverlaysProvider({ userId, userEmail, children }: AppOverlays
   const [goodreadsOpen, setGoodreadsOpen] = useState(false);
   const [readerEntry, setReaderEntry] = useState<UserBookEntry | null>(null);
   const [sessionEntry, setSessionEntry] = useState<UserBookEntry | null>(null);
+  const [activeSession, setActiveSession] = useState<ActiveReadingSession | null>(null);
+  const [activeEntry, setActiveEntry] = useState<UserBookEntry | null>(null);
+  const [bannerClock, setBannerClock] = useState('00:00');
+
+  const refreshActiveSession = useCallback(async () => {
+    const session = await fetchActiveSession(userId);
+    setActiveSession(session);
+    if (session) {
+      const entry = await fetchEntry(session.entry_id);
+      setActiveEntry(entry);
+      setBannerClock(formatSessionClock(elapsedSeconds(session)));
+    } else {
+      setActiveEntry(null);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    void refreshActiveSession();
+  }, [refreshActiveSession]);
+
+  useEffect(() => {
+    return subscribeActiveSession(userId, (session) => {
+      setActiveSession(session);
+      if (session) {
+        void fetchEntry(session.entry_id).then(setActiveEntry);
+        setBannerClock(formatSessionClock(elapsedSeconds(session)));
+      } else {
+        setActiveEntry(null);
+      }
+    });
+  }, [userId]);
+
+  useEffect(() => {
+    if (!activeSession?.is_running || sessionEntry) return;
+    const t = setInterval(() => {
+      setBannerClock(formatSessionClock(elapsedSeconds(activeSession)));
+    }, 1000);
+    return () => clearInterval(t);
+  }, [activeSession, sessionEntry]);
 
   const logSession = useCallback(
     async (
@@ -56,8 +104,9 @@ export function AppOverlaysProvider({ userId, userEmail, children }: AppOverlays
         note: payload.note,
       });
       await refreshPending();
+      await refreshActiveSession();
     },
-    [userId, refreshPending],
+    [userId, refreshPending, refreshActiveSession],
   );
 
   const value: AppOverlaysContextValue = {
@@ -67,9 +116,21 @@ export function AppOverlaysProvider({ userId, userEmail, children }: AppOverlays
     openSession: (entry) => setSessionEntry(entry),
   };
 
+  const showBanner = Boolean(activeSession && activeEntry && !sessionEntry);
+
   return (
     <AppOverlaysContext.Provider value={value}>
       {children}
+      {showBanner && activeEntry && (
+        <ActiveSessionBanner
+          title={activeEntry.book?.title ?? 'Книга'}
+          clock={bannerClock}
+          onContinue={() => setSessionEntry(activeEntry)}
+          onDiscard={() => {
+            void clearActiveSession(userId).then(refreshActiveSession);
+          }}
+        />
+      )}
       {settingsOpen && (
         <SettingsSheet
           userId={userId}
@@ -92,9 +153,18 @@ export function AppOverlaysProvider({ userId, userEmail, children }: AppOverlays
       {sessionEntry && (
         <SessionTimer
           entry={sessionEntry}
-          onClose={() => setSessionEntry(null)}
+          userId={userId}
+          onDismiss={() => {
+            setSessionEntry(null);
+            void refreshActiveSession();
+          }}
+          onDiscard={() => {
+            setSessionEntry(null);
+            void refreshActiveSession();
+          }}
           onFinish={(payload) => {
             void logSession(sessionEntry.id, payload);
+            setSessionEntry(null);
           }}
         />
       )}

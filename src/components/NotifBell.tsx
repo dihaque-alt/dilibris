@@ -1,32 +1,49 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+  hydrateNotificationTimes,
   loadNotifications,
   markAllNotifsRead,
   markNotifRead,
   notifGlyph,
   type AppNotification,
+  type NotificationPage,
 } from '../lib/notificationsStore';
 
 interface NotifBellProps {
   userId: string;
 }
 
-const PAGE_ROUTES: Record<string, string> = {
+const PAGE_ROUTES: Record<NotificationPage, string> = {
   library: '/',
   dashboard: '/dashboard',
   notes: '/notes',
   'buddy-reads': '/buddy-reads',
 };
 
+function routeFor(n: AppNotification): string | null {
+  if (!n.go?.page) return null;
+  if (n.go.buddyReadId) return `/buddy-reads/${n.go.buddyReadId}`;
+  return PAGE_ROUTES[n.go.page] ?? null;
+}
+
 export function NotifBell({ userId }: NotifBellProps) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [items, setItems] = useState<AppNotification[]>(() => loadNotifications(userId));
+  const [items, setItems] = useState<AppNotification[]>(() =>
+    hydrateNotificationTimes(loadNotifications(userId)),
+  );
   const ref = useRef<HTMLDivElement>(null);
 
+  function refresh() {
+    setItems(hydrateNotificationTimes(loadNotifications(userId)));
+  }
+
   useEffect(() => {
-    setItems(loadNotifications(userId));
+    refresh();
+    const onChange = () => refresh();
+    window.addEventListener('dilibris:notifications', onChange);
+    return () => window.removeEventListener('dilibris:notifications', onChange);
   }, [userId]);
 
   const unread = items.filter((n) => !n.read).length;
@@ -34,9 +51,8 @@ export function NotifBell({ userId }: NotifBellProps) {
   function handleOpen(id: string, n: AppNotification) {
     setItems(markNotifRead(userId, id));
     setOpen(false);
-    if (n.go?.page && PAGE_ROUTES[n.go.page]) {
-      navigate(PAGE_ROUTES[n.go.page]);
-    }
+    const path = routeFor(n);
+    if (path) navigate(path);
   }
 
   return (

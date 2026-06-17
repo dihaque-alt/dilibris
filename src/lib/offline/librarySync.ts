@@ -1,4 +1,5 @@
 import { supabase } from '../supabase';
+import { flushActiveSession } from './activeSessionSync';
 import { offlineDb, isOnline, nowIso, type PendingOp } from './db';
 import type { BookEntryStatus, ReadingSession, UserBookEntry, UserShelf } from '../../types/database';
 
@@ -436,7 +437,12 @@ export async function deleteSession(userId: string, sessionId: string, entryId: 
 async function executeOp(op: PendingOp) {
   switch (op.operation) {
     case 'insert':
-      if (op.table === 'user_shelves' || op.table === 'books' || op.table === 'user_book_entries' || op.table === 'reading_sessions') {
+      if (
+        op.table === 'user_shelves' ||
+        op.table === 'books' ||
+        op.table === 'user_book_entries' ||
+        op.table === 'reading_sessions'
+      ) {
         const { error } = await supabase.from(op.table).insert(op.payload);
         if (error) throw error;
       }
@@ -448,6 +454,15 @@ async function executeOp(op: PendingOp) {
       break;
     }
     case 'delete': {
+      if (op.table === 'active_reading_sessions') {
+        const { user_id } = op.payload as { user_id: string };
+        const { error } = await supabase
+          .from('active_reading_sessions')
+          .delete()
+          .eq('user_id', user_id);
+        if (error) throw error;
+        break;
+      }
       const { id } = op.payload as { id: string };
       const { error } = await supabase.from(op.table).delete().eq('id', id);
       if (error) throw error;
@@ -458,6 +473,8 @@ async function executeOp(op: PendingOp) {
 
 export async function flushPendingOps(userId: string): Promise<{ synced: number; failed: number }> {
   if (!isOnline()) return { synced: 0, failed: 0 };
+
+  await flushActiveSession(userId);
 
   const ops = await offlineDb.pendingOps.where('userId').equals(userId).sortBy('createdAt');
   let synced = 0;

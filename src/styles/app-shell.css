@@ -430,37 +430,52 @@
 .flyout-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 65;
+  z-index: 100;
   background: var(--bg-overlay);
   backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  animation: dl-fade var(--dur-base) ease;
+}
+
+.flyout-center {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 22px;
-  padding: 24px;
-  animation: dl-fade var(--dur-base) ease;
+  width: min(100%, 480px);
+  min-height: 100dvh;
+  min-height: 100svh;
+  margin: 0 auto;
+  padding:
+    max(56px, calc(env(safe-area-inset-top, 0px) + 48px))
+    max(16px, env(safe-area-inset-right, 0px))
+    max(24px, env(safe-area-inset-bottom, 0px))
+    max(16px, env(safe-area-inset-left, 0px));
+  box-sizing: border-box;
 }
 
-.flyout-stage {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 22px;
-}
-
-.flyout-cover-wrap {
+.flyout-hero {
+  flex: 0 0 auto;
   transform-origin: center center;
   cursor: pointer;
-  border: none;
-  background: transparent;
-  padding: 0;
   opacity: 0;
+  width: clamp(180px, 38vw, 264px);
+  max-width: 100%;
+}
+
+.flyout-hero .dl-cover-frame {
+  width: 100% !important;
+  height: auto !important;
+  max-height: min(52svh, 400px);
 }
 
 .flyout-meta {
+  flex: 0 0 auto;
   text-align: center;
-  max-width: 420px;
+  max-width: min(420px, 92vw);
   opacity: 0;
   transform: translateY(10px);
   transition: all var(--dur-base) var(--ease-warm) 120ms;
@@ -475,20 +490,22 @@
   margin: 0;
   font-family: var(--font-serif);
   font-weight: 700;
-  font-size: var(--fs-h1);
+  font-size: clamp(1.35rem, 4.5vw, var(--fs-h1));
   color: var(--text-on-dark);
+  line-height: 1.15;
+  text-wrap: balance;
 }
 
 .flyout-author {
   margin: 6px 0 14px;
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: 1.15rem;
+  font-size: clamp(1rem, 2.8vw, 1.15rem);
   color: rgba(251, 247, 240, 0.78);
 }
 
 .flyout-hint {
-  margin: 0;
+  margin: 14px 0 0;
   font-family: var(--font-sans);
   font-size: var(--fs-sm);
   color: rgba(251, 247, 240, 0.62);
@@ -496,12 +513,24 @@
 
 .flyout-close {
   position: fixed;
-  top: var(--sp-4);
-  right: var(--sp-4);
-  z-index: 51;
+  top: max(var(--sp-4), env(safe-area-inset-top, 0px));
+  right: max(var(--sp-4), env(safe-area-inset-right, 0px));
+  z-index: 101;
   color: rgba(251, 247, 240, 0.85);
   background: rgba(0, 0, 0, 0.35);
   border-radius: var(--r-pill);
+}
+
+@media (max-height: 680px) {
+  .flyout-center {
+    justify-content: flex-start;
+    min-height: auto;
+    padding-top: 56px;
+  }
+
+  .flyout-hero .dl-cover-frame {
+    max-height: min(44svh, 320px);
+  }
 }
 
 /* ---- Status pill (handoff colors) ------------------------------------ */
@@ -599,7 +628,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .flyout-cover-wrap {
+  .flyout-hero {
     transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .flyout-meta {
+    opacity: 1 !important;
+    transform: none !important;
   }
 }

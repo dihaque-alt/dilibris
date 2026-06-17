@@ -71,6 +71,18 @@ export interface ReadingSession {
   created_at: string;
 }
 
+/** In-progress reading timer; one row per user until saved or discarded. */
+export interface ActiveReadingSession {
+  user_id: string;
+  entry_id: string;
+  accumulated_seconds: number;
+  is_running: boolean;
+  last_tick_at: string;
+  pages_draft: string;
+  note_draft: string;
+  updated_at: string;
+}
+
 export interface Review {
   id: string;
   user_id: string;

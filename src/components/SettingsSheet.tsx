@@ -10,8 +10,10 @@ import {
   type RoomMood,
 } from '../lib/appearancePrefs';
 import {
+  BOOK_SIZE_LABELS,
   loadLibraryDisplayPrefs,
   saveLibraryDisplayPrefs,
+  type BookSizePreset,
   type BookViewMode,
   type LibraryDisplayPrefs,
 } from '../lib/libraryDisplayPrefs';
@@ -176,6 +178,15 @@ export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps
               ['typo', 'Типографічні'],
             ]}
             onChange={(v) => patchLibrary('realCovers', v === 'real')}
+          />
+          <SegmentedField
+            label="Розмір"
+            value={form.library.bookSize}
+            options={(Object.keys(BOOK_SIZE_LABELS) as BookSizePreset[]).map((key) => [
+              key,
+              BOOK_SIZE_LABELS[key],
+            ])}
+            onChange={(v) => patchLibrary('bookSize', v as BookSizePreset)}
           />
           <Toggle
             checked={form.library.hoverTitles}

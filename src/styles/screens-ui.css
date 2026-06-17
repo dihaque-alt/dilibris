@@ -662,3 +662,104 @@
 .dl-page .banner-error {
   margin-bottom: 12px;
 }
+
+.dl-buddy-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dl-panel-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.dl-panel-title-row .dl-panel-title {
+  margin: 0;
+}
+
+.dl-composer-box {
+  margin-bottom: 16px;
+  padding: 14px;
+  background: var(--bg-card-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+
+.dl-shared-notes-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.dl-shared-note-item {
+  display: flex;
+  gap: 11px;
+  align-items: flex-start;
+}
+
+.dl-shared-note-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.dl-shared-note-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
+.dl-shared-note-author {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: var(--fs-sm);
+  color: var(--text-main);
+}
+
+.dl-page-badge {
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--accent-lime-deep);
+  background: var(--accent-lime-light);
+  border-radius: var(--r-pill);
+  padding: 1px 9px;
+}
+
+.dl-shared-note-text {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: var(--fs-body);
+  color: var(--text-main);
+  line-height: 1.45;
+}
+
+.dl-panel--chat {
+  display: flex;
+  flex-direction: column;
+  min-height: 320px;
+}
+
+.dl-chat-bubble.is-mine {
+  align-self: flex-end;
+  max-width: 86%;
+  background: var(--accent-lime-light);
+  border-color: transparent;
+}
+
+.dl-chat-bubble.is-mine .dl-chat-author {
+  color: var(--accent-lime-deep);
+}
+
+@media (min-width: 860px) {
+  .dl-buddy-columns {
+    align-items: start;
+  }
+}

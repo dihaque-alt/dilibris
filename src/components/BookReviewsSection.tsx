@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { supabase } from '../lib/supabase';
 import { formatDateTimeUk } from '../lib/dates';
-import { formatStarRating, parseRating, REVIEW_RATING_OPTIONS } from '../lib/rating';
+import { formatStarRating } from '../lib/rating';
 import type { Review } from '../types/database';
+import { StarRating } from './StarRating';
 
 interface BookReviewsSectionProps {
   bookId: string;
@@ -38,7 +39,7 @@ export function BookReviewsSection({ bookId, entryId, userId, entryRating, embed
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const [reviewRating, setReviewRating] = useState('');
+  const [reviewRating, setReviewRating] = useState<number>(0);
   const [reviewBody, setReviewBody] = useState('');
   const [containsSpoilers, setContainsSpoilers] = useState(false);
 
@@ -69,7 +70,7 @@ export function BookReviewsSection({ bookId, entryId, userId, entryRating, embed
 
   useEffect(() => {
     if (ownReview && !editing) {
-      setReviewRating(String(ownReview.rating));
+      setReviewRating(ownReview.rating);
       setReviewBody(ownReview.body);
       setContainsSpoilers(ownReview.contains_spoilers);
     }
@@ -77,11 +78,11 @@ export function BookReviewsSection({ bookId, entryId, userId, entryRating, embed
 
   function startEditing() {
     if (ownReview) {
-      setReviewRating(String(ownReview.rating));
+      setReviewRating(ownReview.rating);
       setReviewBody(ownReview.body);
       setContainsSpoilers(ownReview.contains_spoilers);
     } else {
-      setReviewRating(entryRating ? String(entryRating) : '4');
+      setReviewRating(entryRating ?? 4);
       setReviewBody('');
       setContainsSpoilers(false);
     }
@@ -90,7 +91,7 @@ export function BookReviewsSection({ bookId, entryId, userId, entryRating, embed
 
   async function handleSave(e: FormEvent) {
     e.preventDefault();
-    const rating = parseRating(reviewRating);
+    const rating = reviewRating;
     if (!rating) {
       setError('Обери оцінку для відгуку');
       return;
@@ -133,7 +134,7 @@ export function BookReviewsSection({ bookId, entryId, userId, entryRating, embed
       return;
     }
 
-    setReviewRating('');
+    setReviewRating(0);
     setReviewBody('');
     setContainsSpoilers(false);
     setEditing(false);
@@ -169,16 +170,10 @@ export function BookReviewsSection({ bookId, entryId, userId, entryRating, embed
         <p className="form-hint">Завантажуємо відгуки…</p>
       ) : editing ? (
         <form className="inline-form review-form" onSubmit={handleSave}>
-          <label>
-            Оцінка
-            <select value={reviewRating} onChange={(e) => setReviewRating(e.target.value)} required>
-              {REVIEW_RATING_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </label>
+          <div className="dl-field">
+            <span className="dl-field-label">Оцінка</span>
+            <StarRating value={reviewRating} size={26} onChange={setReviewRating} />
+          </div>
           <label>
             Текст відгуку
             <textarea

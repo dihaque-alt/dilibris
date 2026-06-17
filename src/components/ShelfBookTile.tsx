@@ -69,7 +69,7 @@ export function ShelfBookTile({
       <div
         className="dl-cv"
         style={{
-          transform: hover ? 'translateY(-10px)' : 'none',
+          transform: hover ? 'translateY(-12px)' : 'none',
         }}
       >
         {isSpine ? (
