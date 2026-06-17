@@ -15,8 +15,8 @@
 | 1 | Smoke test + журнал відхилень | ✅ |
 | 2 | Фото кімнати (room-bg, floor) | ✅ |
 | 3 | Обкладинки за замовчуванням (cover, не spine) | ✅ |
-| 4 | Bookcase chrome (лампа, карниз, цоколь) | ⬜ |
-| 5 | Fly-out — дрібна parity | ⬜ |
+| 4 | Bookcase chrome (лампа, карниз, цоколь) | ⏭ пропущено |
+| 5 | Fly-out — дрібна parity | ✅ |
 | 6 | Картка книги — візуал + таби | ⬜ |
 | 7 | Картка книги — поведінка (прогрес, сесії) | ⬜ |
 | 8 | Session timer + resume banner | ⬜ |
@@ -109,17 +109,12 @@
 
 ---
 
-### 4. Bookcase chrome (лампа, карниз, цоколь)
-**Навіщо:** прототип має повну `.dl-bookcase` структуру; prod — спрощені полиці.
+### 4. Bookcase chrome (лампа, карниз, цоколь) — ⏭ **пропущено**
+**Рішення (2026-06-17):** спроба `BookcaseChrome` (лампа + дерев’яна рама) на prod виглядала гірше за full-bleed полиці над фото-кімнатою. Revert `843141e`. **Залишаємо поточний UI** (як у `library.jsx` / photo shelves). Не повертаємось до пункту в v1.1.
 
-**Що зробити:**
-- Порт DOM/CSS з `design-handoff/prototype/library.css` (лампа, cornice, case-body, plinth, feet)
-- Обгорнути існуючі shelves у bookcase shell у `LibraryPage.tsx`
-- Не ламати horizontal scroll і drag-reorder
+~~**Навіщо:** прототип має повну `.dl-bookcase` структуру; prod — спрощені полиці.~~
 
-**Готово коли:** візуально збігається з prototype library screen (desktop + mobile).
-
-**Файли:** `src/pages/LibraryPage.tsx`, `src/styles/library.css`, `library-overrides.css`
+**Наступний пункт:** #5.
 
 ---
 
@@ -132,6 +127,8 @@
 - Safe area + короткий viewport (`app-shell.css`)
 
 **Готово коли:** side-by-side з прототипом немає помітних відмінностей у motion і композиції.
+
+**Зроблено (2026-06-17):** прибрано ✕ (scrim + Escape); hover lift −10px + `--shadow-book-hover`; hint margin 18px; клік поза обкладинкою закриває; safe-area / short viewport без змін (вже були).
 
 **Файли:** `src/components/BookFlyout.tsx`, `src/styles/app-shell.css`
 
@@ -401,6 +398,7 @@ Focus trap у modals; `aria-label` на ✕; keyboard fly-out/detail; `prefers-r
 
 ## Після v1.1 (не в scope зараз)
 
+- Bookcase chrome (лампа, карниз, цоколь) — відхилено; photo + full-bleed shelves краще
 - Push/email notifications backend
 - EPUB / real reader
 - Public profile pages
@@ -425,4 +423,4 @@ Focus trap у modals; `aria-label` на ✕; keyboard fly-out/detail; `prefers-r
 
 ---
 
-*Останнє оновлення: 2026-06-17 — #3 default bookView = cover*
+*Останнє оновлення: 2026-06-17 — #5 fly-out parity*

@@ -431,6 +431,9 @@
   position: fixed;
   inset: 0;
   z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: var(--bg-overlay);
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
@@ -470,6 +473,16 @@
   width: 100% !important;
   height: auto !important;
   max-height: min(52svh, 400px);
+  box-shadow: var(--shadow-book);
+  transition:
+    transform var(--dur-base) var(--ease-back),
+    box-shadow var(--dur-base) ease;
+}
+
+.flyout-hero:hover .dl-cover-frame,
+.flyout-hero:focus-visible .dl-cover-frame {
+  transform: translateY(-10px);
+  box-shadow: var(--shadow-book-hover);
 }
 
 .flyout-meta {
@@ -505,20 +518,10 @@
 }
 
 .flyout-hint {
-  margin: 14px 0 0;
+  margin: 18px 0 0;
   font-family: var(--font-sans);
   font-size: var(--fs-sm);
   color: rgba(251, 247, 240, 0.62);
-}
-
-.flyout-close {
-  position: fixed;
-  top: max(var(--sp-4), env(safe-area-inset-top, 0px));
-  right: max(var(--sp-4), env(safe-area-inset-right, 0px));
-  z-index: 101;
-  color: rgba(251, 247, 240, 0.85);
-  background: rgba(0, 0, 0, 0.35);
-  border-radius: var(--r-pill);
 }
 
 @media (max-height: 680px) {
@@ -631,6 +634,11 @@
   .flyout-hero {
     transition: none !important;
     opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .flyout-hero .dl-cover-frame {
+    transition: none !important;
     transform: none !important;
   }
 

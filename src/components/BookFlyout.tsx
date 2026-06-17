@@ -79,6 +79,14 @@ export function BookFlyout({ entry, fromRect, onClose, onOpenDetail }: BookFlyou
     };
   }, []);
 
+  useEffect(() => {
+    function onKeyDown(e: globalThis.KeyboardEvent) {
+      if (e.key === 'Escape') onClose();
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
+
   function onCoverKeyDown(e: KeyboardEvent) {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -90,22 +98,16 @@ export function BookFlyout({ entry, fromRect, onClose, onOpenDetail }: BookFlyou
 
   const ui = (
     <div className="flyout-backdrop" onClick={onClose} role="presentation">
-      <button
-        type="button"
-        className="btn-icon flyout-close"
-        onClick={onClose}
-        aria-label="Закрити"
-      >
-        ×
-      </button>
-
-      <div className="flyout-center" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+      <div className="flyout-center" role="dialog" aria-modal="true">
         <div
           ref={coverRef}
           className="flyout-hero"
           role="button"
           tabIndex={0}
-          onClick={onOpenDetail}
+          onClick={(e) => {
+            e.stopPropagation();
+            onOpenDetail();
+          }}
           onKeyDown={onCoverKeyDown}
           aria-label={`Відкрити картку: ${book?.title ?? 'Книга'}`}
         >
