@@ -23,7 +23,7 @@ export const BOOK_SIZE_LABELS: Record<BookSizePreset, string> = {
 };
 
 const DEFAULTS: LibraryDisplayPrefs = {
-  bookView: 'spine',
+  bookView: 'cover',
   bookSize: 'cozy',
   hoverTitles: true,
   realCovers: true,
