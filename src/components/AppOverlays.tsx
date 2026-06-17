@@ -92,17 +92,23 @@ export function AppOverlaysProvider({ userId, userEmail, children }: AppOverlays
 
   useEffect(() => {
     if (!activeSession || sessionEntry) return;
+
     const tick = () => {
       const session = activeSessionRef.current;
-      if (session) {
-        setBannerClock(formatSessionClock(elapsedSeconds(session)));
-      }
+      if (!session) return;
+      setBannerClock(formatSessionClock(elapsedSeconds(session)));
     };
+
     tick();
     if (!activeSession.is_running) return;
-    const t = setInterval(tick, 1000);
+
+    const t = setInterval(() => {
+      const session = activeSessionRef.current;
+      if (!session?.is_running) return;
+      setBannerClock(formatSessionClock(elapsedSeconds(session)));
+    }, 1000);
     return () => clearInterval(t);
-  }, [activeSession, sessionEntry]);
+  }, [activeSession?.is_running, activeSession?.accumulated_seconds, activeSession?.last_tick_at, sessionEntry, activeSession]);
 
   const logSession = useCallback(
     async (
@@ -144,6 +150,7 @@ export function AppOverlaysProvider({ userId, userEmail, children }: AppOverlays
         <ActiveSessionBanner
           title={activeEntry.book?.title ?? 'Книга'}
           clock={bannerClock}
+          isRunning={activeSession?.is_running ?? false}
           onContinue={() => setSessionEntry(activeEntry)}
           onDiscard={discardActiveSession}
         />
