@@ -15,7 +15,7 @@
 | 1 | Smoke test + журнал відхилень | ✅ |
 | 2 | Фото кімнати (room-bg, floor) | ✅ |
 | 3 | Обкладинки за замовчуванням (cover, не spine) | ✅ |
-| 4 | Bookcase chrome (лампа, карниз, цоколь) | ⬜ |
+| 4 | Bookcase chrome (лампа, карниз, цоколь) | ✅ |
 | 5 | Fly-out — дрібна parity | ⬜ |
 | 6 | Картка книги — візуал + таби | ⬜ |
 | 7 | Картка книги — поведінка (прогрес, сесії) | ⬜ |
@@ -425,4 +425,4 @@ Focus trap у modals; `aria-label` на ✕; keyboard fly-out/detail; `prefers-r
 
 ---
 
-*Останнє оновлення: 2026-06-17 — #3 default bookView = cover*
+*Останнє оновлення: 2026-06-17 — #4 bookcase chrome (лампа, карниз, цоколь)*

@@ -4,6 +4,7 @@ import { useAppOverlays } from '../components/AppOverlays';
 import { useOffline } from '../components/OfflineProvider';
 import { AddShelfSheet } from '../components/AddShelfSheet';
 import { AddBookModal } from '../components/AddBookModal';
+import { BookcaseChrome } from '../components/BookcaseChrome';
 import { BookDetailModal } from '../components/BookDetailModal';
 import { BookFlyout } from '../components/BookFlyout';
 import { RoomBackdrop } from '../components/RoomBackdrop';
@@ -302,6 +303,7 @@ export function LibraryPage({ userId, userEmail }: LibraryPageProps) {
           </div>
         </div>
 
+        <BookcaseChrome>
         {filteredShelves.length === 0 ? (
           <div className="dl-empty">Нічого не знайдено за запитом «{filter}»</div>
         ) : (
@@ -422,6 +424,7 @@ export function LibraryPage({ userId, userEmail }: LibraryPageProps) {
             );
           })
         )}
+        </BookcaseChrome>
           </>
         )}
       </div>

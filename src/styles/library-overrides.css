@@ -533,3 +533,190 @@
 .dl-empty-room-cta {
   padding: 12px 22px !important;
 }
+
+/* ============ Bookcase chrome (#4) — lamp, cornice, posts, plinth ===== */
+.dl-bookcase-shell {
+  position: relative;
+  z-index: 1;
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 0 clamp(12px, 3vw, 28px);
+}
+
+.dl-pendant {
+  position: relative;
+  height: 44px;
+  display: flex;
+  justify-content: center;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.dl-pendant-cord {
+  display: block;
+  width: 2px;
+  height: 26px;
+  background: linear-gradient(180deg, #7a5538, #3a2e22);
+}
+
+.dl-pendant-shade {
+  position: absolute;
+  top: 20px;
+  width: clamp(48px, 14vw, 60px);
+  height: 26px;
+  background: linear-gradient(180deg, #f0d27a, #d8a82a 38%, #9c7a18);
+  border-radius: 46% 46% 14px 14px / 78% 78% 14px 14px;
+  box-shadow:
+    inset 0 2px 1px rgba(255, 250, 228, 0.75),
+    0 6px 14px rgba(36, 32, 28, 0.3);
+}
+
+.dl-bookcase {
+  position: relative;
+  filter: drop-shadow(0 22px 26px rgba(46, 30, 16, 0.34));
+}
+
+.dl-cornice {
+  height: 18px;
+  margin: 0 -8px;
+  background:
+    repeating-linear-gradient(0deg, rgba(46, 30, 16, 0.1) 0 1px, rgba(46, 30, 16, 0) 1px 5px),
+    linear-gradient(180deg, #b88e6b, #8a5f3d 52%, #5e4029);
+  border-radius: 9px 9px 3px 3px;
+  box-shadow: inset 0 2px 0 rgba(255, 247, 230, 0.5);
+}
+
+.dl-case-body {
+  position: relative;
+  padding: 8px 16px 4px;
+  background:
+    repeating-linear-gradient(90deg, rgba(46, 30, 16, 0.06) 0 1px, rgba(46, 30, 16, 0) 1px 6px),
+    linear-gradient(180deg, #b8946b, #a77e55);
+  box-shadow:
+    inset 0 16px 22px -12px rgba(46, 30, 16, 0.6),
+    inset 12px 0 18px -12px rgba(46, 30, 16, 0.45),
+    inset -12px 0 18px -12px rgba(46, 30, 16, 0.45);
+}
+
+.dl-case-post {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 16px;
+  z-index: 3;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(90deg, rgba(46, 30, 16, 0.13) 0 1px, rgba(46, 30, 16, 0) 1px 5px),
+    linear-gradient(90deg, #8a5f3d, #5e4029);
+}
+
+.dl-case-post--left {
+  left: 0;
+}
+
+.dl-case-post--right {
+  right: 0;
+}
+
+.dl-case-shelves {
+  position: relative;
+  z-index: 1;
+}
+
+.dl-plinth {
+  position: relative;
+  height: 22px;
+  margin: 0 -12px;
+  background:
+    repeating-linear-gradient(0deg, rgba(46, 30, 16, 0.1) 0 1px, rgba(46, 30, 16, 0) 1px 5px),
+    linear-gradient(180deg, #a9784f, #7a5538 68%, #5e4029);
+  border-radius: 3px 3px 12px 12px;
+  box-shadow: var(--shadow-shelf);
+}
+
+.dl-plinth-foot {
+  position: absolute;
+  bottom: -6px;
+  width: clamp(22px, 8vw, 28px);
+  height: 10px;
+  background: linear-gradient(180deg, #5e4029, #3a2818);
+  border-radius: 0 0 4px 4px;
+  box-shadow: 0 4px 8px rgba(36, 32, 28, 0.35);
+}
+
+.dl-plinth-foot--left {
+  left: 18%;
+}
+
+.dl-plinth-foot--right {
+  right: 18%;
+}
+
+/* Shelves inside the wooden case — contained, not full-bleed */
+.dl-bookcase .dl-shelf {
+  padding-top: 16px;
+}
+
+.dl-bookcase .dl-shelf:first-child {
+  padding-top: 10px;
+}
+
+.dl-bookcase .dl-shelf-head {
+  max-width: none;
+  margin: 0 0 4px;
+  padding: 0 4px;
+}
+
+.dl-bookcase .dl-stage {
+  width: 100%;
+  overflow: visible;
+}
+
+.dl-bookcase .dl-back {
+  left: -2px;
+  right: -2px;
+  border-radius: 3px;
+}
+
+.dl-bookcase .dl-board {
+  width: 100%;
+  border-radius: 0;
+}
+
+.dl-bookcase .dl-rail {
+  padding-left: 8px;
+  padding-right: 8px;
+  padding-top: 40px;
+}
+
+.dl-bookcase .dl-rail.is-spine {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.dl-bookcase .dl-empty {
+  margin: 24px 8px 16px;
+}
+
+@media (max-width: 820px) {
+  .dl-pendant {
+    height: 36px;
+  }
+
+  .dl-pendant-cord {
+    height: 20px;
+  }
+
+  .dl-pendant-shade {
+    top: 16px;
+    height: 22px;
+  }
+
+  .dl-case-body {
+    padding: 6px 12px 2px;
+  }
+
+  .dl-case-post {
+    width: 12px;
+  }
+}
