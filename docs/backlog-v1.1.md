@@ -19,7 +19,7 @@
 | 5 | Fly-out — дрібна parity | ✅ |
 | 6 | Картка книги — візуал + таби | ✅ |
 | 7 | Картка книги — поведінка (прогрес, сесії) | ✅ |
-| 8 | Session timer + resume banner | ⬜ |
+| 8 | Session timer + resume banner | ✅ |
 | 9 | ReaderView — рішення (stub / прибрати / залишити) | ⬜ |
 | 10 | Auth + onboarding — візуал і копі | ⬜ |
 | 11 | Onboarding — persist у Supabase | ⬜ |
@@ -177,6 +177,8 @@
 - Portal + z-index над fly-out
 
 **Готово коли:** сценарії з #1 (сесія) всі ✅; немає ghost sessions.
+
+**Зроблено (2026-06-17):** банер через portal, z-index 105 (> fly-out); копірайт «Згорнути» / «Скинути» / «Завершити й записати»; clear active session лише після успішного log; realtime sync draft; merge dirty local; flush offline delete.
 
 **Файли:** `SessionTimer.tsx`, `activeSessionSync.ts`, `ActiveSessionBanner.tsx`, `AppOverlays.tsx`
 

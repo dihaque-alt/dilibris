@@ -3,6 +3,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from 'react';
@@ -55,6 +56,11 @@ export function AppOverlaysProvider({ userId, userEmail, children }: AppOverlays
   const [activeSession, setActiveSession] = useState<ActiveReadingSession | null>(null);
   const [activeEntry, setActiveEntry] = useState<UserBookEntry | null>(null);
   const [bannerClock, setBannerClock] = useState('00:00');
+  const activeSessionRef = useRef<ActiveReadingSession | null>(null);
+
+  useEffect(() => {
+    activeSessionRef.current = activeSession;
+  }, [activeSession]);
 
   const refreshActiveSession = useCallback(async () => {
     const session = await fetchActiveSession(userId);
@@ -85,10 +91,16 @@ export function AppOverlaysProvider({ userId, userEmail, children }: AppOverlays
   }, [userId]);
 
   useEffect(() => {
-    if (!activeSession?.is_running || sessionEntry) return;
-    const t = setInterval(() => {
-      setBannerClock(formatSessionClock(elapsedSeconds(activeSession)));
-    }, 1000);
+    if (!activeSession || sessionEntry) return;
+    const tick = () => {
+      const session = activeSessionRef.current;
+      if (session) {
+        setBannerClock(formatSessionClock(elapsedSeconds(session)));
+      }
+    };
+    tick();
+    if (!activeSession.is_running) return;
+    const t = setInterval(tick, 1000);
     return () => clearInterval(t);
   }, [activeSession, sessionEntry]);
 
@@ -103,11 +115,18 @@ export function AppOverlaysProvider({ userId, userEmail, children }: AppOverlays
         minutes: payload.minutes,
         note: payload.note,
       });
+      await clearActiveSession(userId);
       await refreshPending();
       await refreshActiveSession();
     },
     [userId, refreshPending, refreshActiveSession],
   );
+
+  const discardActiveSession = useCallback(async () => {
+    if (!window.confirm('Скинути сесію без запису в журнал?')) return;
+    await clearActiveSession(userId);
+    await refreshActiveSession();
+  }, [userId, refreshActiveSession]);
 
   const value: AppOverlaysContextValue = {
     openSettings: () => setSettingsOpen(true),
@@ -126,9 +145,7 @@ export function AppOverlaysProvider({ userId, userEmail, children }: AppOverlays
           title={activeEntry.book?.title ?? 'Книга'}
           clock={bannerClock}
           onContinue={() => setSessionEntry(activeEntry)}
-          onDiscard={() => {
-            void clearActiveSession(userId).then(refreshActiveSession);
-          }}
+          onDiscard={discardActiveSession}
         />
       )}
       {settingsOpen && (
@@ -162,8 +179,8 @@ export function AppOverlaysProvider({ userId, userEmail, children }: AppOverlays
             setSessionEntry(null);
             void refreshActiveSession();
           }}
-          onFinish={(payload) => {
-            void logSession(sessionEntry.id, payload);
+          onFinish={async (payload) => {
+            await logSession(sessionEntry.id, payload);
             setSessionEntry(null);
           }}
         />

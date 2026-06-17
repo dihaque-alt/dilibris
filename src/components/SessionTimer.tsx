@@ -9,6 +9,7 @@ import {
   saveActiveSession,
   snapshotSession,
   startActiveSession,
+  subscribeActiveSession,
 } from '../lib/offline/activeSessionSync';
 import type { ActiveReadingSession, UserBookEntry } from '../types/database';
 
@@ -17,7 +18,7 @@ interface SessionTimerProps {
   userId: string;
   onDismiss: () => void;
   onDiscard: () => void;
-  onFinish: (payload: { minutes: number; pages: number; note: string | null }) => void;
+  onFinish: (payload: { minutes: number; pages: number; note: string | null }) => void | Promise<void>;
 }
 
 export function SessionTimer({ entry, userId, onDismiss, onDiscard, onFinish }: SessionTimerProps) {
@@ -28,6 +29,7 @@ export function SessionTimer({ entry, userId, onDismiss, onDiscard, onFinish }: 
   const [pages, setPages] = useState('');
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   const sessionRef = useRef<ActiveReadingSession | null>(null);
   const runningRef = useRef(true);
@@ -94,6 +96,26 @@ export function SessionTimer({ entry, userId, onDismiss, onDiscard, onFinish }: 
   }, [userId, entry.id]);
 
   useEffect(() => {
+    return subscribeActiveSession(userId, (remote) => {
+      if (!remote || remote.entry_id !== entry.id) return;
+
+      const editingField =
+        document.activeElement instanceof HTMLInputElement &&
+        document.activeElement.closest('.session-fields');
+
+      sessionRef.current = remote;
+      setSession(remote);
+      setSec(elapsedSeconds(remote));
+      setRunning(remote.is_running);
+
+      if (!editingField) {
+        setPages(remote.pages_draft);
+        setNote(remote.note_draft);
+      }
+    });
+  }, [userId, entry.id]);
+
+  useEffect(() => {
     if (!running || !session) return;
     const t = setInterval(() => {
       setSec(elapsedSeconds(sessionRef.current ?? session));
@@ -148,6 +170,7 @@ export function SessionTimer({ entry, userId, onDismiss, onDiscard, onFinish }: 
   }
 
   async function handleDiscard() {
+    if (!window.confirm('Скинути сесію без запису в журнал?')) return;
     await clearActiveSession(userId);
     onDiscard();
   }
@@ -159,15 +182,23 @@ export function SessionTimer({ entry, userId, onDismiss, onDiscard, onFinish }: 
     const pagesNum = parseInt(pagesRef.current, 10) || 0;
     const noteText = noteRef.current.trim() || null;
 
-    await clearActiveSession(userId);
-    onFinish({ minutes, pages: pagesNum, note: noteText });
-    onDismiss();
+    setError('');
+    try {
+      await onFinish({ minutes, pages: pagesNum, note: noteText });
+      onDismiss();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Не вдалося записати сесію');
+    }
   }
 
   const clock = formatSessionClock(sec);
 
   return createPortal(
-    <div className="dl-modal-backdrop" onClick={() => void handleDismiss()} role="presentation">
+    <div
+      className={`dl-modal-backdrop${mobile ? ' is-sheet-backdrop' : ''}`}
+      onClick={() => void handleDismiss()}
+      role="presentation"
+    >
       <div
         className={`dl-detailcard session-timer ${mobile ? 'is-sheet' : 'is-modal is-narrow'}`}
         onClick={(e) => e.stopPropagation()}
@@ -216,13 +247,17 @@ export function SessionTimer({ entry, userId, onDismiss, onDiscard, onFinish }: 
             </div>
 
             <footer className="session-foot">
-              <button type="button" className="dl-ghost" onClick={() => void handleDiscard()}>
-                Скасувати
+              <button type="button" className="dl-ghost" onClick={() => void handleDismiss()}>
+                Згорнути
+              </button>
+              <button type="button" className="dl-ghost session-foot-discard" onClick={() => void handleDiscard()}>
+                Скинути
               </button>
               <button type="button" className="dl-primary" onClick={() => void finish()}>
                 Завершити й записати
               </button>
             </footer>
+            {error && <p className="form-error session-error">{error}</p>}
           </>
         )}
       </div>

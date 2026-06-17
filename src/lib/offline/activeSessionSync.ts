@@ -66,6 +66,33 @@ function pickNewer(
   return new Date(a.updated_at) >= new Date(b.updated_at) ? a : b;
 }
 
+function mergeActiveSessions(
+  remote: ActiveReadingSession | null,
+  local: ActiveReadingSessionLocal | null,
+): ActiveReadingSession | null {
+  if (!remote && !local) return null;
+  if (!remote) return local;
+  if (!local) return remote;
+  if (remote.entry_id !== local.entry_id) {
+    return pickNewer(remote, local);
+  }
+
+  const remoteNewer = new Date(remote.updated_at) >= new Date(local.updated_at);
+  const base = remoteNewer ? remote : local;
+
+  if (!local.dirty) return base;
+
+  return {
+    ...base,
+    pages_draft: local.pages_draft,
+    note_draft: local.note_draft,
+    accumulated_seconds: Math.max(remote.accumulated_seconds, local.accumulated_seconds),
+    is_running: local.is_running,
+    last_tick_at: local.last_tick_at,
+    updated_at: local.updated_at,
+  };
+}
+
 async function pushToServer(session: ActiveReadingSession): Promise<void> {
   if (!isOnline()) {
     await saveLocal(session, true);
@@ -85,7 +112,7 @@ export async function fetchActiveSession(userId: string): Promise<ActiveReadingS
   if (isOnline()) {
     try {
       const remote = await fetchRemote(userId);
-      const chosen = pickNewer(remote, local ?? null);
+      const chosen = mergeActiveSessions(remote, local ?? null);
       if (chosen) {
         await saveLocal(chosen, local?.dirty ?? false);
       } else if (local?.dirty) {
@@ -105,6 +132,11 @@ export async function startActiveSession(
   userId: string,
   entryId: string,
 ): Promise<ActiveReadingSession> {
+  const existing = await offlineDb.activeSessions.get(userId);
+  if (existing?.entry_id === entryId) {
+    return existing;
+  }
+
   const now = nowIso();
   const session: ActiveReadingSession = {
     user_id: userId,
@@ -149,9 +181,26 @@ export async function clearActiveSession(userId: string): Promise<void> {
 
 /** Push dirty local draft or pending delete after reconnect. */
 export async function flushActiveSession(userId: string): Promise<void> {
-  const local = await offlineDb.activeSessions.get(userId);
   if (!isOnline()) return;
 
+  const pendingDelete = await offlineDb.pendingOps
+    .where('userId')
+    .equals(userId)
+    .filter((op) => op.table === 'active_reading_sessions' && op.operation === 'delete')
+    .first();
+
+  if (pendingDelete) {
+    const { user_id } = pendingDelete.payload as { user_id: string };
+    const { error } = await supabase
+      .from('active_reading_sessions')
+      .delete()
+      .eq('user_id', user_id);
+    if (!error) await offlineDb.pendingOps.delete(pendingDelete.id);
+    await offlineDb.activeSessions.delete(userId);
+    return;
+  }
+
+  const local = await offlineDb.activeSessions.get(userId);
   if (local?.dirty) {
     await pushToServer(local);
   }
