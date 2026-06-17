@@ -11,6 +11,9 @@ interface BookReviewsSectionProps {
   userId: string;
   entryRating: number | null;
   embedded?: boolean;
+  formId?: string;
+  onFormOpenChange?: (open: boolean) => void;
+  onSavingChange?: (saving: boolean) => void;
 }
 
 function ReviewBody({ body, containsSpoilers }: { body: string; containsSpoilers: boolean }) {
@@ -32,7 +35,16 @@ function ReviewBody({ body, containsSpoilers }: { body: string; containsSpoilers
   return <p className="review-body">{body}</p>;
 }
 
-export function BookReviewsSection({ bookId, entryId, userId, entryRating, embedded }: BookReviewsSectionProps) {
+export function BookReviewsSection({
+  bookId,
+  entryId,
+  userId,
+  entryRating,
+  embedded,
+  formId = 'book-review-form',
+  onFormOpenChange,
+  onSavingChange,
+}: BookReviewsSectionProps) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -75,6 +87,20 @@ export function BookReviewsSection({ bookId, entryId, userId, entryRating, embed
       setContainsSpoilers(ownReview.contains_spoilers);
     }
   }, [ownReview, editing]);
+
+  useEffect(() => {
+    onFormOpenChange?.(editing);
+    return () => {
+      onFormOpenChange?.(false);
+    };
+  }, [editing, onFormOpenChange]);
+
+  useEffect(() => {
+    onSavingChange?.(saving);
+    return () => {
+      onSavingChange?.(false);
+    };
+  }, [saving, onSavingChange]);
 
   function startEditing() {
     if (ownReview) {
@@ -169,7 +195,7 @@ export function BookReviewsSection({ bookId, entryId, userId, entryRating, embed
       {loading ? (
         <p className="form-hint">Завантажуємо відгуки…</p>
       ) : editing ? (
-        <form className="inline-form review-form" onSubmit={handleSave}>
+        <form id={formId} className="inline-form review-form" onSubmit={handleSave}>
           <div className="dl-field">
             <span className="dl-field-label">Оцінка</span>
             <StarRating value={reviewRating} size={26} onChange={setReviewRating} />

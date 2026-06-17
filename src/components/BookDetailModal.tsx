@@ -71,6 +71,11 @@ export function BookDetailModal({
   const [sessionNote, setSessionNote] = useState('');
   const [sessionSaving, setSessionSaving] = useState(false);
 
+  const [notesFormOpen, setNotesFormOpen] = useState(false);
+  const [notesSaving, setNotesSaving] = useState(false);
+  const [reviewFormOpen, setReviewFormOpen] = useState(false);
+  const [reviewSaving, setReviewSaving] = useState(false);
+
   const loadSessions = useCallback(async () => {
     setLoadingSessions(true);
     const data = await fetchSessions(entry.id);
@@ -105,6 +110,28 @@ export function BookDetailModal({
     status !== 'finished' &&
     (onRead || onSession);
   const isEbook = format === 'ebook';
+
+  const footerSubmitFormId =
+    tab === 'progress'
+      ? 'book-progress-form'
+      : tab === 'notes' && notesFormOpen
+        ? 'book-notes-form'
+        : tab === 'review' && reviewFormOpen
+          ? 'book-review-form'
+          : tab === 'sessions' && showSessionForm
+            ? 'book-session-form'
+            : null;
+
+  const footerSaving =
+    tab === 'progress'
+      ? saving
+      : tab === 'notes'
+        ? notesSaving
+        : tab === 'review'
+          ? reviewSaving
+          : tab === 'sessions'
+            ? sessionSaving
+            : false;
 
   async function handleSave(e: FormEvent) {
     e.preventDefault();
@@ -400,11 +427,20 @@ export function BookDetailModal({
               entryId={entry.id}
               userId={userId}
               entryRating={parseRating(rating)}
+              onFormOpenChange={setReviewFormOpen}
+              onSavingChange={setReviewSaving}
             />
           )}
 
           {tab === 'notes' && book && (
-            <BookNotesSection embedded bookId={book.id} entryId={entry.id} userId={userId} />
+            <BookNotesSection
+              embedded
+              bookId={book.id}
+              entryId={entry.id}
+              userId={userId}
+              onFormOpenChange={setNotesFormOpen}
+              onSavingChange={setNotesSaving}
+            />
           )}
 
           {tab === 'sessions' && (
@@ -433,6 +469,7 @@ export function BookDetailModal({
 
               {showSessionForm && (
                 <form
+                  id="book-session-form"
                   className="inline-form session-form"
                   onSubmit={handleAddSession}
                   style={{ marginBottom: 16 }}
@@ -528,9 +565,14 @@ export function BookDetailModal({
           <button type="button" className="dl-ghost" onClick={onClose}>
             Скасувати
           </button>
-          {tab === 'progress' ? (
-            <button type="submit" form="book-progress-form" className="dl-primary" disabled={saving}>
-              {saving ? 'Зберігаємо…' : 'Зберегти'}
+          {footerSubmitFormId ? (
+            <button
+              type="submit"
+              form={footerSubmitFormId}
+              className="dl-primary"
+              disabled={footerSaving}
+            >
+              {footerSaving ? 'Зберігаємо…' : 'Зберегти'}
             </button>
           ) : (
             <button type="button" className="dl-primary" onClick={onClose}>

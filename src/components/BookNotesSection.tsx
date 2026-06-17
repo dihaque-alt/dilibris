@@ -10,6 +10,9 @@ interface BookNotesSectionProps {
   entryId: string;
   userId: string;
   embedded?: boolean;
+  formId?: string;
+  onFormOpenChange?: (open: boolean) => void;
+  onSavingChange?: (saving: boolean) => void;
 }
 
 function NoteBody({ body, containsSpoilers }: { body: string; containsSpoilers: boolean }) {
@@ -42,7 +45,15 @@ function emptyForm() {
   };
 }
 
-export function BookNotesSection({ bookId, entryId, userId, embedded }: BookNotesSectionProps) {
+export function BookNotesSection({
+  bookId,
+  entryId,
+  userId,
+  embedded,
+  formId = 'book-notes-form',
+  onFormOpenChange,
+  onSavingChange,
+}: BookNotesSectionProps) {
   const [ownNotes, setOwnNotes] = useState<Note[]>([]);
   const [publicNotes, setPublicNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
@@ -126,6 +137,27 @@ export function BookNotesSection({ bookId, entryId, userId, embedded }: BookNote
     setError('');
   }
 
+  useEffect(() => {
+    onFormOpenChange?.(showForm);
+    return () => {
+      onFormOpenChange?.(false);
+    };
+  }, [showForm, onFormOpenChange]);
+
+  useEffect(() => {
+    onSavingChange?.(saving);
+    return () => {
+      onSavingChange?.(false);
+    };
+  }, [saving, onSavingChange]);
+
+  function parsePageNumber(raw: string): number | null {
+    if (!raw.trim()) return null;
+    const value = Number(raw);
+    if (!Number.isFinite(value) || value < 1) return null;
+    return Math.floor(value);
+  }
+
   async function handleSave(e: FormEvent) {
     e.preventDefault();
     if (!body.trim()) {
@@ -140,22 +172,28 @@ export function BookNotesSection({ bookId, entryId, userId, embedded }: BookNote
       note_type: noteType,
       visibility,
       body: body.trim(),
-      page_number: pageNumber ? Number(pageNumber) : null,
+      page_number: parsePageNumber(pageNumber),
       chapter: chapter.trim() || null,
       contains_spoilers: containsSpoilers,
     };
 
-    const { error: saveError } = editingId
-      ? await supabase.from('notes').update(payload).eq('id', editingId)
+    const { data, error: saveError } = editingId
+      ? await supabase.from('notes').update(payload).eq('id', editingId).select('id').single()
       : await supabase.from('notes').insert({
           ...payload,
           user_id: userId,
           entry_id: entryId,
           book_id: bookId,
-        });
+        }).select('id').single();
 
     if (saveError) {
       setError(saveError.message);
+      setSaving(false);
+      return;
+    }
+
+    if (!data) {
+      setError('Не вдалося зберегти нотатку — спробуй ще раз');
       setSaving(false);
       return;
     }
@@ -221,7 +259,7 @@ export function BookNotesSection({ bookId, entryId, userId, embedded }: BookNote
       )}
 
       {showForm && (
-        <form className="inline-form note-form" onSubmit={handleSave}>
+        <form id={formId} className="inline-form note-form" onSubmit={handleSave}>
           <h4>{editingId ? 'Редагувати нотатку' : 'Нова нотатка'}</h4>
           <div className="form-row">
             <label>
