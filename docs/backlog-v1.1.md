@@ -13,7 +13,7 @@
 | # | Пункт | Статус |
 |---|--------|--------|
 | 1 | Smoke test + журнал відхилень | ✅ |
-| 2 | Фото кімнати (room-bg, floor) | ⬜ |
+| 2 | Фото кімнати (room-bg, floor) | ✅ |
 | 3 | Обкладинки за замовчуванням (cover, не spine) | ⬜ |
 | 4 | Bookcase chrome (лампа, карниз, цоколь) | ⬜ |
 | 5 | Fly-out — дрібна parity | ⬜ |
@@ -425,4 +425,4 @@ Focus trap у modals; `aria-label` на ✕; keyboard fly-out/detail; `prefers-r
 
 ---
 
-*Останнє оновлення: 2026-06-17 — #1 smoke test завершено, журнал заповнено*
+*Останнє оновлення: 2026-06-17 — #2 room-bg/floor у public/*
