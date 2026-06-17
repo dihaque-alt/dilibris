@@ -280,7 +280,7 @@ export function BookDetailModal({
 
         <div className="dl-detail-body">
           {tab === 'progress' && (
-            <form id="book-progress-form" onSubmit={handleSave}>
+            <form id="book-progress-form" className="dl-detail-form-stack" onSubmit={handleSave}>
               <div className="dl-field">
                 <span className="dl-field-label">Статус</span>
                 <div className="dl-choice-row">

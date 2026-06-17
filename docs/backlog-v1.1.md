@@ -17,7 +17,7 @@
 | 3 | Обкладинки за замовчуванням (cover, не spine) | ✅ |
 | 4 | Bookcase chrome (лампа, карниз, цоколь) | ⏭ пропущено |
 | 5 | Fly-out — дрібна parity | ✅ |
-| 6 | Картка книги — візуал + таби | ⬜ |
+| 6 | Картка книги — візуал + таби | ✅ |
 | 7 | Картка книги — поведінка (прогрес, сесії) | ⬜ |
 | 8 | Session timer + resume banner | ⬜ |
 | 9 | ReaderView — рішення (stub / прибрати / залишити) | ⬜ |
@@ -143,6 +143,8 @@
 - Mobile sheet handle, max-height, scroll body
 
 **Готово коли:** desktop modal + mobile sheet виглядають як прототип; кнопки з design system.
+
+**Зроблено (2026-06-17):** `dl-*` кнопки у відгуках/нотатках; embedded-стилі карток і форм у `detail-ui.css`; progress form stack gap 18px; mobile footer safe-area.
 
 **Файли:** `BookDetailModal.tsx`, `detail-ui.css`, `BookReviewsSection.tsx`, `BookNotesSection.tsx`
 

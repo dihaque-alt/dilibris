@@ -21,7 +21,7 @@ function NoteBody({ body, containsSpoilers }: { body: string; containsSpoilers: 
     return (
       <div className="review-spoiler">
         <p className="form-hint">Містить спойлери</p>
-        <button type="button" className="btn-small btn-secondary" onClick={() => setRevealed(true)}>
+        <button type="button" className="dl-ghost" onClick={() => setRevealed(true)}>
           Показати нотатку
         </button>
       </div>
@@ -284,16 +284,16 @@ export function BookNotesSection({ bookId, entryId, userId, embedded }: BookNote
             />
             Містить спойлери
           </label>
-          <div className="form-actions">
-            <button type="button" className="btn-secondary" onClick={closeForm}>
+          <div className={`form-actions${embedded ? ' form-actions--detail' : ''}`}>
+            <button type="button" className="dl-ghost" onClick={closeForm}>
               Скасувати
             </button>
             {editingId && (
-              <button type="button" className="btn-danger" onClick={() => handleDelete(editingId)}>
+              <button type="button" className="dl-danger" onClick={() => handleDelete(editingId)}>
                 Видалити
               </button>
             )}
-            <button type="submit" disabled={saving}>
+            <button type="submit" className="dl-primary" disabled={saving}>
               {saving ? 'Зберігаємо…' : editingId ? 'Зберегти' : 'Додати'}
             </button>
           </div>
@@ -320,7 +320,7 @@ export function BookNotesSection({ bookId, entryId, userId, embedded }: BookNote
                       {NOTE_VISIBILITY_LABELS[note.visibility]}
                     </span>
                   </div>
-                  <button type="button" className="btn-small btn-secondary" onClick={() => openEditForm(note)}>
+                  <button type="button" className="dl-ghost" onClick={() => openEditForm(note)}>
                     Редагувати
                   </button>
                 </header>

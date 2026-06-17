@@ -22,7 +22,7 @@ function ReviewBody({ body, containsSpoilers }: { body: string; containsSpoilers
     return (
       <div className="review-spoiler">
         <p className="form-hint">Містить спойлери</p>
-        <button type="button" className="btn-small btn-secondary" onClick={() => setRevealed(true)}>
+        <button type="button" className="dl-ghost" onClick={() => setRevealed(true)}>
           Показати відгук
         </button>
       </div>
@@ -147,7 +147,7 @@ export function BookReviewsSection({ bookId, entryId, userId, entryRating, embed
         <div className="panel-head">
           <h3>Відгуки</h3>
           {!editing && (
-            <button type="button" className="btn-small" onClick={startEditing}>
+            <button type="button" className="dl-ghost" onClick={startEditing}>
               {ownReview ? 'Редагувати' : '+ Написати'}
             </button>
           )}
@@ -156,7 +156,7 @@ export function BookReviewsSection({ bookId, entryId, userId, entryRating, embed
 
       {embedded && !editing && (
         <div className="embedded-actions">
-          <button type="button" className="btn-small" onClick={startEditing}>
+          <button type="button" className="dl-ghost" onClick={startEditing}>
             {ownReview ? 'Редагувати відгук' : '+ Написати відгук'}
           </button>
         </div>
@@ -191,10 +191,10 @@ export function BookReviewsSection({ bookId, entryId, userId, entryRating, embed
             />
             Містить спойлери
           </label>
-          <div className="form-actions">
+          <div className={`form-actions${embedded ? ' form-actions--detail' : ''}`}>
             <button
               type="button"
-              className="btn-secondary"
+              className="dl-ghost"
               onClick={() => {
                 setEditing(false);
                 setError('');
@@ -203,11 +203,11 @@ export function BookReviewsSection({ bookId, entryId, userId, entryRating, embed
               Скасувати
             </button>
             {ownReview && (
-              <button type="button" className="btn-danger" onClick={handleDelete}>
+              <button type="button" className="dl-danger" onClick={handleDelete}>
                 Видалити
               </button>
             )}
-            <button type="submit" disabled={saving}>
+            <button type="submit" className="dl-primary" disabled={saving}>
               {saving ? 'Зберігаємо…' : 'Опублікувати'}
             </button>
           </div>
