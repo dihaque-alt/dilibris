@@ -4,6 +4,7 @@ interface ActiveSessionBannerProps {
   title: string;
   clock: string;
   isRunning: boolean;
+  onTogglePause: () => void;
   onContinue: () => void;
   onDiscard: () => void;
 }
@@ -12,6 +13,7 @@ export function ActiveSessionBanner({
   title,
   clock,
   isRunning,
+  onTogglePause,
   onContinue,
   onDiscard,
 }: ActiveSessionBannerProps) {
@@ -28,6 +30,9 @@ export function ActiveSessionBanner({
       <div className="active-session-banner-actions">
         <button type="button" className="dl-ghost" onClick={onDiscard}>
           Скинути
+        </button>
+        <button type="button" className="dl-ghost" onClick={onTogglePause}>
+          {isRunning ? 'Пауза' : 'Відновити'}
         </button>
         <button type="button" className="dl-primary" onClick={onContinue}>
           Продовжити

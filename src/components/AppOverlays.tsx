@@ -13,6 +13,8 @@ import {
   elapsedSeconds,
   fetchActiveSession,
   formatSessionClock,
+  saveActiveSession,
+  snapshotSession,
   subscribeActiveSession,
 } from '../lib/offline/activeSessionSync';
 import { addSession, fetchEntry } from '../lib/offline/librarySync';
@@ -134,6 +136,17 @@ export function AppOverlaysProvider({ userId, userEmail, children }: AppOverlays
     await refreshActiveSession();
   }, [userId, refreshActiveSession]);
 
+  const toggleActiveSessionPause = useCallback(async () => {
+    const session = activeSessionRef.current;
+    if (!session) return;
+
+    const nextRunning = !session.is_running;
+    const next = snapshotSession(session, { is_running: nextRunning });
+    await saveActiveSession(next);
+    setActiveSession(next);
+    setBannerClock(formatSessionClock(elapsedSeconds(next)));
+  }, []);
+
   const value: AppOverlaysContextValue = {
     openSettings: () => setSettingsOpen(true),
     openGoodreadsImport: () => setGoodreadsOpen(true),
@@ -151,6 +164,7 @@ export function AppOverlaysProvider({ userId, userEmail, children }: AppOverlays
           title={activeEntry.book?.title ?? 'Книга'}
           clock={bannerClock}
           isRunning={activeSession?.is_running ?? false}
+          onTogglePause={() => void toggleActiveSessionPause()}
           onContinue={() => setSessionEntry(activeEntry)}
           onDiscard={discardActiveSession}
         />
