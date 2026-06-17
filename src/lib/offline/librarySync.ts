@@ -348,6 +348,22 @@ export async function fetchSessions(entryId: string): Promise<ReadingSession[]> 
   return offlineDb.sessions.where('entry_id').equals(entryId).reverse().sortBy('started_at');
 }
 
+async function sumSessionMinutes(entryId: string): Promise<number> {
+  const sessions = await offlineDb.sessions.where('entry_id').equals(entryId).toArray();
+  return sessions.reduce((sum, session) => sum + session.minutes, 0);
+}
+
+async function patchEntryProgress(
+  entryId: string,
+  patch: Pick<UserBookEntry, 'current_page' | 'total_minutes'>,
+): Promise<UserBookEntry | null> {
+  const entry = await offlineDb.entries.get(entryId);
+  if (!entry) return null;
+  const updated = { ...entry, ...patch, updated_at: nowIso() };
+  await offlineDb.entries.put(updated);
+  return updated;
+}
+
 export async function addSession(
   userId: string,
   entryId: string,
@@ -391,8 +407,13 @@ export async function addSession(
     });
     if (error) throw error;
     if (entry && payload.pages > 0) {
-      await supabase.from('user_book_entries').update({ current_page: entry.current_page + payload.pages }).eq('id', entryId);
+      const { error: pageError } = await supabase
+        .from('user_book_entries')
+        .update({ current_page: entry.current_page + payload.pages })
+        .eq('id', entryId);
+      if (pageError) throw pageError;
     }
+    await fetchEntry(entryId);
     return;
   }
 
@@ -409,21 +430,69 @@ export async function addSession(
       note: payload.note,
     },
   });
-  if (entry && payload.pages > 0) {
+
+  if (entry && (payload.pages > 0 || payload.minutes > 0)) {
+    const entryPatch: { id: string; current_page?: number; total_minutes?: number } = { id: entryId };
+    if (payload.pages > 0) entryPatch.current_page = entry.current_page + payload.pages;
+    if (payload.minutes > 0) entryPatch.total_minutes = entry.total_minutes + payload.minutes;
     await enqueue(userId, {
       table: 'user_book_entries',
       operation: 'update',
-      payload: { id: entryId, current_page: entry.current_page + payload.pages },
+      payload: entryPatch,
     });
   }
 }
 
 export async function deleteSession(userId: string, sessionId: string, entryId: string) {
+  let session = await offlineDb.sessions.get(sessionId);
+
+  if (!session && isOnline()) {
+    const { data, error } = await supabase
+      .from('reading_sessions')
+      .select('*')
+      .eq('id', sessionId)
+      .single();
+    if (error) throw error;
+    session = data as ReadingSession;
+  }
+
   await offlineDb.sessions.delete(sessionId);
+
+  const entry = await offlineDb.entries.get(entryId);
+  if (entry && session) {
+    const totalMinutes = await sumSessionMinutes(entryId);
+    const currentPage = Math.max(0, entry.current_page - session.pages_read);
+    await patchEntryProgress(entryId, { current_page: currentPage, total_minutes: totalMinutes });
+
+    if (isOnline()) {
+      const { error } = await supabase.from('reading_sessions').delete().eq('id', sessionId);
+      if (error) throw error;
+      const { error: pageError } = await supabase
+        .from('user_book_entries')
+        .update({ current_page: currentPage })
+        .eq('id', entryId);
+      if (pageError) throw pageError;
+      await fetchEntry(entryId);
+      return;
+    }
+
+    await enqueue(userId, {
+      table: 'reading_sessions',
+      operation: 'delete',
+      payload: { id: sessionId, entry_id: entryId },
+    });
+    await enqueue(userId, {
+      table: 'user_book_entries',
+      operation: 'update',
+      payload: { id: entryId, current_page: currentPage, total_minutes: totalMinutes },
+    });
+    return;
+  }
 
   if (isOnline()) {
     const { error } = await supabase.from('reading_sessions').delete().eq('id', sessionId);
     if (error) throw error;
+    await fetchEntry(entryId);
     return;
   }
 

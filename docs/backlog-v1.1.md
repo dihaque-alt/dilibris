@@ -18,7 +18,7 @@
 | 4 | Bookcase chrome (лампа, карниз, цоколь) | ⏭ пропущено |
 | 5 | Fly-out — дрібна parity | ✅ |
 | 6 | Картка книги — візуал + таби | ✅ |
-| 7 | Картка книги — поведінка (прогрес, сесії) | ⬜ |
+| 7 | Картка книги — поведінка (прогрес, сесії) | ✅ |
 | 8 | Session timer + resume banner | ⬜ |
 | 9 | ReaderView — рішення (stub / прибрати / залишити) | ⬜ |
 | 10 | Auth + onboarding — візуал і копі | ⬜ |
@@ -160,6 +160,8 @@
 - Рейтинг 0.5 крок — `StarRating` + save
 
 **Готово коли:** зміни в detail відображаються на dashboard і після reload.
+
+**Зроблено (2026-06-17):** auto `started_on`/`finished_on` (включно з dnf) у формі й при збереженні; `snapRating` 0.5; сесії add/delete синхронізують `current_page` + `total_minutes` (online trigger + offline queue); modal оновлює stat chips через `fetchEntry`.
 
 **Файли:** `BookDetailModal.tsx`, `librarySync.ts`, `StarRating.tsx`
 

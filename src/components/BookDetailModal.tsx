@@ -8,11 +8,12 @@ import { daysBetween, todayIsoDate } from '../lib/dates';
 import {
   addSession,
   deleteSession,
+  fetchEntry,
   fetchSessions,
   updateEntry,
 } from '../lib/offline/librarySync';
 import { formatAuthors, STATUS_LABELS } from '../lib/labels';
-import { formatMinutes, parseRating } from '../lib/rating';
+import { formatMinutes, parseRating, snapRating } from '../lib/rating';
 import { useIsMobile } from '../hooks/useIsMobile';
 import type { BookEntryStatus, ReadingFormat, ReadingSession, UserBookEntry } from '../types/database';
 import { BookCover } from './BookCover';
@@ -98,6 +99,30 @@ export function BookDetailModal({
     };
   }, []);
 
+  useEffect(() => {
+    if (status === 'reading' || status === 're_reading' || status === 'finished' || status === 'dnf') {
+      setStartedOn((prev) => prev || todayIsoDate());
+    }
+    if (status === 'finished' || status === 'dnf') {
+      setFinishedOn((prev) => prev || todayIsoDate());
+    } else {
+      setFinishedOn('');
+    }
+  }, [status]);
+
+  const applyEntrySnapshot = useCallback(async () => {
+    const refreshed = await fetchEntry(entry.id);
+    if (!refreshed) return;
+    setCurrentPage(String(refreshed.current_page));
+    setTotalMinutes(refreshed.total_minutes);
+    setStartedOn(refreshed.started_on ?? '');
+    setFinishedOn(refreshed.finished_on ?? '');
+    setCountsTowardStats(refreshed.counts_toward_stats);
+    if (refreshed.rating != null) {
+      setRating(String(refreshed.rating));
+    }
+  }, [entry.id]);
+
   const totalPagesNum = totalPages ? Number(totalPages) : null;
   const currentPageNum = Number(currentPage) || 0;
   const progressPct =
@@ -144,16 +169,18 @@ export function BookDetailModal({
     if (status === 'reading' || status === 're_reading') {
       if (!nextStarted) nextStarted = todayIsoDate();
     }
-    if (status === 'finished') {
+    if (status === 'finished' || status === 'dnf') {
       if (!nextStarted) nextStarted = todayIsoDate();
       if (!nextFinished) nextFinished = todayIsoDate();
     }
+
+    const savedRating = snapRating(parseRating(rating));
 
     try {
       await updateEntry(userId, entry.id, {
         status,
         format: format || null,
-        rating: parseRating(rating),
+        rating: savedRating,
         started_on: nextStarted,
         finished_on: status === 'finished' || status === 'dnf' ? nextFinished : null,
         current_page: currentPageNum,
@@ -166,10 +193,7 @@ export function BookDetailModal({
       return;
     }
 
-    const cached = await fetchSessions(entry.id);
-    setTotalMinutes(cached.reduce((s, r) => s + r.minutes, 0));
-    setStartedOn(nextStarted ?? '');
-    setFinishedOn(nextFinished ?? '');
+    await applyEntrySnapshot();
     await refreshPending();
     onUpdated();
     setSaving(false);
@@ -197,12 +221,7 @@ export function BookDetailModal({
       return;
     }
 
-    const cached = await fetchSessions(entry.id);
-    setTotalMinutes(cached.reduce((s, r) => s + r.minutes, 0));
-    if (pages > 0) {
-      setCurrentPage(String(currentPageNum + pages));
-    }
-
+    await applyEntrySnapshot();
     setSessionPages('');
     setSessionMinutes('');
     setSessionNote('');
@@ -224,8 +243,7 @@ export function BookDetailModal({
       return;
     }
 
-    const cached = await fetchSessions(entry.id);
-    setTotalMinutes(cached.reduce((s, r) => s + r.minutes, 0));
+    await applyEntrySnapshot();
     await loadSessions();
     await refreshPending();
     onUpdated();
@@ -350,9 +368,9 @@ export function BookDetailModal({
               <div className="dl-field">
                 <span className="dl-field-label">Оцінка</span>
                 <StarRating
-                  value={parseRating(rating) ?? 0}
+                  value={snapRating(parseRating(rating)) ?? 0}
                   size={28}
-                  onChange={(v) => setRating(v > 0 ? String(v) : '')}
+                  onChange={(v) => setRating(v > 0 ? String(snapRating(v) ?? v) : '')}
                 />
               </div>
 

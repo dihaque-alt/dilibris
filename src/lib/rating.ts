@@ -16,6 +16,13 @@ export function parseRating(value: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+/** Clamp to 0.5-step star ratings accepted by Postgres check constraints. */
+export function snapRating(value: number | null | undefined): number | null {
+  if (value == null || value <= 0) return null;
+  const snapped = Math.round(value * 2) / 2;
+  return snapped >= 0.5 && snapped <= 5 ? snapped : null;
+}
+
 export function formatStarRating(rating: number): string {
   return `${rating} ★`;
 }
