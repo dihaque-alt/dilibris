@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type MutableRefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { useIsMobile } from '../hooks/useIsMobile';
 import {
@@ -9,19 +9,50 @@ import {
   saveActiveSession,
   snapshotSession,
   startActiveSession,
-  subscribeActiveSession,
 } from '../lib/offline/activeSessionSync';
 import type { ActiveReadingSession, UserBookEntry } from '../types/database';
 
 interface SessionTimerProps {
   entry: UserBookEntry;
   userId: string;
+  syncedSession?: ActiveReadingSession | null;
   onDismiss: () => void;
   onDiscard: () => void;
   onFinish: (payload: { minutes: number; pages: number; note: string | null }) => void | Promise<void>;
 }
 
-export function SessionTimer({ entry, userId, onDismiss, onDiscard, onFinish }: SessionTimerProps) {
+function applyRemoteSession(
+  remote: ActiveReadingSession,
+  setSession: (s: ActiveReadingSession) => void,
+  setSec: (n: number) => void,
+  setRunning: (r: boolean) => void,
+  setPages: (p: string) => void,
+  setNote: (n: string) => void,
+  sessionRef: MutableRefObject<ActiveReadingSession | null>,
+) {
+  const editingField =
+    document.activeElement instanceof HTMLInputElement &&
+    document.activeElement.closest('.session-fields');
+
+  sessionRef.current = remote;
+  setSession(remote);
+  setSec(elapsedSeconds(remote));
+  setRunning(remote.is_running);
+
+  if (!editingField) {
+    setPages(remote.pages_draft);
+    setNote(remote.note_draft);
+  }
+}
+
+export function SessionTimer({
+  entry,
+  userId,
+  syncedSession,
+  onDismiss,
+  onDiscard,
+  onFinish,
+}: SessionTimerProps) {
   const mobile = useIsMobile();
   const [session, setSession] = useState<ActiveReadingSession | null>(null);
   const [sec, setSec] = useState(0);
@@ -49,7 +80,7 @@ export function SessionTimer({ entry, userId, onDismiss, onDiscard, onFinish }: 
     noteRef.current = note;
   }, [note]);
 
-  const persist = useCallback(async () => {
+  async function persist() {
     const current = sessionRef.current;
     if (!current) return;
     const next = snapshotSession(current, {
@@ -60,23 +91,22 @@ export function SessionTimer({ entry, userId, onDismiss, onDiscard, onFinish }: 
     sessionRef.current = next;
     setSession(next);
     await saveActiveSession(next);
-  }, []);
+  }
 
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
       setLoading(true);
+      setError('');
       try {
         const existing = await fetchActiveSession(userId);
         if (cancelled) return;
 
-        let active: ActiveReadingSession;
-        if (existing?.entry_id === entry.id) {
-          active = existing;
-        } else {
-          active = await startActiveSession(userId, entry.id);
-        }
+        const active =
+          existing?.entry_id === entry.id
+            ? existing
+            : await startActiveSession(userId, entry.id);
 
         if (cancelled) return;
         sessionRef.current = active;
@@ -85,6 +115,10 @@ export function SessionTimer({ entry, userId, onDismiss, onDiscard, onFinish }: 
         setRunning(active.is_running);
         setPages(active.pages_draft);
         setNote(active.note_draft);
+      } catch (err) {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : 'Не вдалося запустити сесію');
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -96,24 +130,9 @@ export function SessionTimer({ entry, userId, onDismiss, onDiscard, onFinish }: 
   }, [userId, entry.id]);
 
   useEffect(() => {
-    return subscribeActiveSession(userId, (remote) => {
-      if (!remote || remote.entry_id !== entry.id) return;
-
-      const editingField =
-        document.activeElement instanceof HTMLInputElement &&
-        document.activeElement.closest('.session-fields');
-
-      sessionRef.current = remote;
-      setSession(remote);
-      setSec(elapsedSeconds(remote));
-      setRunning(remote.is_running);
-
-      if (!editingField) {
-        setPages(remote.pages_draft);
-        setNote(remote.note_draft);
-      }
-    });
-  }, [userId, entry.id]);
+    if (!syncedSession || syncedSession.entry_id !== entry.id) return;
+    applyRemoteSession(syncedSession, setSession, setSec, setRunning, setPages, setNote, sessionRef);
+  }, [syncedSession, entry.id]);
 
   useEffect(() => {
     if (!running || !session) return;
@@ -129,7 +148,7 @@ export function SessionTimer({ entry, userId, onDismiss, onDiscard, onFinish }: 
       void persist();
     }, 5000);
     return () => clearInterval(interval);
-  }, [session, loading, persist]);
+  }, [session, loading]);
 
   useEffect(() => {
     const onHide = () => {
@@ -139,7 +158,7 @@ export function SessionTimer({ entry, userId, onDismiss, onDiscard, onFinish }: 
     };
     document.addEventListener('visibilitychange', onHide);
     return () => document.removeEventListener('visibilitychange', onHide);
-  }, [persist]);
+  }, []);
 
   useEffect(() => {
     const prev = document.body.style.overflow;
@@ -154,7 +173,7 @@ export function SessionTimer({ entry, userId, onDismiss, onDiscard, onFinish }: 
     if (!current) return;
 
     const nextRunning = !runningRef.current;
-    let next = snapshotSession(current, { is_running: nextRunning });
+    const next = snapshotSession(current, { is_running: nextRunning });
     if (!nextRunning) {
       setSec(elapsedSeconds(next));
     }
@@ -177,8 +196,12 @@ export function SessionTimer({ entry, userId, onDismiss, onDiscard, onFinish }: 
 
   async function finish() {
     const current = sessionRef.current;
-    const source = current ?? sessionRef.current;
-    const minutes = Math.max(1, Math.round(elapsedSeconds(source) / 60));
+    if (!current) {
+      setError('Сесію не запущено — спробуй закрити й відкрити знову');
+      return;
+    }
+
+    const minutes = Math.max(1, Math.round(elapsedSeconds(current) / 60));
     const pagesNum = parseInt(pagesRef.current, 10) || 0;
     const noteText = noteRef.current.trim() || null;
 
@@ -192,6 +215,7 @@ export function SessionTimer({ entry, userId, onDismiss, onDiscard, onFinish }: 
   }
 
   const clock = formatSessionClock(sec);
+  const canUseSession = !loading && session != null;
 
   return createPortal(
     <div
@@ -199,67 +223,84 @@ export function SessionTimer({ entry, userId, onDismiss, onDiscard, onFinish }: 
       onClick={() => void handleDismiss()}
       role="presentation"
     >
-      <div
-        className={`dl-detailcard session-timer ${mobile ? 'is-sheet' : 'is-modal is-narrow'}`}
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-labelledby="session-title"
-      >
-        {mobile && <div className="dl-sheet-handle" aria-hidden="true" />}
-        {loading ? (
-          <p className="session-kicker">Завантаження сесії…</p>
-        ) : (
-          <>
-            <p className="session-kicker">Сесія читання</p>
-            <h2 id="session-title" className="session-book-title">
-              {entry.book?.title ?? 'Книга'}
-            </h2>
+      <div className="dl-modal-backdrop-inner">
+        <div
+          className={`dl-detailcard session-timer ${mobile ? 'is-sheet' : 'is-modal is-narrow'}`}
+          onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-labelledby="session-title"
+        >
+          {mobile && <div className="dl-sheet-handle" aria-hidden="true" />}
+          {loading ? (
+            <p className="session-kicker">Завантаження сесії…</p>
+          ) : (
+            <>
+              <p className="session-kicker">Сесія читання</p>
+              <h2 id="session-title" className="session-book-title">
+                {entry.book?.title ?? 'Книга'}
+              </h2>
 
-            <div className="session-clock">
-              {clock}
-            </div>
-            <button type="button" className="dl-ghost session-pause" onClick={() => void togglePause()}>
-              {running ? '❚❚ Пауза' : '▷ Далі'}
-            </button>
+              <div className="session-clock">{clock}</div>
+              <button
+                type="button"
+                className="dl-ghost session-pause"
+                disabled={!canUseSession}
+                onClick={() => void togglePause()}
+              >
+                {running ? '❚❚ Пауза' : '▷ Далі'}
+              </button>
 
-            <div className="session-fields">
-              <label className="dl-field">
-                <span className="dl-field-label">Сторінок</span>
-                <input
-                  className="dl-field-input"
-                  value={pages}
-                  onChange={(e) => setPages(e.target.value.replace(/[^0-9]/g, ''))}
-                  onBlur={() => void persist()}
-                  placeholder="0"
-                  inputMode="numeric"
-                />
-              </label>
-              <label className="dl-field session-note-field">
-                <span className="dl-field-label">Нотатка</span>
-                <input
-                  className="dl-field-input"
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  onBlur={() => void persist()}
-                  placeholder="думка на полях…"
-                />
-              </label>
-            </div>
+              <div className="session-fields">
+                <label className="dl-field">
+                  <span className="dl-field-label">Сторінок</span>
+                  <input
+                    className="dl-field-input"
+                    value={pages}
+                    disabled={!canUseSession}
+                    onChange={(e) => setPages(e.target.value.replace(/[^0-9]/g, ''))}
+                    onBlur={() => void persist()}
+                    placeholder="0"
+                    inputMode="numeric"
+                  />
+                </label>
+                <label className="dl-field session-note-field">
+                  <span className="dl-field-label">Нотатка</span>
+                  <input
+                    className="dl-field-input"
+                    value={note}
+                    disabled={!canUseSession}
+                    onChange={(e) => setNote(e.target.value)}
+                    onBlur={() => void persist()}
+                    placeholder="думка на полях…"
+                  />
+                </label>
+              </div>
 
-            <footer className="session-foot">
-              <button type="button" className="dl-ghost" onClick={() => void handleDismiss()}>
-                Згорнути
-              </button>
-              <button type="button" className="dl-ghost session-foot-discard" onClick={() => void handleDiscard()}>
-                Скинути
-              </button>
-              <button type="button" className="dl-primary" onClick={() => void finish()}>
-                Завершити й записати
-              </button>
-            </footer>
-            {error && <p className="form-error session-error">{error}</p>}
-          </>
-        )}
+              <footer className="session-foot">
+                <button type="button" className="dl-ghost" onClick={() => void handleDismiss()}>
+                  Згорнути
+                </button>
+                <button
+                  type="button"
+                  className="dl-ghost session-foot-discard"
+                  disabled={!canUseSession}
+                  onClick={() => void handleDiscard()}
+                >
+                  Скинути
+                </button>
+                <button
+                  type="button"
+                  className="dl-primary"
+                  disabled={!canUseSession}
+                  onClick={() => void finish()}
+                >
+                  Завершити й записати
+                </button>
+              </footer>
+              {error && <p className="form-error session-error">{error}</p>}
+            </>
+          )}
+        </div>
       </div>
     </div>,
     document.body,

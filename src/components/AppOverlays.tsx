@@ -171,6 +171,7 @@ export function AppOverlaysProvider({ userId, userEmail, children }: AppOverlays
         <SessionTimer
           entry={sessionEntry}
           userId={userId}
+          syncedSession={activeSession?.entry_id === sessionEntry.id ? activeSession : null}
           onDismiss={() => {
             setSessionEntry(null);
             void refreshActiveSession();

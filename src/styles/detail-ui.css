@@ -1007,6 +1007,17 @@
   width: min(420px, 94vw);
 }
 
+.session-timer.dl-detailcard.is-modal,
+.session-timer.dl-detailcard.is-sheet {
+  padding: 24px 28px 28px;
+}
+
+@media (max-width: 720px) {
+  .session-timer.dl-detailcard.is-sheet {
+    padding: 16px 20px calc(22px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 @media (max-width: 720px) {
   .dl-settings-head,
   .dl-settings-body,

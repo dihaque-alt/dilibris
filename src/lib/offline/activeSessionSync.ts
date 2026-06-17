@@ -93,6 +93,17 @@ function mergeActiveSessions(
   };
 }
 
+async function clearPendingActiveSessionDeletes(userId: string): Promise<void> {
+  const ops = await offlineDb.pendingOps
+    .where('userId')
+    .equals(userId)
+    .filter((op) => op.table === 'active_reading_sessions' && op.operation === 'delete')
+    .toArray();
+  if (ops.length) {
+    await offlineDb.pendingOps.bulkDelete(ops.map((op) => op.id));
+  }
+}
+
 async function pushToServer(session: ActiveReadingSession): Promise<void> {
   if (!isOnline()) {
     await saveLocal(session, true);
@@ -103,6 +114,7 @@ async function pushToServer(session: ActiveReadingSession): Promise<void> {
     onConflict: 'user_id',
   });
   if (error) throw error;
+  await clearPendingActiveSessionDeletes(session.user_id);
   await saveLocal(session, false);
 }
 
@@ -134,7 +146,12 @@ export async function startActiveSession(
 ): Promise<ActiveReadingSession> {
   const existing = await offlineDb.activeSessions.get(userId);
   if (existing?.entry_id === entryId) {
-    return existing;
+    if (existing.is_running) {
+      return existing;
+    }
+    const resumed = snapshotSession(existing, { is_running: true });
+    await pushToServer(resumed);
+    return resumed;
   }
 
   const now = nowIso();
@@ -183,11 +200,20 @@ export async function clearActiveSession(userId: string): Promise<void> {
 export async function flushActiveSession(userId: string): Promise<void> {
   if (!isOnline()) return;
 
+  const local = await offlineDb.activeSessions.get(userId);
   const pendingDelete = await offlineDb.pendingOps
     .where('userId')
     .equals(userId)
     .filter((op) => op.table === 'active_reading_sessions' && op.operation === 'delete')
     .first();
+
+  if (pendingDelete && local) {
+    await offlineDb.pendingOps.delete(pendingDelete.id);
+    if (local.dirty) {
+      await pushToServer(local);
+    }
+    return;
+  }
 
   if (pendingDelete) {
     const { user_id } = pendingDelete.payload as { user_id: string };
@@ -200,7 +226,6 @@ export async function flushActiveSession(userId: string): Promise<void> {
     return;
   }
 
-  const local = await offlineDb.activeSessions.get(userId);
   if (local?.dirty) {
     await pushToServer(local);
   }
