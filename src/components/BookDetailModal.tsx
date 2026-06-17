@@ -237,7 +237,7 @@ export function BookDetailModal({
             <StatusPill status={status} size="sm" />
           </div>
           <button type="button" className="dl-close" onClick={onClose} aria-label="Закрити">
-            ✕
+            ×
           </button>
         </header>
 
