@@ -8,7 +8,6 @@ type CallbackState = 'loading' | 'done' | 'error';
 
 export function AuthCallbackPage() {
   const [state, setState] = useState<CallbackState>('loading');
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -18,10 +17,7 @@ export function AuthCallbackPage() {
       const oauthError = params.get('error_description') ?? params.get('error');
 
       if (oauthError) {
-        if (!cancelled) {
-          setError(oauthError);
-          setState('error');
-        }
+        if (!cancelled) setState('error');
         return;
       }
 
@@ -32,7 +28,6 @@ export function AuthCallbackPage() {
         if (cancelled) return;
 
         if (exchangeError) {
-          setError(exchangeError.message);
           setState('error');
           return;
         }
@@ -45,7 +40,6 @@ export function AuthCallbackPage() {
       if (cancelled) return;
 
       if (sessionError) {
-        setError(sessionError.message);
         setState('error');
         return;
       }
@@ -55,7 +49,6 @@ export function AuthCallbackPage() {
         return;
       }
 
-      setError('Не вдалося увійти. Спробуй ще раз.');
       setState('error');
     }
 
@@ -88,7 +81,6 @@ export function AuthCallbackPage() {
               <span>DiLibris</span>
             </div>
             <h1 className="auth-onboard-title">Не вдалося увійти</h1>
-            {error && <p className="form-error">{error}</p>}
             <div className="auth-onboard-actions">
               <Link to="/" className="dl-primary auth-onboard-btn">
                 Спробувати знову
