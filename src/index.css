@@ -1146,6 +1146,21 @@ label {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  border-radius: var(--r-sm);
+}
+
+.active-session-banner-text:hover {
+  opacity: 0.85;
+}
+
+.active-session-banner-text:focus-visible {
+  outline: 2px solid var(--gold-deep);
+  outline-offset: 2px;
 }
 
 .active-session-banner-kicker {

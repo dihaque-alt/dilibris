@@ -4,8 +4,9 @@ interface ActiveSessionBannerProps {
   title: string;
   clock: string;
   isRunning: boolean;
+  onOpen: () => void;
   onTogglePause: () => void;
-  onContinue: () => void;
+  onFinish: () => void;
   onDiscard: () => void;
 }
 
@@ -13,20 +14,26 @@ export function ActiveSessionBanner({
   title,
   clock,
   isRunning,
+  onOpen,
   onTogglePause,
-  onContinue,
+  onFinish,
   onDiscard,
 }: ActiveSessionBannerProps) {
   return createPortal(
     <div className="active-session-banner" role="status" aria-live="polite">
-      <div className="active-session-banner-text">
+      <button
+        type="button"
+        className="active-session-banner-text"
+        onClick={onOpen}
+        aria-label={`Відкрити сесію: ${title}`}
+      >
         <span className="active-session-banner-kicker">
           {isRunning ? 'Сесія читання' : 'Сесія на паузі'}
         </span>
         <span className="active-session-banner-title">
           {title} · {clock}
         </span>
-      </div>
+      </button>
       <div className="active-session-banner-actions">
         <button type="button" className="dl-ghost" onClick={onDiscard}>
           Скинути
@@ -34,8 +41,8 @@ export function ActiveSessionBanner({
         <button type="button" className="dl-ghost" onClick={onTogglePause}>
           {isRunning ? 'Пауза' : 'Відновити'}
         </button>
-        <button type="button" className="dl-primary" onClick={onContinue}>
-          Продовжити
+        <button type="button" className="dl-primary" onClick={onFinish}>
+          Завершити
         </button>
       </div>
     </div>,

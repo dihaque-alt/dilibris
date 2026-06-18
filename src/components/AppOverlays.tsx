@@ -144,6 +144,26 @@ export function AppOverlaysProvider({ userId, userEmail, children }: AppOverlays
     setBannerClock(formatSessionClock(elapsedSeconds(next)));
   }, []);
 
+  const finishActiveSession = useCallback(async () => {
+    const session = activeSessionRef.current;
+    if (!session) return;
+
+    try {
+      const snap = session.is_running
+        ? snapshotSession(session, { is_running: false })
+        : session;
+      if (session.is_running) {
+        await saveActiveSession(snap);
+      }
+      const minutes = Math.max(1, Math.round(elapsedSeconds(snap) / 60));
+      const pages = parseInt(snap.pages_draft, 10) || 0;
+      const note = snap.note_draft.trim() || null;
+      await logSession(session.entry_id, { minutes, pages, note });
+    } catch (err) {
+      window.alert(err instanceof Error ? err.message : 'Не вдалося записати сесію');
+    }
+  }, [logSession]);
+
   const value: AppOverlaysContextValue = {
     openSettings: () => setSettingsOpen(true),
     openGoodreadsImport: () => setGoodreadsOpen(true),
@@ -160,8 +180,9 @@ export function AppOverlaysProvider({ userId, userEmail, children }: AppOverlays
           title={activeEntry.book?.title ?? 'Книга'}
           clock={bannerClock}
           isRunning={activeSession?.is_running ?? false}
+          onOpen={() => setSessionEntry(activeEntry)}
           onTogglePause={() => void toggleActiveSessionPause()}
-          onContinue={() => setSessionEntry(activeEntry)}
+          onFinish={() => void finishActiveSession()}
           onDiscard={discardActiveSession}
         />
       )}
