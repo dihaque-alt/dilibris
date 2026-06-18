@@ -470,11 +470,6 @@ export function LibraryPage({ userId, userEmail }: LibraryPageProps) {
             const updated = await fetchEntry(selectedEntry.id);
             if (updated) setSelectedEntry(updated);
           }}
-          onRead={() => {
-            const e = selectedEntry;
-            setSelectedEntry(null);
-            overlays.openReader(e);
-          }}
           onSession={() => {
             const e = selectedEntry;
             setSelectedEntry(null);

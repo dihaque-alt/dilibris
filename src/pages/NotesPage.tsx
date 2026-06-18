@@ -184,11 +184,6 @@ export function NotesPage({ userId, userEmail }: NotesPageProps) {
           userId={userId}
           onClose={() => setSelectedEntry(null)}
           onUpdated={() => refreshEntry(selectedEntry.id)}
-          onRead={() => {
-            const e = selectedEntry;
-            setSelectedEntry(null);
-            overlays.openReader(e);
-          }}
           onSession={() => {
             const e = selectedEntry;
             setSelectedEntry(null);

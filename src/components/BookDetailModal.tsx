@@ -26,7 +26,6 @@ interface BookDetailModalProps {
   userId: string;
   onClose: () => void;
   onUpdated: () => void;
-  onRead?: () => void;
   onSession?: () => void;
 }
 
@@ -42,7 +41,6 @@ export function BookDetailModal({
   userId,
   onClose,
   onUpdated,
-  onRead,
   onSession,
 }: BookDetailModalProps) {
   const mobile = useIsMobile();
@@ -131,10 +129,7 @@ export function BookDetailModal({
       : null;
   const readingDays = daysBetween(startedOn || null, finishedOn || null);
   const showReadingActions =
-    status !== 'want_to_read' &&
-    status !== 'finished' &&
-    (onRead || onSession);
-  const isEbook = format === 'ebook';
+    status !== 'want_to_read' && status !== 'finished' && onSession;
 
   const footerSubmitFormId =
     tab === 'progress'
@@ -302,20 +297,9 @@ export function BookDetailModal({
 
         {showReadingActions && (
           <div className="dl-detail-reading-actions">
-            {isEbook ? (
-              <>
-                <button type="button" className="dl-primary dl-detail-read-primary" onClick={onRead}>
-                  ▷ Читати далі
-                </button>
-                <button type="button" className="dl-ghost" onClick={onSession}>
-                  ⏱ Сесія
-                </button>
-              </>
-            ) : (
-              <button type="button" className="dl-primary dl-detail-read-primary" onClick={onSession}>
-                ⏱ Почати сесію
-              </button>
-            )}
+            <button type="button" className="dl-primary dl-detail-read-primary" onClick={onSession}>
+              ⏱ Почати сесію
+            </button>
           </div>
         )}
 

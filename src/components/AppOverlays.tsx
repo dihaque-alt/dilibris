@@ -22,14 +22,12 @@ import type { ActiveReadingSession, UserBookEntry } from '../types/database';
 import { ActiveSessionBanner } from './ActiveSessionBanner';
 import { useOffline } from './OfflineProvider';
 import { GoodreadsImportSheet } from './GoodreadsImportSheet';
-import { ReaderView } from './ReaderView';
 import { SessionTimer } from './SessionTimer';
 import { SettingsSheet } from './SettingsSheet';
 
 interface AppOverlaysContextValue {
   openSettings: () => void;
   openGoodreadsImport: () => void;
-  openReader: (entry: UserBookEntry) => void;
   openSession: (entry: UserBookEntry) => void;
 }
 
@@ -53,7 +51,6 @@ export function AppOverlaysProvider({ userId, userEmail, children }: AppOverlays
   const { refreshPending } = useOffline();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [goodreadsOpen, setGoodreadsOpen] = useState(false);
-  const [readerEntry, setReaderEntry] = useState<UserBookEntry | null>(null);
   const [sessionEntry, setSessionEntry] = useState<UserBookEntry | null>(null);
   const [activeSession, setActiveSession] = useState<ActiveReadingSession | null>(null);
   const [activeEntry, setActiveEntry] = useState<UserBookEntry | null>(null);
@@ -150,7 +147,6 @@ export function AppOverlaysProvider({ userId, userEmail, children }: AppOverlays
   const value: AppOverlaysContextValue = {
     openSettings: () => setSettingsOpen(true),
     openGoodreadsImport: () => setGoodreadsOpen(true),
-    openReader: (entry) => setReaderEntry(entry),
     openSession: (entry) => setSessionEntry(entry),
   };
 
@@ -178,15 +174,6 @@ export function AppOverlaysProvider({ userId, userEmail, children }: AppOverlays
       )}
       {goodreadsOpen && (
         <GoodreadsImportSheet userId={userId} onClose={() => setGoodreadsOpen(false)} />
-      )}
-      {readerEntry && (
-        <ReaderView
-          entry={readerEntry}
-          onClose={() => setReaderEntry(null)}
-          onFinish={(payload) => {
-            void logSession(readerEntry.id, { ...payload, note: null });
-          }}
-        />
       )}
       {sessionEntry && (
         <SessionTimer

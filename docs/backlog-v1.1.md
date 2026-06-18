@@ -20,7 +20,7 @@
 | 6 | Картка книги — візуал + таби | ✅ |
 | 7 | Картка книги — поведінка (прогрес, сесії) | ✅ |
 | 8 | Session timer + resume banner | ✅ |
-| 9 | ReaderView — рішення (stub / прибрати / залишити) | ⬜ |
+| 9 | ReaderView — рішення (stub / прибрати / залишити) | ✅ |
 | 10 | Auth + onboarding — візуал і копі | ⬜ |
 | 11 | Onboarding — persist у Supabase | ⬜ |
 | 12 | Offline: notes у черзі sync | ⬜ |
@@ -196,7 +196,9 @@
 
 **Готово коли:** немає кнопки/flow, який обіцяє те, чого немає.
 
-**Файли:** `ReaderView.tsx`, `BookDetailModal.tsx`, `docs/product-spec.md`
+**Рішення (2026-06-17):** **B + відкладено до v2** — прибрано «▷ Читати далі» і `ReaderView` з prod; paper і ebook використовують лише «⏱ Почати сесію». Демо-reader лишається в `design-handoff/prototype/`; EPUB/файл — після v1.
+
+**Файли:** `BookDetailModal.tsx`, `AppOverlays.tsx`, `docs/product-spec.md` (видалено `ReaderView.tsx`)
 
 ---
 
@@ -429,4 +431,4 @@ Focus trap у modals; `aria-label` на ✕; keyboard fly-out/detail; `prefers-r
 
 ---
 
-*Останнє оновлення: 2026-06-17 — #5 fly-out parity*
+*Останнє оновлення: 2026-06-17 — #9 ReaderView removed from prod*
