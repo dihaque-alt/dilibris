@@ -14,6 +14,7 @@ export interface Profile {
   bio: string | null;
   locale: string;
   is_profile_public: boolean;
+  onboarded_at: string | null;
 }
 
 export interface UserShelf {

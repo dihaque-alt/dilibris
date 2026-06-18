@@ -22,7 +22,7 @@
 | 8 | Session timer + resume banner | ✅ |
 | 9 | ReaderView — рішення (stub / прибрати / залишити) | ✅ |
 | 10 | Auth + onboarding — візуал і копі | ✅ |
-| 11 | Onboarding — persist у Supabase | ⬜ |
+| 11 | Onboarding — persist у Supabase | ✅ |
 | 12 | Offline: notes у черзі sync | ⬜ |
 | 13 | Offline: reviews у черзі sync | ⬜ |
 | 14 | Offline: dashboard snapshot | ⬜ |
@@ -230,7 +230,11 @@
 
 **Готово коли:** onboarding показується один раз на акаунт, на будь-якому пристрої.
 
-**Файли:** `supabase/migrations/004_*.sql`, `OnboardingWelcome.tsx`, `useAuth` / profile fetch
+**Зроблено (2026-06-18):** `profiles.onboarded_at`; `resolveOnboardingStatus` + migrate з localStorage; кеш localStorage після server read.
+
+**Файли:** `supabase/migrations/004_profiles_onboarded_at.sql`, `src/lib/onboarding.ts`, `OnboardingWelcome.tsx`, `App.tsx`
+
+**Deploy:** після merge — виконати міграцію в Supabase SQL Editor.
 
 ---
 
@@ -433,4 +437,4 @@ Focus trap у modals; `aria-label` на ✕; keyboard fly-out/detail; `prefers-r
 
 ---
 
-*Останнє оновлення: 2026-06-18 — #10 auth + onboarding parity*
+*Останнє оновлення: 2026-06-18 — #11 onboarding persist Supabase*

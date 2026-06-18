@@ -1,17 +1,8 @@
 import { useEffect, useState } from 'react';
+import { markOnboardingComplete } from '../lib/onboarding';
 import { supabase } from '../lib/supabase';
 import { BrandMark } from './BrandMark';
 import { RoomBackdrop } from './RoomBackdrop';
-
-const onboardKey = (userId: string) => `dilibris_onboarded_${userId}`;
-
-export function hasCompletedOnboarding(userId: string): boolean {
-  return localStorage.getItem(onboardKey(userId)) === '1';
-}
-
-export function markOnboardingComplete(userId: string) {
-  localStorage.setItem(onboardKey(userId), '1');
-}
 
 interface OnboardingWelcomeProps {
   userId: string;
@@ -76,7 +67,14 @@ export function OnboardingWelcome({ userId, userEmail, onComplete }: OnboardingW
       }
     }
 
-    markOnboardingComplete(userId);
+    try {
+      await markOnboardingComplete(userId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Не вдалося зберегти onboarding');
+      setSaving(false);
+      return;
+    }
+
     setSaving(false);
     onComplete();
   }
