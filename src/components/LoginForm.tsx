@@ -1,17 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { getAuthRedirectUrl } from '../lib/authRedirect';
 import { supabase } from '../lib/supabase';
-
-function BrandMark() {
-  return (
-    <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true">
-      <rect x="3" y="5" width="26" height="22" rx="5" fill="var(--accent-lime)" />
-      <rect x="3" y="5" width="13" height="22" rx="5" fill="var(--accent-lime-deep)" />
-      <rect x="14.5" y="7" width="3" height="18" rx="1.5" fill="var(--bg-room)" />
-      <circle cx="9.5" cy="16" r="2" fill="var(--gold-highlight)" />
-    </svg>
-  );
-}
+import { BrandMark } from './BrandMark';
 
 function GoogleIcon() {
   return (
@@ -89,7 +79,8 @@ export function LoginForm() {
           <>
             <h1 className="auth-onboard-title">Твоя віртуальна бібліотека</h1>
             <p className="auth-onboard-sub">
-              Залиш пошту — надішлемо чарівний лінк для входу. Жодних паролів.
+              Що читаєш, що відклала, з ким — і скільки радості це принесло за рік. Залиш
+              пошту — надішлемо лінк для входу.
             </p>
 
             <button
@@ -97,13 +88,12 @@ export function LoginForm() {
               className="login-google-btn"
               onClick={handleGoogleSignIn}
               disabled={busy}
-              style={{ width: '100%', marginBottom: 12 }}
             >
               <GoogleIcon />
               {busy ? 'Перенаправляємо…' : 'Увійти через Google'}
             </button>
 
-            <div className="login-divider" aria-hidden="true" style={{ margin: '1rem 0' }}>
+            <div className="login-divider" aria-hidden="true">
               <span>або email</span>
             </div>
 
@@ -119,9 +109,8 @@ export function LoginForm() {
               />
               <button
                 type="submit"
-                className="dl-primary"
+                className="dl-primary auth-onboard-btn"
                 disabled={!emailValid || busy}
-                style={{ width: '100%', padding: '13px', opacity: emailValid ? 1 : 0.5 }}
               >
                 {busy ? 'Надсилаємо…' : 'Надіслати лінк'}
               </button>
@@ -139,12 +128,12 @@ export function LoginForm() {
               ✉
             </div>
             <h1 className="auth-onboard-title">Перевір пошту</h1>
-            <p className="auth-onboard-sub">
-              Лінк для входу полетів на <strong>{email.trim()}</strong>. Відкрий лист і тицьни
-              «Увійти в DiLibris».
+            <p className="auth-onboard-sub auth-onboard-sub--sent">
+              Лінк для входу полетів на{' '}
+              <strong>{email.trim()}</strong>. Відкрий лист і тицьни «Увійти в DiLibris».
             </p>
             <div className="auth-onboard-actions">
-              <button type="button" className="dl-ghost" style={{ width: '100%' }} onClick={handleResend}>
+              <button type="button" className="dl-ghost auth-onboard-btn" onClick={handleResend}>
                 Надіслати ще раз
               </button>
               <button type="button" className="auth-link-btn" onClick={() => setStep('email')}>

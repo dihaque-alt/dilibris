@@ -21,7 +21,7 @@
 | 7 | Картка книги — поведінка (прогрес, сесії) | ✅ |
 | 8 | Session timer + resume banner | ✅ |
 | 9 | ReaderView — рішення (stub / прибрати / залишити) | ✅ |
-| 10 | Auth + onboarding — візуал і копі | ⬜ |
+| 10 | Auth + onboarding — візуал і копі | ✅ |
 | 11 | Onboarding — persist у Supabase | ⬜ |
 | 12 | Offline: notes у черзі sync | ⬜ |
 | 13 | Offline: reviews у черзі sync | ⬜ |
@@ -214,7 +214,9 @@
 
 **Готово коли:** auth card візуально в одній системі з рештою app.
 
-**Файли:** `LoginForm.tsx`, `OnboardingWelcome.tsx`, `index.css`
+**Зроблено (2026-06-18):** спільний `BrandMark`; auth/onboarding картки на `detail-ui.css` (Google btn, divider, поля); копі як у прототипі; callback/loading на room backdrop.
+
+**Файли:** `LoginForm.tsx`, `OnboardingWelcome.tsx`, `BrandMark.tsx`, `AuthCallbackPage.tsx`, `detail-ui.css`
 
 ---
 
@@ -431,4 +433,4 @@ Focus trap у modals; `aria-label` на ✕; keyboard fly-out/detail; `prefers-r
 
 ---
 
-*Останнє оновлення: 2026-06-17 — #9 ReaderView removed from prod*
+*Останнє оновлення: 2026-06-18 — #10 auth + onboarding parity*

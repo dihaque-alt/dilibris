@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { BrandMark } from './BrandMark';
 import { RoomBackdrop } from './RoomBackdrop';
 
 const onboardKey = (userId: string) => `dilibris_onboarded_${userId}`;
@@ -85,14 +86,19 @@ export function OnboardingWelcome({ userId, userEmail, onComplete }: OnboardingW
       <RoomBackdrop />
       <div className="auth-onboard-wrap">
         <div className="auth-onboard-card">
+          <div className="auth-onboard-brand">
+            <BrandMark />
+            <span>DiLibris</span>
+          </div>
+
           <h1 className="auth-onboard-title">Трохи про тебе</h1>
-          <p className="auth-onboard-sub" style={{ marginBottom: 24 }}>
+          <p className="auth-onboard-sub auth-onboard-sub--who">
             Це налаштуємо зараз — зміниш будь-коли в профілі.
           </p>
 
-          <div className="auth-onboard-actions">
-            <div>
-              <label className="dl-field-label" htmlFor="onboard-name">
+          <div className="auth-onboard-actions auth-onboard-actions--who">
+            <div className="auth-onboard-field-group">
+              <label className="auth-onboard-label" htmlFor="onboard-name">
                 Ім&apos;я
               </label>
               <input
@@ -105,22 +111,20 @@ export function OnboardingWelcome({ userId, userEmail, onComplete }: OnboardingW
               />
             </div>
 
-            <div>
-              <label className="dl-field-label" htmlFor="onboard-target">
+            <div className="auth-onboard-field-group">
+              <label className="auth-onboard-label" htmlFor="onboard-target">
                 Ціль на рік ·{' '}
-                <strong style={{ color: 'var(--accent-lime-deep)', textTransform: 'none' }}>
-                  {target} книг
-                </strong>
+                <strong className="auth-onboard-target-value">{target} книг</strong>
               </label>
               <input
                 id="onboard-target"
                 type="range"
+                className="auth-onboard-range"
                 min={6}
                 max={60}
                 step={1}
                 value={target}
                 onChange={(e) => setTarget(Number(e.target.value))}
-                style={{ width: '100%', accentColor: 'var(--accent-lime)' }}
               />
             </div>
 
@@ -128,8 +132,7 @@ export function OnboardingWelcome({ userId, userEmail, onComplete }: OnboardingW
 
             <button
               type="button"
-              className="dl-primary"
-              style={{ width: '100%', padding: '13px', marginTop: 4 }}
+              className="dl-primary auth-onboard-btn auth-onboard-btn--enter"
               disabled={saving}
               onClick={handleEnter}
             >

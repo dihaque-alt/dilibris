@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
+import { BrandMark } from '../components/BrandMark';
+import { RoomBackdrop } from '../components/RoomBackdrop';
 import { supabase } from '../lib/supabase';
 
 type CallbackState = 'loading' | 'done' | 'error';
@@ -13,8 +15,7 @@ export function AuthCallbackPage() {
 
     async function finishSession() {
       const params = new URLSearchParams(window.location.search);
-      const oauthError =
-        params.get('error_description') ?? params.get('error');
+      const oauthError = params.get('error_description') ?? params.get('error');
 
       if (oauthError) {
         if (!cancelled) {
@@ -27,8 +28,7 @@ export function AuthCallbackPage() {
       const code = params.get('code');
 
       if (code) {
-        const { error: exchangeError } =
-          await supabase.auth.exchangeCodeForSession(code);
+        const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code);
         if (cancelled) return;
 
         if (exchangeError) {
@@ -68,22 +68,36 @@ export function AuthCallbackPage() {
 
   if (state === 'loading') {
     return (
-      <div className="center-page center-page--auth">
-        <p>Завершуємо вхід…</p>
-      </div>
+      <>
+        <RoomBackdrop />
+        <div className="auth-onboard-wrap">
+          <p className="auth-onboard-loading">Завершуємо вхід…</p>
+        </div>
+      </>
     );
   }
 
   if (state === 'error') {
     return (
-      <div className="center-page center-page--auth">
-        <div className="login-card">
-          <p className="form-error">Помилка входу: {error}</p>
-          <Link to="/" className="login-retry-link">
-            Спробувати знову
-          </Link>
+      <>
+        <RoomBackdrop />
+        <div className="auth-onboard-wrap">
+          <div className="auth-onboard-card">
+            <div className="auth-onboard-brand">
+              <BrandMark />
+              <span>DiLibris</span>
+            </div>
+            <h1 className="auth-onboard-title">Не вдалося увійти</h1>
+            <p className="auth-onboard-sub auth-onboard-sub--who">{error}</p>
+            <div className="auth-onboard-actions">
+              <Link to="/" className="dl-primary auth-onboard-btn">
+                Спробувати знову
+              </Link>
+            </div>
+            <div className="auth-onboard-foot">Безкоштовно назавжди · без реклами</div>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 

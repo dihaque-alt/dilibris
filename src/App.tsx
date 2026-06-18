@@ -57,10 +57,12 @@ function AppRoutes() {
 
   if (loading) {
     return (
-      <div className="center-page center-page--auth">
+      <>
         <RoomBackdrop />
-        <p style={{ position: 'relative', zIndex: 2, color: 'var(--ink-room-soft)' }}>Завантаження…</p>
-      </div>
+        <div className="auth-onboard-wrap">
+          <p className="auth-onboard-loading">Завантаження…</p>
+        </div>
+      </>
     );
   }
 
