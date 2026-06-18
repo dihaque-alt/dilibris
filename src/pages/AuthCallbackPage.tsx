@@ -88,13 +88,12 @@ export function AuthCallbackPage() {
               <span>DiLibris</span>
             </div>
             <h1 className="auth-onboard-title">Не вдалося увійти</h1>
-            <p className="auth-onboard-sub auth-onboard-sub--who">{error}</p>
+            {error && <p className="form-error">{error}</p>}
             <div className="auth-onboard-actions">
               <Link to="/" className="dl-primary auth-onboard-btn">
                 Спробувати знову
               </Link>
             </div>
-            <div className="auth-onboard-foot">Безкоштовно назавжди · без реклами</div>
           </div>
         </div>
       </>

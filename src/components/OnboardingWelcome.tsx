@@ -92,9 +92,6 @@ export function OnboardingWelcome({ userId, userEmail, onComplete }: OnboardingW
           </div>
 
           <h1 className="auth-onboard-title">Трохи про тебе</h1>
-          <p className="auth-onboard-sub auth-onboard-sub--who">
-            Це налаштуємо зараз — зміниш будь-коли в профілі.
-          </p>
 
           <div className="auth-onboard-actions auth-onboard-actions--who">
             <div className="auth-onboard-field-group">
@@ -139,8 +136,6 @@ export function OnboardingWelcome({ userId, userEmail, onComplete }: OnboardingW
               {saving ? 'Зберігаємо…' : 'Зайти в бібліотеку'}
             </button>
           </div>
-
-          <div className="auth-onboard-foot">Безкоштовно назавжди · без реклами</div>
         </div>
       </div>
     </>

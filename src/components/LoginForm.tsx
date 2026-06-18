@@ -78,10 +78,6 @@ export function LoginForm() {
         {step === 'email' && (
           <>
             <h1 className="auth-onboard-title">Твоя віртуальна бібліотека</h1>
-            <p className="auth-onboard-sub">
-              Що читаєш, що відклала, з ким — і скільки радості це принесло за рік. Залиш
-              пошту — надішлемо лінк для входу.
-            </p>
 
             <button
               type="button"
@@ -128,10 +124,6 @@ export function LoginForm() {
               ✉
             </div>
             <h1 className="auth-onboard-title">Перевір пошту</h1>
-            <p className="auth-onboard-sub auth-onboard-sub--sent">
-              Лінк для входу полетів на{' '}
-              <strong>{email.trim()}</strong>. Відкрий лист і тицьни «Увійти в DiLibris».
-            </p>
             <div className="auth-onboard-actions">
               <button type="button" className="dl-ghost auth-onboard-btn" onClick={handleResend}>
                 Надіслати ще раз
@@ -144,8 +136,6 @@ export function LoginForm() {
         )}
 
         {message && <p className={status === 'error' ? 'form-error' : 'form-hint'}>{message}</p>}
-
-        <div className="auth-onboard-foot">Безкоштовно назавжди · без реклами</div>
       </div>
     </div>
   );
