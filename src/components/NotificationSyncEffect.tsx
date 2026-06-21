@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { hydrateNotificationTimes, loadNotifications } from '../lib/notificationsStore';
+import { syncNotifications } from '../lib/notificationsStore';
 import { syncActivityNotifications } from '../lib/syncActivityNotifications';
 
 interface NotificationSyncEffectProps {
@@ -10,11 +10,15 @@ export function NotificationSyncEffect({ userId }: NotificationSyncEffectProps) 
   useEffect(() => {
     let cancelled = false;
 
-    (async () => {
+    void (async () => {
       try {
+        await syncNotifications(userId);
+        if (cancelled) return;
         await syncActivityNotifications(userId);
         if (cancelled) return;
-        hydrateNotificationTimes(loadNotifications(userId));
+        await syncNotifications(userId);
+        if (cancelled) return;
+        window.dispatchEvent(new CustomEvent('dilibris:notifications'));
       } catch {
         /* offline / auth edge */
       }

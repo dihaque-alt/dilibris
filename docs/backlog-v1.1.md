@@ -27,7 +27,7 @@
 | 13 | Offline: reviews у черзі sync | ✅ |
 | 14 | Offline: dashboard snapshot | ✅ |
 | 15 | Settings prefs → Supabase | ✅ |
-| 16 | Notifications — прибрати seed, persist | ⬜ |
+| 16 | Notifications — прибрати seed, persist | ✅ |
 | 17 | Re-read (parent_entry_id) | ⬜ |
 | 18 | Dashboard — візуал до прототипу | ⬜ |
 | 19 | Notes feed — візуал + empty state | ⬜ |
@@ -309,7 +309,11 @@
 
 **Готово коли:** немає вигаданих «Час читати» при першому візиті; read state sync між пристроями.
 
-**Файли:** `notificationsStore.ts`, `syncActivityNotifications.ts`, migration (optional `notifications` table)
+**Зроблено (2026-06-18):** `user_notifications` table; seed removed; Supabase persist + local cache; activity sync dedupes by id.
+
+**Файли:** `006_user_notifications.sql`, `notificationsStore.ts`, `syncActivityNotifications.ts`, `NotificationSyncEffect.tsx`
+
+**Міграція prod:** `supabase/migrations/006_user_notifications.sql` на DiLibris PRODUCTION.
 
 ---
 
@@ -449,4 +453,4 @@ Focus trap у modals; `aria-label` на ✕; keyboard fly-out/detail; `prefers-r
 
 ---
 
-*Останнє оновлення: 2026-06-18 — #15 settings prefs Supabase*
+*Останнє оновлення: 2026-06-18 — #16 notifications persist Supabase*

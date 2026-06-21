@@ -1,3 +1,6 @@
+import { isOnline } from './offline/db';
+import { supabase } from './supabase';
+
 export type NotificationKind = 'buddy' | 'challenge' | 'deadline' | 'reminder';
 
 export type NotificationPage = 'library' | 'dashboard' | 'notes' | 'buddy-reads';
@@ -18,8 +21,20 @@ export interface AppNotification {
   go?: NotificationGo;
 }
 
-const KEY = (userId: string) => `dilibris_notifs_${userId}`;
-const SEEN_KEY = (userId: string) => `dilibris_notif_seen_${userId}`;
+interface NotificationRow {
+  user_id: string;
+  id: string;
+  kind: NotificationKind;
+  body: string;
+  read: boolean;
+  created_at: string;
+  go_page: NotificationPage | null;
+  go_buddy_read_id: string | null;
+  go_entry_id: string | null;
+}
+
+const CACHE_KEY = (userId: string) => `dilibris_notifs_${userId}`;
+const LEGACY_SEED_IDS = new Set(['n1', 'n4']);
 
 function relTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -33,35 +48,47 @@ function relTime(iso: string): string {
   return `${days} дн тому`;
 }
 
-function seed(_userId: string): AppNotification[] {
-  const now = Date.now();
-  return [
-    {
-      id: 'n1',
-      kind: 'challenge',
-      text: 'Ти на півдорозі до річної цілі — ще трохи!',
-      time: '2 год тому',
-      read: false,
-      createdAt: new Date(now - 2 * 3600000).toISOString(),
-      go: { page: 'dashboard' },
-    },
-    {
-      id: 'n4',
-      kind: 'reminder',
-      text: 'Тихий вечір — час для кількох сторінок?',
-      time: '3 дні тому',
-      read: true,
-      createdAt: new Date(now - 3 * 86400000).toISOString(),
-      go: { page: 'library' },
-    },
-  ];
+function rowToNotification(row: NotificationRow): AppNotification {
+  return {
+    id: row.id,
+    kind: row.kind,
+    text: row.body,
+    read: row.read,
+    createdAt: row.created_at,
+    time: relTime(row.created_at),
+    go: row.go_page
+      ? {
+          page: row.go_page,
+          buddyReadId: row.go_buddy_read_id ?? undefined,
+          entryId: row.go_entry_id ?? undefined,
+        }
+      : undefined,
+  };
 }
 
-export function loadNotifications(userId: string): AppNotification[] {
+function notificationToRow(userId: string, notification: AppNotification): NotificationRow {
+  return {
+    user_id: userId,
+    id: notification.id,
+    kind: notification.kind,
+    body: notification.text,
+    read: notification.read,
+    created_at: notification.createdAt,
+    go_page: notification.go?.page ?? null,
+    go_buddy_read_id: notification.go?.buddyReadId ?? null,
+    go_entry_id: notification.go?.entryId ?? null,
+  };
+}
+
+function withoutLegacySeed(items: AppNotification[]): AppNotification[] {
+  return items.filter((n) => !LEGACY_SEED_IDS.has(n.id));
+}
+
+function loadCachedNotifications(userId: string): AppNotification[] {
   try {
-    const raw = localStorage.getItem(KEY(userId));
+    const raw = localStorage.getItem(CACHE_KEY(userId));
     if (raw) {
-      const items = (JSON.parse(raw) as AppNotification[]).map((n, i) => ({
+      const items = withoutLegacySeed(JSON.parse(raw) as AppNotification[]).map((n, i) => ({
         ...n,
         createdAt: n.createdAt ?? new Date(Date.now() - i * 3600000).toISOString(),
       }));
@@ -70,43 +97,126 @@ export function loadNotifications(userId: string): AppNotification[] {
   } catch {
     /* ignore */
   }
-  const initial = seed(userId);
-  saveNotifications(userId, initial);
-  return initial;
+  return [];
 }
 
-export function saveNotifications(userId: string, items: AppNotification[]) {
-  localStorage.setItem(KEY(userId), JSON.stringify(items));
+function cacheNotifications(userId: string, items: AppNotification[]) {
+  localStorage.setItem(CACHE_KEY(userId), JSON.stringify(withoutLegacySeed(items).slice(0, 40)));
+}
+
+async function fetchRemoteNotifications(userId: string): Promise<AppNotification[]> {
+  const { data, error } = await supabase
+    .from('user_notifications')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(40);
+
+  if (error) throw error;
+  return (data as NotificationRow[]).map(rowToNotification);
+}
+
+async function upsertNotifications(userId: string, items: AppNotification[]): Promise<void> {
+  if (!items.length) return;
+  const rows = items.map((item) => notificationToRow(userId, item));
+  const { error } = await supabase.from('user_notifications').upsert(rows, {
+    onConflict: 'user_id,id',
+    ignoreDuplicates: true,
+  });
+  if (error) throw error;
+}
+
+async function flushCachedReadState(userId: string, remote: AppNotification[]): Promise<void> {
+  const cached = loadCachedNotifications(userId);
+  await Promise.all(
+    cached
+      .filter((item) => item.read && !remote.find((row) => row.id === item.id)?.read)
+      .map((item) =>
+        supabase
+          .from('user_notifications')
+          .update({ read: true })
+          .eq('user_id', userId)
+          .eq('id', item.id),
+      ),
+  );
+}
+
+export function loadNotifications(userId: string): AppNotification[] {
+  return hydrateNotificationTimes(loadCachedNotifications(userId));
+}
+
+export async function syncNotifications(userId: string): Promise<AppNotification[]> {
+  const cached = loadCachedNotifications(userId);
+
+  if (!isOnline()) {
+    return hydrateNotificationTimes(cached);
+  }
+
+  try {
+    let remote = await fetchRemoteNotifications(userId);
+
+    if (remote.length === 0 && cached.length > 0) {
+      await upsertNotifications(userId, cached);
+      remote = await fetchRemoteNotifications(userId);
+    } else if (remote.length > 0) {
+      await flushCachedReadState(userId, remote);
+      remote = await fetchRemoteNotifications(userId);
+    }
+
+    cacheNotifications(userId, remote);
+    return hydrateNotificationTimes(remote);
+  } catch {
+    return hydrateNotificationTimes(cached);
+  }
 }
 
 export function markNotifRead(userId: string, id: string): AppNotification[] {
-  const items = loadNotifications(userId).map((n) =>
+  const items = loadCachedNotifications(userId).map((n) =>
     n.id === id ? { ...n, read: true } : n,
   );
-  saveNotifications(userId, items);
-  return items;
+  cacheNotifications(userId, items);
+
+  if (isOnline()) {
+    void supabase
+      .from('user_notifications')
+      .update({ read: true })
+      .eq('user_id', userId)
+      .eq('id', id);
+  }
+
+  return hydrateNotificationTimes(items);
 }
 
 export function markAllNotifsRead(userId: string): AppNotification[] {
-  const items = loadNotifications(userId).map((n) => ({ ...n, read: true }));
-  saveNotifications(userId, items);
-  return items;
+  const items = loadCachedNotifications(userId).map((n) => ({ ...n, read: true }));
+  cacheNotifications(userId, items);
+
+  if (isOnline()) {
+    void supabase.from('user_notifications').update({ read: true }).eq('user_id', userId);
+  }
+
+  return hydrateNotificationTimes(items);
 }
 
 export function notifGlyph(kind: NotificationKind): string {
   return { buddy: '💬', challenge: '✦', deadline: '⏳', reminder: '☾' }[kind] ?? '•';
 }
 
-export function addNotification(
+export async function addNotification(
   userId: string,
   partial: Omit<AppNotification, 'id' | 'time' | 'read' | 'createdAt'> & {
     id?: string;
     createdAt?: string;
     read?: boolean;
   },
-): AppNotification[] {
+): Promise<AppNotification[]> {
   const createdAt = partial.createdAt ?? new Date().toISOString();
   const id = partial.id ?? `n-${createdAt}-${Math.random().toString(36).slice(2, 8)}`;
+
+  if (loadCachedNotifications(userId).some((n) => n.id === id)) {
+    return hydrateNotificationTimes(loadCachedNotifications(userId));
+  }
+
   const next: AppNotification = {
     id,
     kind: partial.kind,
@@ -117,28 +227,35 @@ export function addNotification(
     time: relTime(createdAt),
   };
 
-  const items = loadNotifications(userId).filter((n) => n.id !== id);
-  items.unshift(next);
-  saveNotifications(userId, items.slice(0, 40));
-  window.dispatchEvent(new CustomEvent('dilibris:notifications'));
-  return items;
-}
+  const items = [next, ...loadCachedNotifications(userId)].slice(0, 40);
+  cacheNotifications(userId, items);
 
-export function loadNotifSeen(userId: string): Record<string, string> {
-  try {
-    const raw = localStorage.getItem(SEEN_KEY(userId));
-    if (raw) return JSON.parse(raw) as Record<string, string>;
-  } catch {
-    /* ignore */
+  if (isOnline()) {
+    const { error } = await supabase.from('user_notifications').upsert(notificationToRow(userId, next), {
+      onConflict: 'user_id,id',
+      ignoreDuplicates: true,
+    });
+    if (error) throw error;
   }
-  return {};
-}
 
-export function saveNotifSeen(userId: string, seen: Record<string, string>) {
-  localStorage.setItem(SEEN_KEY(userId), JSON.stringify(seen));
+  window.dispatchEvent(new CustomEvent('dilibris:notifications'));
+  return hydrateNotificationTimes(items);
 }
 
 /** Refresh relative time labels after load. */
 export function hydrateNotificationTimes(items: AppNotification[]): AppNotification[] {
   return items.map((n) => ({ ...n, time: relTime(n.createdAt) }));
+}
+
+export async function loadExistingNotificationIds(userId: string): Promise<Set<string>> {
+  if (isOnline()) {
+    try {
+      const remote = await fetchRemoteNotifications(userId);
+      cacheNotifications(userId, remote);
+      return new Set(remote.map((n) => n.id));
+    } catch {
+      /* fall through */
+    }
+  }
+  return new Set(loadCachedNotifications(userId).map((n) => n.id));
 }
