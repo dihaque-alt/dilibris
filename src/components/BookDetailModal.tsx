@@ -7,6 +7,7 @@ import { StatusPill } from './StatusPill';
 import { daysBetween, todayIsoDate } from '../lib/dates';
 import {
   addSession,
+  deleteEntry,
   deleteSession,
   fetchEntry,
   fetchSessions,
@@ -26,6 +27,7 @@ interface BookDetailModalProps {
   userId: string;
   onClose: () => void;
   onUpdated: () => void;
+  onDeleted?: () => void;
   onSession?: () => void;
 }
 
@@ -41,6 +43,7 @@ export function BookDetailModal({
   userId,
   onClose,
   onUpdated,
+  onDeleted,
   onSession,
 }: BookDetailModalProps) {
   const mobile = useIsMobile();
@@ -61,6 +64,7 @@ export function BookDetailModal({
   const [sessions, setSessions] = useState<ReadingSession[]>([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
   const [showSessionForm, setShowSessionForm] = useState(false);
 
@@ -242,6 +246,30 @@ export function BookDetailModal({
     await loadSessions();
     await refreshPending();
     onUpdated();
+  }
+
+  async function handleDeleteEntry() {
+    const title = book?.title ?? 'Книга';
+    if (
+      !window.confirm(
+        `Видалити «${title}» з бібліотеки? Сесії та нотатки до цієї книги теж зникнуть.`,
+      )
+    ) {
+      return;
+    }
+
+    setDeleting(true);
+    setError('');
+
+    try {
+      await deleteEntry(userId, entry.id);
+      await refreshPending();
+      onDeleted?.();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Не вдалося видалити книгу');
+      setDeleting(false);
+    }
   }
 
   return createPortal(
@@ -564,7 +592,15 @@ export function BookDetailModal({
         </div>
 
         <footer className="dl-detail-footer">
-          <button type="button" className="dl-ghost" onClick={onClose}>
+          <button
+            type="button"
+            className="dl-danger dl-detail-footer-delete"
+            disabled={deleting || saving}
+            onClick={() => void handleDeleteEntry()}
+          >
+            {deleting ? 'Видаляємо…' : 'Видалити'}
+          </button>
+          <button type="button" className="dl-ghost" disabled={deleting} onClick={onClose}>
             Скасувати
           </button>
           {footerSubmitFormId ? (
@@ -572,12 +608,12 @@ export function BookDetailModal({
               type="submit"
               form={footerSubmitFormId}
               className="dl-primary"
-              disabled={footerSaving}
+              disabled={footerSaving || deleting}
             >
               {footerSaving ? 'Зберігаємо…' : 'Зберегти'}
             </button>
           ) : (
-            <button type="button" className="dl-primary" onClick={onClose}>
+            <button type="button" className="dl-primary" disabled={deleting} onClick={onClose}>
               Готово
             </button>
           )}

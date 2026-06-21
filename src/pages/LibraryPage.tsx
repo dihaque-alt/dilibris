@@ -470,6 +470,11 @@ export function LibraryPage({ userId, userEmail }: LibraryPageProps) {
             const updated = await fetchEntry(selectedEntry.id);
             if (updated) setSelectedEntry(updated);
           }}
+          onDeleted={async () => {
+            await loadLibrary();
+            await refreshPending();
+            setSelectedEntry(null);
+          }}
           onSession={() => {
             const e = selectedEntry;
             setSelectedEntry(null);

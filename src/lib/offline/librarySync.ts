@@ -1,5 +1,5 @@
 import { supabase } from '../supabase';
-import { flushActiveSession } from './activeSessionSync';
+import { clearActiveSession, flushActiveSession } from './activeSessionSync';
 import { offlineDb, isOnline, nowIso, type PendingOp } from './db';
 import type { BookEntryStatus, ReadingSession, UserBookEntry, UserShelf } from '../../types/database';
 
@@ -149,6 +149,32 @@ export async function deleteShelf(userId: string, shelfId: string) {
   }
 
   await enqueue(userId, { table: 'user_shelves', operation: 'delete', payload: { id: shelfId } });
+}
+
+export async function deleteEntry(userId: string, entryId: string) {
+  const activeSession = await offlineDb.activeSessions.get(userId);
+  if (activeSession?.entry_id === entryId) {
+    await clearActiveSession(userId);
+  }
+
+  const sessionIds = await offlineDb.sessions.where('entry_id').equals(entryId).primaryKeys();
+  if (sessionIds.length > 0) {
+    await offlineDb.sessions.bulkDelete(sessionIds);
+  }
+
+  await offlineDb.entries.delete(entryId);
+
+  if (isOnline()) {
+    const { error } = await supabase.from('user_book_entries').delete().eq('id', entryId);
+    if (error) throw error;
+    return;
+  }
+
+  await enqueue(userId, {
+    table: 'user_book_entries',
+    operation: 'delete',
+    payload: { id: entryId },
+  });
 }
 
 export async function addBook(

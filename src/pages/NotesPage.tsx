@@ -184,6 +184,11 @@ export function NotesPage({ userId, userEmail }: NotesPageProps) {
           userId={userId}
           onClose={() => setSelectedEntry(null)}
           onUpdated={() => refreshEntry(selectedEntry.id)}
+          onDeleted={async () => {
+            setSelectedEntry(null);
+            const next = await fetchAllUserNotes(userId);
+            setItems(next);
+          }}
           onSession={() => {
             const e = selectedEntry;
             setSelectedEntry(null);
