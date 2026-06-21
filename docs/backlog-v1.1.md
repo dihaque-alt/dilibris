@@ -23,7 +23,7 @@
 | 9 | ReaderView — рішення (stub / прибрати / залишити) | ✅ |
 | 10 | Auth + onboarding — візуал і копі | ✅ |
 | 11 | Onboarding — persist у Supabase | ✅ |
-| 12 | Offline: notes у черзі sync | ⬜ |
+| 12 | Offline: notes у черзі sync | ✅ |
 | 13 | Offline: reviews у черзі sync | ⬜ |
 | 14 | Offline: dashboard snapshot | ⬜ |
 | 15 | Settings prefs → Supabase | ⬜ |
@@ -249,7 +249,9 @@
 
 **Готово коли:** додана нотатка offline з’являється після reconnect на іншому пристрої.
 
-**Файли:** `db.ts`, `librarySync.ts` або `notesSync.ts`, `BookNotesSection.tsx`, `notesFeed.ts`
+**Зроблено (2026-06-18):** Dexie `notes`; `notesSync.ts` (read cache, write queue, LWW on flush); `BookNotesSection` + feed через offline шар.
+
+**Файли:** `db.ts`, `notesSync.ts`, `librarySync.ts`, `BookNotesSection.tsx`, `notesFeed.ts`
 
 ---
 
@@ -437,4 +439,4 @@ Focus trap у modals; `aria-label` на ✕; keyboard fly-out/detail; `prefers-r
 
 ---
 
-*Останнє оновлення: 2026-06-18 — #11 onboarding persist Supabase*
+*Останнє оновлення: 2026-06-18 — #12 offline notes sync*

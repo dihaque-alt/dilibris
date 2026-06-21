@@ -1,5 +1,6 @@
 import { supabase } from '../supabase';
 import { clearActiveSession, flushActiveSession } from './activeSessionSync';
+import { executeNoteOp, refreshUserNotesCache } from './notesSync';
 import { offlineDb, isOnline, nowIso, type PendingOp } from './db';
 import type { BookEntryStatus, ReadingSession, UserBookEntry, UserShelf } from '../../types/database';
 
@@ -536,7 +537,8 @@ async function executeOp(op: PendingOp) {
         op.table === 'user_shelves' ||
         op.table === 'books' ||
         op.table === 'user_book_entries' ||
-        op.table === 'reading_sessions'
+        op.table === 'reading_sessions' ||
+        op.table === 'notes'
       ) {
         const { error } = await supabase.from(op.table).insert(op.payload);
         if (error) throw error;
@@ -577,7 +579,11 @@ export async function flushPendingOps(userId: string): Promise<{ synced: number;
 
   for (const op of ops) {
     try {
-      await executeOp(op);
+      if (op.table === 'notes') {
+        await executeNoteOp(op);
+      } else {
+        await executeOp(op);
+      }
       await offlineDb.pendingOps.delete(op.id);
       synced++;
     } catch {
@@ -587,6 +593,7 @@ export async function flushPendingOps(userId: string): Promise<{ synced: number;
 
   if (synced > 0) {
     await fetchLibrary(userId);
+    await refreshUserNotesCache(userId);
   }
 
   return { synced, failed };

@@ -1,9 +1,15 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { supabase } from '../lib/supabase';
 import { formatDateTimeUk } from '../lib/dates';
 import { NOTE_TYPE_LABELS, NOTE_VISIBILITY_LABELS } from '../lib/labels';
+import {
+  deleteNote,
+  fetchNotesForEntry,
+  saveNote,
+  type NoteWritePayload,
+} from '../lib/offline/notesSync';
 import { loadLocalPrefs } from '../lib/userSettings';
 import type { Note, NoteType, NoteVisibility } from '../types/database';
+import { useOffline } from './OfflineProvider';
 
 interface BookNotesSectionProps {
   bookId: string;
@@ -54,6 +60,7 @@ export function BookNotesSection({
   onFormOpenChange,
   onSavingChange,
 }: BookNotesSectionProps) {
+  const { refreshPending } = useOffline();
   const [ownNotes, setOwnNotes] = useState<Note[]>([]);
   const [publicNotes, setPublicNotes] = useState<Note[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,31 +77,9 @@ export function BookNotesSection({
   const [containsSpoilers, setContainsSpoilers] = useState(false);
 
   const loadNotes = useCallback(async () => {
-    const [ownResult, publicResult] = await Promise.all([
-      supabase
-        .from('notes')
-        .select('*')
-        .eq('entry_id', entryId)
-        .is('buddy_read_id', null)
-        .order('created_at', { ascending: false }),
-      supabase
-        .from('notes')
-        .select(`
-          *,
-          profile:profiles (display_name, avatar_url)
-        `)
-        .eq('book_id', bookId)
-        .eq('visibility', 'public')
-        .neq('user_id', userId)
-        .is('buddy_read_id', null)
-        .order('created_at', { ascending: false }),
-    ]);
-
-    if (ownResult.error) throw ownResult.error;
-    if (publicResult.error) throw publicResult.error;
-
-    setOwnNotes((ownResult.data as Note[]) ?? []);
-    setPublicNotes((publicResult.data as Note[]) ?? []);
+    const { ownNotes: own, publicNotes: pub } = await fetchNotesForEntry(userId, entryId, bookId);
+    setOwnNotes(own);
+    setPublicNotes(pub);
   }, [bookId, entryId, userId]);
 
   useEffect(() => {
@@ -168,7 +153,7 @@ export function BookNotesSection({
     setSaving(true);
     setError('');
 
-    const payload = {
+    const payload: NoteWritePayload = {
       note_type: noteType,
       visibility,
       body: body.trim(),
@@ -177,28 +162,16 @@ export function BookNotesSection({
       contains_spoilers: containsSpoilers,
     };
 
-    const { data, error: saveError } = editingId
-      ? await supabase.from('notes').update(payload).eq('id', editingId).select('id').single()
-      : await supabase.from('notes').insert({
-          ...payload,
-          user_id: userId,
-          entry_id: entryId,
-          book_id: bookId,
-        }).select('id').single();
-
-    if (saveError) {
-      setError(saveError.message);
-      setSaving(false);
-      return;
-    }
-
-    if (!data) {
-      setError('Не вдалося зберегти нотатку — спробуй ще раз');
+    try {
+      await saveNote(userId, entryId, bookId, editingId, payload);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Не вдалося зберегти нотатку');
       setSaving(false);
       return;
     }
 
     await loadNotes();
+    await refreshPending();
     closeForm();
     setSaving(false);
   }
@@ -207,14 +180,16 @@ export function BookNotesSection({
     if (!window.confirm('Видалити нотатку?')) return;
     setError('');
 
-    const { error: deleteError } = await supabase.from('notes').delete().eq('id', noteId);
-    if (deleteError) {
-      setError(deleteError.message);
+    try {
+      await deleteNote(userId, noteId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Не вдалося видалити нотатку');
       return;
     }
 
     if (editingId === noteId) closeForm();
     await loadNotes();
+    await refreshPending();
   }
 
   function renderNoteMeta(note: Note) {
