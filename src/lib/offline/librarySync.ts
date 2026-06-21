@@ -3,7 +3,8 @@ import { clearActiveSession, flushActiveSession } from './activeSessionSync';
 import { executeNoteOp, refreshUserNotesCache } from './notesSync';
 import { executeReviewOp, refreshUserReviewsCache } from './reviewsSync';
 import { offlineDb, isOnline, nowIso, type PendingOp } from './db';
-import type { BookEntryStatus, ReadingSession, UserBookEntry, UserShelf } from '../../types/database';
+import type { BookEntryStatus, ReadingFormat, ReadingSession, UserBookEntry, UserShelf } from '../../types/database';
+import { todayIsoDate } from '../dates';
 
 const ENTRY_SELECT = `
   *,
@@ -303,6 +304,78 @@ export async function updateEntry(userId: string, entryId: string, patch: Record
     operation: 'update',
     payload: { id: entryId, ...patch },
   });
+}
+
+async function resolveRereadShelfId(userId: string, parent: UserBookEntry): Promise<string | null> {
+  const reReadShelf = await offlineDb.shelves
+    .where('user_id')
+    .equals(userId)
+    .filter((shelf) => shelf.status_filter === 're_reading')
+    .first();
+  return reReadShelf?.id ?? parent.shelf_id;
+}
+
+/** Create a child entry for a new re-read; parent finished record stays unchanged. */
+export async function createRereadEntry(
+  userId: string,
+  parent: UserBookEntry,
+  opts: {
+    countsTowardStats: boolean;
+    format?: ReadingFormat | null;
+  },
+): Promise<UserBookEntry> {
+  const entryId = crypto.randomUUID();
+  const startedOn = todayIsoDate();
+  const shelfId = await resolveRereadShelfId(userId, parent);
+
+  const child: UserBookEntry = {
+    id: entryId,
+    user_id: userId,
+    book_id: parent.book_id,
+    shelf_id: shelfId,
+    parent_entry_id: parent.id,
+    status: 're_reading',
+    format: opts.format ?? parent.format ?? null,
+    rating: null,
+    current_page: 0,
+    total_pages: parent.total_pages ?? parent.book?.page_count ?? null,
+    total_minutes: 0,
+    started_on: startedOn,
+    finished_on: null,
+    counts_toward_stats: opts.countsTowardStats,
+    book: parent.book,
+  };
+
+  await offlineDb.entries.put(child);
+
+  const insertPayload = {
+    id: entryId,
+    user_id: userId,
+    book_id: parent.book_id,
+    shelf_id: shelfId,
+    parent_entry_id: parent.id,
+    status: 're_reading' as const,
+    format: child.format,
+    total_pages: child.total_pages,
+    current_page: 0,
+    total_minutes: 0,
+    started_on: startedOn,
+    counts_toward_stats: opts.countsTowardStats,
+  };
+
+  if (isOnline()) {
+    const { error } = await supabase.from('user_book_entries').insert(insertPayload);
+    if (error) throw error;
+    return child;
+  }
+
+  await enqueue(userId, {
+    table: 'user_book_entries',
+    operation: 'insert',
+    payload: insertPayload,
+  });
+
+  return child;
 }
 
 export async function renameShelf(userId: string, shelfId: string, name: string) {

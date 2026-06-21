@@ -57,6 +57,7 @@ export interface UserBookEntry {
   started_on: string | null;
   finished_on: string | null;
   counts_toward_stats: boolean;
+  parent_entry_id?: string | null;
   updated_at?: string;
   book?: Book;
 }

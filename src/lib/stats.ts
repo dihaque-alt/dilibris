@@ -56,7 +56,11 @@ export function entryToStatsEntry(entry: UserBookEntry): StatsEntry {
 }
 
 export function finishedForStats(entries: StatsEntry[]): StatsEntry[] {
-  return entries.filter((e) => e.status === 'finished' && e.counts_toward_stats);
+  return entries.filter((e) => {
+    if (!e.counts_toward_stats) return false;
+    if (e.status === 'finished') return true;
+    return e.status === 're_reading' && Boolean(e.finished_on);
+  });
 }
 
 export function finishedInYear(entries: StatsEntry[], year: number): StatsEntry[] {

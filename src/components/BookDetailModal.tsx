@@ -7,6 +7,7 @@ import { StatusPill } from './StatusPill';
 import { daysBetween, todayIsoDate } from '../lib/dates';
 import {
   addSession,
+  createRereadEntry,
   deleteEntry,
   deleteSession,
   fetchEntry,
@@ -162,6 +163,41 @@ export function BookDetailModal({
     setSaving(true);
     setError('');
 
+    const startingReread =
+      status === 're_reading' &&
+      entry.status !== 're_reading' &&
+      !entry.parent_entry_id &&
+      entry.status === 'finished';
+
+    if (startingReread) {
+      if (
+        !window.confirm(
+          'Почати новий прохід? Попереднє прочитання збережеться окремо — зʼявиться новий запис на полиці.',
+        )
+      ) {
+        setStatus(entry.status);
+        setSaving(false);
+        return;
+      }
+
+      try {
+        await createRereadEntry(userId, entry, {
+          countsTowardStats: countsTowardStats,
+          format: format || null,
+        });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Не вдалося створити перечитання');
+        setSaving(false);
+        return;
+      }
+
+      await refreshPending();
+      onUpdated();
+      setSaving(false);
+      onClose();
+      return;
+    }
+
     let nextStarted = startedOn || null;
     let nextFinished = finishedOn || null;
 
@@ -303,6 +339,11 @@ export function BookDetailModal({
             <h2 id="book-detail-title">{book?.title}</h2>
             <p>{formatAuthors(book?.authors)}</p>
             <StatusPill status={status} size="sm" />
+            {entry.parent_entry_id && (
+              <p className="form-hint" style={{ marginTop: 6 }}>
+                Перечитання · попередній прохід збережено
+              </p>
+            )}
           </div>
           <button type="button" className="dl-close" onClick={onClose} aria-label="Закрити">
             ×

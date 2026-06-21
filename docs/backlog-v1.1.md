@@ -28,7 +28,7 @@
 | 14 | Offline: dashboard snapshot | ✅ |
 | 15 | Settings prefs → Supabase | ✅ |
 | 16 | Notifications — прибрати seed, persist | ✅ |
-| 17 | Re-read (parent_entry_id) | ⬜ |
+| 17 | Re-read (parent_entry_id) | ✅ |
 | 18 | Dashboard — візуал до прототипу | ⬜ |
 | 19 | Notes feed — візуал + empty state | ⬜ |
 | 20 | Buddy list — обкладинки + картки | ⬜ |
@@ -327,7 +327,9 @@
 
 **Готово коли:** друге перечитання не перезаписує перше; challenge коректний.
 
-**Файли:** `BookDetailModal.tsx`, `librarySync.ts`, `lib/stats.ts`
+**Зроблено (2026-06-18):** `createRereadEntry` + confirm при finished→re_reading; parent лишається; toggle challenge на child; stats враховують `counts_toward_stats` + re_reading з `finished_on`.
+
+**Файли:** `BookDetailModal.tsx`, `librarySync.ts`, `stats.ts`, `database.ts`
 
 ---
 
@@ -453,4 +455,4 @@ Focus trap у modals; `aria-label` на ✕; keyboard fly-out/detail; `prefers-r
 
 ---
 
-*Останнє оновлення: 2026-06-18 — #16 notifications persist Supabase*
+*Останнє оновлення: 2026-06-18 — #17 re-read parent_entry_id*
