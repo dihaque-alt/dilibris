@@ -25,7 +25,7 @@
 | 11 | Onboarding — persist у Supabase | ✅ |
 | 12 | Offline: notes у черзі sync | ✅ |
 | 13 | Offline: reviews у черзі sync | ✅ |
-| 14 | Offline: dashboard snapshot | ⬜ |
+| 14 | Offline: dashboard snapshot | ✅ |
 | 15 | Settings prefs → Supabase | ⬜ |
 | 16 | Notifications — прибрати seed, persist | ⬜ |
 | 17 | Re-read (parent_entry_id) | ⬜ |
@@ -275,7 +275,9 @@
 
 **Готово коли:** `/dashboard` не пустий offline після хоча б одного візиту online.
 
-**Файли:** `DashboardPage.tsx`, `lib/stats.ts`, `db.ts`
+**Зроблено (2026-06-18):** Dexie `dashboardSnapshots`; `dashboardSync.ts`; badge «Дані станом на …»; fallback з кешу бібліотеки.
+
+**Файли:** `db.ts`, `dashboardSync.ts`, `stats.ts`, `DashboardPage.tsx`
 
 ---
 
@@ -443,4 +445,4 @@ Focus trap у modals; `aria-label` на ✕; keyboard fly-out/detail; `prefers-r
 
 ---
 
-*Останнє оновлення: 2026-06-18 — #13 offline reviews sync*
+*Останнє оновлення: 2026-06-18 — #14 offline dashboard snapshot*

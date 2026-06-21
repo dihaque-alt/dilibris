@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
 import { AppNav } from '../components/AppNav';
 import { ChallengeBar } from '../components/ChallengeBar';
 import { FormatDonut } from '../components/FormatDonut';
@@ -6,6 +6,9 @@ import { PageHead } from '../components/PageHead';
 import { RoomBackdrop } from '../components/RoomBackdrop';
 import { StatBarRow } from '../components/StatBarRow';
 import { useIsMobile } from '../hooks/useIsMobile';
+import { formatDateTimeUk } from '../lib/dates';
+import { fetchDashboardData } from '../lib/offline/dashboardSync';
+import { isOnline } from '../lib/offline/db';
 import { supabase } from '../lib/supabase';
 import { formatMinutes, formatStarRating } from '../lib/rating';
 import {
@@ -78,41 +81,26 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [entries, setEntries] = useState<StatsEntry[]>([]);
-  const [challenge, setChallenge] = useState<ReadingChallenge | null>(null);
+  const [challenges, setChallenges] = useState<ReadingChallenge[]>([]);
+  const [fromCache, setFromCache] = useState(false);
+  const [cachedAt, setCachedAt] = useState<string | null>(null);
   const [targetBooks, setTargetBooks] = useState('12');
   const [loading, setLoading] = useState(true);
   const [savingChallenge, setSavingChallenge] = useState(false);
   const [error, setError] = useState('');
 
+  const challenge = useMemo(
+    () => challenges.find((c) => c.year === selectedYear) ?? null,
+    [challenges, selectedYear],
+  );
+
   const loadData = useCallback(async () => {
-    const [entriesResult, challengeResult] = await Promise.all([
-      supabase
-        .from('user_book_entries')
-        .select(`
-          id, status, counts_toward_stats, finished_on, started_on,
-          rating, total_pages, total_minutes, format,
-          book:books (title, authors, language, page_count)
-        `)
-        .eq('user_id', userId),
-      supabase
-        .from('reading_challenges')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('year', selectedYear)
-        .maybeSingle(),
-    ]);
-
-    if (entriesResult.error) throw entriesResult.error;
-    if (challengeResult.error) throw challengeResult.error;
-
-    setEntries((entriesResult.data as unknown as StatsEntry[]) ?? []);
-    setChallenge((challengeResult.data as ReadingChallenge | null) ?? null);
-    if (challengeResult.data) {
-      setTargetBooks(String(challengeResult.data.target_books));
-    } else {
-      setTargetBooks('12');
-    }
-  }, [userId, selectedYear]);
+    const data = await fetchDashboardData(userId);
+    setEntries(data.entries);
+    setChallenges(data.challenges);
+    setFromCache(data.fromCache);
+    setCachedAt(data.cachedAt);
+  }, [userId]);
 
   useEffect(() => {
     setLoading(true);
@@ -123,6 +111,14 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
       })
       .finally(() => setLoading(false));
   }, [loadData]);
+
+  useEffect(() => {
+    if (challenge) {
+      setTargetBooks(String(challenge.target_books));
+    } else {
+      setTargetBooks('12');
+    }
+  }, [challenge]);
 
   const yearOptions = availableYears(entries);
   const finishedThisYear = finishedInYear(entries, selectedYear);
@@ -151,6 +147,11 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
 
   async function handleSaveChallenge(e: FormEvent) {
     e.preventDefault();
+    if (!isOnline()) {
+      setError('Зберегти ціль можна лише з підключенням до інternet');
+      return;
+    }
+
     const parsed = parseInt(targetBooks, 10);
     if (!Number.isFinite(parsed) || parsed < 0) {
       setError('Ціль має бути числом від 0');
@@ -182,7 +183,11 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
       return;
     }
 
-    setChallenge(data as ReadingChallenge);
+    setChallenges((prev) => {
+      const rest = prev.filter((c) => c.year !== selectedYear);
+      return [...rest, data as ReadingChallenge];
+    });
+    await loadData();
     setSavingChallenge(false);
   }
 
@@ -202,6 +207,12 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
     <div className="app-shell">
       <RoomBackdrop />
       <AppNav userEmail={userEmail} userId={userId} active="dashboard" />
+
+      {fromCache && cachedAt && (
+        <p className="offline-hint">
+          Дані станом на {formatDateTimeUk(cachedAt)}.
+        </p>
+      )}
 
       <main className="dl-page dashboard-page">
         <PageHead
@@ -253,7 +264,7 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
                 onChange={(e) => setTargetBooks(e.target.value)}
               />
             </label>
-            <button type="submit" className="dl-ghost" disabled={savingChallenge}>
+            <button type="submit" className="dl-ghost" disabled={savingChallenge || !isOnline()}>
               {savingChallenge ? 'Зберігаємо…' : 'Зберегти ціль'}
             </button>
           </form>

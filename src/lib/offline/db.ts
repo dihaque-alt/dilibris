@@ -4,10 +4,19 @@ import type {
   Book,
   Note,
   Review,
+  ReadingChallenge,
   ReadingSession,
   UserBookEntry,
   UserShelf,
 } from '../../types/database';
+import type { StatsEntry } from '../stats';
+
+export interface DashboardSnapshot {
+  user_id: string;
+  entries: StatsEntry[];
+  challenges: ReadingChallenge[];
+  cached_at: string;
+}
 
 export interface PendingOp {
   id: string;
@@ -30,6 +39,7 @@ class DiLibrisOfflineDB extends Dexie {
   activeSessions!: EntityTable<ActiveReadingSessionLocal, 'user_id'>;
   notes!: EntityTable<Note, 'id'>;
   reviews!: EntityTable<Review, 'id'>;
+  dashboardSnapshots!: EntityTable<DashboardSnapshot, 'user_id'>;
   pendingOps!: EntityTable<PendingOp, 'id'>;
 
   constructor() {
@@ -66,6 +76,17 @@ class DiLibrisOfflineDB extends Dexie {
       activeSessions: 'user_id, entry_id',
       notes: 'id, user_id, entry_id, book_id, updated_at',
       reviews: 'id, user_id, book_id, entry_id, updated_at',
+      pendingOps: 'id, userId, createdAt',
+    });
+    this.version(5).stores({
+      shelves: 'id, user_id',
+      entries: 'id, user_id, shelf_id, book_id',
+      books: 'id',
+      sessions: 'id, entry_id',
+      activeSessions: 'user_id, entry_id',
+      notes: 'id, user_id, entry_id, book_id, updated_at',
+      reviews: 'id, user_id, book_id, entry_id, updated_at',
+      dashboardSnapshots: 'user_id',
       pendingOps: 'id, userId, createdAt',
     });
   }

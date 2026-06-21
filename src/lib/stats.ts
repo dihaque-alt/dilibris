@@ -1,3 +1,5 @@
+import type { UserBookEntry } from '../types/database';
+
 export interface StatsEntry {
   id: string;
   status: string;
@@ -30,6 +32,28 @@ export const MONTH_NAMES_UK = [
   'Лис',
   'Гру',
 ];
+
+export function entryToStatsEntry(entry: UserBookEntry): StatsEntry {
+  return {
+    id: entry.id,
+    status: entry.status,
+    counts_toward_stats: entry.counts_toward_stats,
+    finished_on: entry.finished_on,
+    started_on: entry.started_on,
+    rating: entry.rating,
+    total_pages: entry.total_pages,
+    total_minutes: entry.total_minutes,
+    format: entry.format,
+    book: entry.book
+      ? {
+          title: entry.book.title,
+          authors: entry.book.authors,
+          language: entry.book.language,
+          page_count: entry.book.page_count,
+        }
+      : undefined,
+  };
+}
 
 export function finishedForStats(entries: StatsEntry[]): StatsEntry[] {
   return entries.filter((e) => e.status === 'finished' && e.counts_toward_stats);
