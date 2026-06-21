@@ -3,6 +3,7 @@ import type {
   ActiveReadingSession,
   Book,
   Note,
+  Review,
   ReadingSession,
   UserBookEntry,
   UserShelf,
@@ -11,7 +12,7 @@ import type {
 export interface PendingOp {
   id: string;
   userId: string;
-  table: 'user_shelves' | 'books' | 'user_book_entries' | 'reading_sessions' | 'active_reading_sessions' | 'notes';
+  table: 'user_shelves' | 'books' | 'user_book_entries' | 'reading_sessions' | 'active_reading_sessions' | 'notes' | 'reviews';
   operation: 'insert' | 'update' | 'delete';
   payload: Record<string, unknown>;
   createdAt: number;
@@ -28,6 +29,7 @@ class DiLibrisOfflineDB extends Dexie {
   sessions!: EntityTable<ReadingSession, 'id'>;
   activeSessions!: EntityTable<ActiveReadingSessionLocal, 'user_id'>;
   notes!: EntityTable<Note, 'id'>;
+  reviews!: EntityTable<Review, 'id'>;
   pendingOps!: EntityTable<PendingOp, 'id'>;
 
   constructor() {
@@ -54,6 +56,16 @@ class DiLibrisOfflineDB extends Dexie {
       sessions: 'id, entry_id',
       activeSessions: 'user_id, entry_id',
       notes: 'id, user_id, entry_id, book_id, updated_at',
+      pendingOps: 'id, userId, createdAt',
+    });
+    this.version(4).stores({
+      shelves: 'id, user_id',
+      entries: 'id, user_id, shelf_id, book_id',
+      books: 'id',
+      sessions: 'id, entry_id',
+      activeSessions: 'user_id, entry_id',
+      notes: 'id, user_id, entry_id, book_id, updated_at',
+      reviews: 'id, user_id, book_id, entry_id, updated_at',
       pendingOps: 'id, userId, createdAt',
     });
   }

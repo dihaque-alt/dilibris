@@ -24,7 +24,7 @@
 | 10 | Auth + onboarding — візуал і копі | ✅ |
 | 11 | Onboarding — persist у Supabase | ✅ |
 | 12 | Offline: notes у черзі sync | ✅ |
-| 13 | Offline: reviews у черзі sync | ⬜ |
+| 13 | Offline: reviews у черзі sync | ✅ |
 | 14 | Offline: dashboard snapshot | ⬜ |
 | 15 | Settings prefs → Supabase | ⬜ |
 | 16 | Notifications — прибрати seed, persist | ⬜ |
@@ -260,6 +260,10 @@
 
 **Готово коли:** відгук можна написати offline і sync.
 
+**Зроблено (2026-06-18):** Dexie `reviews`; `reviewsSync.ts` (read cache, write queue, LWW on flush); `BookReviewsSection` через offline шар.
+
+**Файли:** `db.ts`, `reviewsSync.ts`, `librarySync.ts`, `BookReviewsSection.tsx`
+
 ---
 
 ### 14. Offline: dashboard snapshot
@@ -439,4 +443,4 @@ Focus trap у modals; `aria-label` на ✕; keyboard fly-out/detail; `prefers-r
 
 ---
 
-*Останнє оновлення: 2026-06-18 — #12 offline notes sync*
+*Останнє оновлення: 2026-06-18 — #13 offline reviews sync*

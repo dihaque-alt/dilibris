@@ -1,8 +1,14 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { supabase } from '../lib/supabase';
 import { formatDateTimeUk } from '../lib/dates';
 import { formatStarRating } from '../lib/rating';
+import {
+  deleteReview,
+  fetchReviewsForBook,
+  saveReview,
+  type ReviewWritePayload,
+} from '../lib/offline/reviewsSync';
 import type { Review } from '../types/database';
+import { useOffline } from './OfflineProvider';
 import { StarRating } from './StarRating';
 
 interface BookReviewsSectionProps {
@@ -45,6 +51,7 @@ export function BookReviewsSection({
   onFormOpenChange,
   onSavingChange,
 }: BookReviewsSectionProps) {
+  const { refreshPending } = useOffline();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -59,18 +66,9 @@ export function BookReviewsSection({
   const otherReviews = reviews.filter((r) => r.user_id !== userId);
 
   const loadReviews = useCallback(async () => {
-    const { data, error: fetchError } = await supabase
-      .from('reviews')
-      .select(`
-        *,
-        profile:profiles (display_name, avatar_url)
-      `)
-      .eq('book_id', bookId)
-      .order('created_at', { ascending: false });
-
-    if (fetchError) throw fetchError;
-    setReviews((data as Review[]) ?? []);
-  }, [bookId]);
+    const { reviews: loaded } = await fetchReviewsForBook(userId, bookId);
+    setReviews(loaded);
+  }, [bookId, userId]);
 
   useEffect(() => {
     loadReviews()
@@ -126,26 +124,22 @@ export function BookReviewsSection({
     setSaving(true);
     setError('');
 
-    const payload = {
-      user_id: userId,
-      book_id: bookId,
-      entry_id: entryId,
+    const payload: ReviewWritePayload = {
       body: reviewBody.trim(),
       rating,
       contains_spoilers: containsSpoilers,
     };
 
-    const { error: upsertError } = ownReview
-      ? await supabase.from('reviews').update(payload).eq('id', ownReview.id)
-      : await supabase.from('reviews').insert(payload);
-
-    if (upsertError) {
-      setError(upsertError.message);
+    try {
+      await saveReview(userId, entryId, bookId, ownReview?.id ?? null, payload);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Не вдалося зберегти відгук');
       setSaving(false);
       return;
     }
 
     await loadReviews();
+    await refreshPending();
     setEditing(false);
     setSaving(false);
   }
@@ -154,9 +148,10 @@ export function BookReviewsSection({
     if (!ownReview || !window.confirm('Видалити свій відгук?')) return;
     setError('');
 
-    const { error: deleteError } = await supabase.from('reviews').delete().eq('id', ownReview.id);
-    if (deleteError) {
-      setError(deleteError.message);
+    try {
+      await deleteReview(userId, ownReview.id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Не вдалося видалити відгук');
       return;
     }
 
@@ -165,6 +160,7 @@ export function BookReviewsSection({
     setContainsSpoilers(false);
     setEditing(false);
     await loadReviews();
+    await refreshPending();
   }
 
   return (
