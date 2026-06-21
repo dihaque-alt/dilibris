@@ -1,3 +1,5 @@
+import { loadCachedAppPrefs, saveAppPrefs, syncAppPrefs } from './appPrefs';
+import { isOnline } from './offline/db';
 import { supabase } from './supabase';
 
 export interface UserSettings {
@@ -10,56 +12,67 @@ export interface UserSettings {
   reminders: boolean;
 }
 
-const PREFS_KEY = (userId: string) => `dilibris_prefs_${userId}`;
-
-const DEFAULT_PREFS = {
-  city: '',
-  defaultPrivate: true,
-  weeklyDigest: false,
-  reminders: true,
-};
-
 export function loadLocalPrefs(userId: string): Partial<UserSettings> {
-  try {
-    const raw = localStorage.getItem(PREFS_KEY(userId));
-    if (raw) return JSON.parse(raw) as Partial<UserSettings>;
-  } catch {
-    /* ignore */
-  }
-  return { ...DEFAULT_PREFS };
-}
-
-export function saveLocalPrefs(userId: string, prefs: Partial<UserSettings>) {
-  const { name, email, yearTarget, ...rest } = prefs;
-  localStorage.setItem(PREFS_KEY(userId), JSON.stringify(rest));
+  const prefs = loadCachedAppPrefs(userId);
+  return {
+    city: prefs.city,
+    defaultPrivate: prefs.defaultPrivate,
+    weeklyDigest: prefs.weeklyDigest,
+    reminders: prefs.reminders,
+  };
 }
 
 export async function loadUserSettings(userId: string, email: string): Promise<UserSettings> {
-  const prefs = loadLocalPrefs(userId);
+  const prefs = await syncAppPrefs(userId);
   const year = new Date().getFullYear();
 
-  const [{ data: profile }, { data: challenge }] = await Promise.all([
-    supabase.from('profiles').select('display_name').eq('id', userId).maybeSingle(),
-    supabase
-      .from('reading_challenges')
-      .select('target_books')
-      .eq('user_id', userId)
-      .eq('year', year)
-      .maybeSingle(),
-  ]);
+  if (isOnline()) {
+    try {
+      const [{ data: profile }, { data: challenge }] = await Promise.all([
+        supabase.from('profiles').select('display_name').eq('id', userId).maybeSingle(),
+        supabase
+          .from('reading_challenges')
+          .select('target_books')
+          .eq('user_id', userId)
+          .eq('year', year)
+          .maybeSingle(),
+      ]);
+
+      return {
+        name: profile?.display_name ?? '',
+        email,
+        city: prefs.city,
+        yearTarget: challenge?.target_books ?? 24,
+        defaultPrivate: prefs.defaultPrivate,
+        weeklyDigest: prefs.weeklyDigest,
+        reminders: prefs.reminders,
+      };
+    } catch {
+      /* fall through to cached prefs */
+    }
+  }
 
   return {
-    name: profile?.display_name ?? '',
+    name: '',
     email,
-    city: prefs.city ?? '',
-    yearTarget: challenge?.target_books ?? 24,
-    defaultPrivate: prefs.defaultPrivate ?? true,
-    weeklyDigest: prefs.weeklyDigest ?? false,
-    reminders: prefs.reminders ?? true,
+    city: prefs.city,
+    yearTarget: 24,
+    defaultPrivate: prefs.defaultPrivate,
+    weeklyDigest: prefs.weeklyDigest,
+    reminders: prefs.reminders,
   };
 }
 
 export async function saveUserSettings(userId: string, settings: UserSettings): Promise<void> {
+  await saveAppPrefs(userId, {
+    city: settings.city,
+    defaultPrivate: settings.defaultPrivate,
+    weeklyDigest: settings.weeklyDigest,
+    reminders: settings.reminders,
+  });
+
+  if (!isOnline()) return;
+
   const year = new Date().getFullYear();
 
   await supabase.from('profiles').update({ display_name: settings.name.trim() || null }).eq('id', userId);
@@ -83,6 +96,4 @@ export async function saveUserSettings(userId: string, settings: UserSettings): 
       target_books: settings.yearTarget,
     });
   }
-
-  saveLocalPrefs(userId, settings);
 }

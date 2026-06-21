@@ -38,12 +38,14 @@ export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps
   const [error, setError] = useState('');
 
   useEffect(() => {
-    Promise.all([
-      loadUserSettings(userId, userEmail),
-      Promise.resolve(loadLibraryDisplayPrefs(userId)),
-      Promise.resolve(loadAppearancePrefs(userId)),
-    ])
-      .then(([profile, library, appearance]) => setForm({ profile, library, appearance }))
+    void loadUserSettings(userId, userEmail)
+      .then((profile) => {
+        setForm({
+          profile,
+          library: loadLibraryDisplayPrefs(userId),
+          appearance: loadAppearancePrefs(userId),
+        });
+      })
       .catch((err) => setError(err instanceof Error ? err.message : 'Помилка завантаження'));
   }, [userId, userEmail]);
 
@@ -74,8 +76,8 @@ export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps
     setError('');
     try {
       await saveUserSettings(userId, form.profile);
-      saveLibraryDisplayPrefs(userId, form.library);
-      saveAppearancePrefs(userId, form.appearance);
+      await saveAppearancePrefs(userId, form.appearance);
+      await saveLibraryDisplayPrefs(userId, form.library);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не вдалося зберегти');

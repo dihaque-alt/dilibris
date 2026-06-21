@@ -1,3 +1,5 @@
+import { loadCachedAppPrefs, saveAppPrefs } from './appPrefs';
+
 export type BookViewMode = 'spine' | 'cover';
 export type BookSizePreset = 'compact' | 'cozy' | 'grand';
 
@@ -7,8 +9,6 @@ export interface LibraryDisplayPrefs {
   hoverTitles: boolean;
   realCovers: boolean;
 }
-
-const STORAGE_KEY = (userId: string) => `dilibris_library_display_${userId}`;
 
 export const BOOK_WIDTH_BY_SIZE: Record<BookSizePreset, number> = {
   compact: 78,
@@ -22,25 +22,12 @@ export const BOOK_SIZE_LABELS: Record<BookSizePreset, string> = {
   grand: 'Велично',
 };
 
-const DEFAULTS: LibraryDisplayPrefs = {
-  bookView: 'cover',
-  bookSize: 'cozy',
-  hoverTitles: true,
-  realCovers: true,
-};
-
 export function loadLibraryDisplayPrefs(userId: string): LibraryDisplayPrefs {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY(userId));
-    if (raw) return { ...DEFAULTS, ...JSON.parse(raw) };
-  } catch {
-    /* ignore */
-  }
-  return { ...DEFAULTS };
+  return loadCachedAppPrefs(userId).libraryDisplay;
 }
 
-export function saveLibraryDisplayPrefs(userId: string, prefs: LibraryDisplayPrefs) {
-  localStorage.setItem(STORAGE_KEY(userId), JSON.stringify(prefs));
+export async function saveLibraryDisplayPrefs(userId: string, prefs: LibraryDisplayPrefs): Promise<void> {
+  await saveAppPrefs(userId, { libraryDisplay: prefs });
   window.dispatchEvent(new CustomEvent('dilibris:library-display'));
 }
 

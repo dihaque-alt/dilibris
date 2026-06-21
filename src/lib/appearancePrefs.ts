@@ -1,3 +1,5 @@
+import { loadCachedAppPrefs, saveAppPrefs } from './appPrefs';
+
 export type AccentPreset = 'Олива' | 'Шавлія' | 'Теракота';
 export type RoomMood = 'evening' | 'day';
 
@@ -25,8 +27,6 @@ export const ACCENT_PRESETS: Record<AccentPreset, Record<string, string>> = {
   },
 };
 
-const STORAGE_KEY = (userId: string) => `dilibris_appearance_${userId}`;
-
 export const APPEARANCE_DEFAULTS: AppearancePrefs = {
   mood: 'evening',
   dim: 0.4,
@@ -34,17 +34,11 @@ export const APPEARANCE_DEFAULTS: AppearancePrefs = {
 };
 
 export function loadAppearancePrefs(userId: string): AppearancePrefs {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY(userId));
-    if (raw) return { ...APPEARANCE_DEFAULTS, ...JSON.parse(raw) };
-  } catch {
-    /* ignore */
-  }
-  return { ...APPEARANCE_DEFAULTS };
+  return loadCachedAppPrefs(userId).appearance;
 }
 
-export function saveAppearancePrefs(userId: string, prefs: AppearancePrefs) {
-  localStorage.setItem(STORAGE_KEY(userId), JSON.stringify(prefs));
+export async function saveAppearancePrefs(userId: string, prefs: AppearancePrefs): Promise<void> {
+  await saveAppPrefs(userId, { appearance: prefs });
   window.dispatchEvent(new CustomEvent('dilibris:appearance'));
 }
 

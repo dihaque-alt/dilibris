@@ -26,7 +26,7 @@
 | 12 | Offline: notes у черзі sync | ✅ |
 | 13 | Offline: reviews у черзі sync | ✅ |
 | 14 | Offline: dashboard snapshot | ✅ |
-| 15 | Settings prefs → Supabase | ⬜ |
+| 15 | Settings prefs → Supabase | ✅ |
 | 16 | Notifications — прибрати seed, persist | ⬜ |
 | 17 | Re-read (parent_entry_id) | ⬜ |
 | 18 | Dashboard — візуал до прототипу | ⬜ |
@@ -291,7 +291,11 @@
 
 **Готово коли:** зміна mood/accent на телефоні видна на ноуті після reload.
 
-**Файли:** migration, `userSettings.ts`, `appearancePrefs.ts`, `libraryDisplayPrefs.ts`, `SettingsSheet.tsx`
+**Зроблено (2026-06-18):** `profiles.app_prefs` jsonb; `appPrefs.ts` (sync on login, legacy migrate); prefs modules + `AppPrefsSyncEffect`.
+
+**Файли:** `005_profiles_app_prefs.sql`, `appPrefs.ts`, `userSettings.ts`, `appearancePrefs.ts`, `libraryDisplayPrefs.ts`, `AppPrefsSyncEffect.tsx`, `SettingsSheet.tsx`
+
+**Міграція prod:** `supabase/migrations/005_profiles_app_prefs.sql` на DiLibris PRODUCTION.
 
 ---
 
@@ -445,4 +449,4 @@ Focus trap у modals; `aria-label` на ✕; keyboard fly-out/detail; `prefers-r
 
 ---
 
-*Останнє оновлення: 2026-06-18 — #14 offline dashboard snapshot*
+*Останнє оновлення: 2026-06-18 — #15 settings prefs Supabase*

@@ -15,6 +15,7 @@ export interface Profile {
   locale: string;
   is_profile_public: boolean;
   onboarded_at: string | null;
+  app_prefs?: Record<string, unknown>;
 }
 
 export interface UserShelf {

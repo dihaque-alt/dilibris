@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { LoginForm } from './components/LoginForm';
 import { OnboardingWelcome } from './components/OnboardingWelcome';
 import { AppearancePrefsEffect } from './components/AppearancePrefsEffect';
+import { AppPrefsSyncEffect } from './components/AppPrefsSyncEffect';
 import { AppOverlaysProvider } from './components/AppOverlays';
 import { NotificationSyncEffect } from './components/NotificationSyncEffect';
 import { OfflineProvider } from './components/OfflineProvider';
@@ -59,6 +60,7 @@ function AuthenticatedRoutes({ userId, userEmail }: { userId: string; userEmail:
 
   return (
     <OfflineProvider userId={userId}>
+      <AppPrefsSyncEffect userId={userId} />
       <AppearancePrefsEffect userId={userId} />
       <NotificationSyncEffect userId={userId} />
       <AppOverlaysProvider userId={userId} userEmail={userEmail}>
