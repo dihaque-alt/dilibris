@@ -1,4 +1,5 @@
 import type { UserBookEntry } from '../types/database';
+import { formatLanguageLabel } from './language';
 
 export interface StatsEntry {
   id: string;
@@ -125,7 +126,7 @@ export function topAuthors(
 export function languageBreakdown(entries: StatsEntry[], year: number): { language: string; count: number }[] {
   const counts = new Map<string, number>();
   finishedInYear(entries, year).forEach((e) => {
-    const lang = e.book?.language?.trim() || 'Невідома';
+    const lang = formatLanguageLabel(e.book?.language);
     counts.set(lang, (counts.get(lang) ?? 0) + 1);
   });
   return [...counts.entries()]

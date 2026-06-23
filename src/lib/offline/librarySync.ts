@@ -181,6 +181,35 @@ export async function deleteEntry(userId: string, entryId: string) {
   });
 }
 
+export async function updateBook(
+  userId: string,
+  bookId: string,
+  patch: { language?: string | null },
+) {
+  const book = await offlineDb.books.get(bookId);
+  if (book) {
+    await offlineDb.books.put({ ...book, ...patch });
+    const entries = await offlineDb.entries.where('book_id').equals(bookId).toArray();
+    for (const entry of entries) {
+      if (entry.book) {
+        await offlineDb.entries.put({ ...entry, book: { ...entry.book, ...patch } });
+      }
+    }
+  }
+
+  if (isOnline()) {
+    const { error } = await supabase.from('books').update(patch).eq('id', bookId);
+    if (error) throw error;
+    return;
+  }
+
+  await enqueue(userId, {
+    table: 'books',
+    operation: 'update',
+    payload: { id: bookId, ...patch },
+  });
+}
+
 export async function addBook(
   userId: string,
   shelfId: string,
@@ -192,6 +221,7 @@ export async function addBook(
     publishedYear: number | null;
     externalIds: Record<string, string>;
     status: BookEntryStatus;
+    language?: string | null;
   },
 ) {
   const bookId = crypto.randomUUID();
@@ -205,7 +235,7 @@ export async function addBook(
     cover_url: payload.coverUrl,
     page_count: payload.pageCount,
     published_year: payload.publishedYear,
-    language: null,
+    language: payload.language ?? null,
     external_ids: payload.externalIds,
   };
 
@@ -239,6 +269,7 @@ export async function addBook(
         cover_url: payload.coverUrl,
         page_count: payload.pageCount,
         published_year: payload.publishedYear,
+        language: payload.language ?? null,
         external_ids: payload.externalIds,
         metadata_source: Object.keys(payload.externalIds).length ? 'open_library' : 'manual',
         created_by: userId,
@@ -269,6 +300,7 @@ export async function addBook(
       cover_url: payload.coverUrl,
       page_count: payload.pageCount,
       published_year: payload.publishedYear,
+      language: payload.language ?? null,
       external_ids: payload.externalIds,
       metadata_source: Object.keys(payload.externalIds).length ? 'open_library' : 'manual',
       created_by: userId,

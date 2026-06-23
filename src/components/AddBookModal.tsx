@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { openLibraryCoverUrl, openLibraryWorkId, searchOpenLibrary } from '../lib/openLibrary';
+import { pickOpenLibraryLanguage, BOOK_LANGUAGE_OPTIONS } from '../lib/language';
 import { formatAuthors, STATUS_LABELS } from '../lib/labels';
 import type { BookEntryStatus, OpenLibraryHit } from '../types/database';
 import { BookCover } from './BookCover';
@@ -19,6 +20,7 @@ interface AddBookModalProps {
     publishedYear: number | null;
     externalIds: Record<string, string>;
     status: BookEntryStatus;
+    language?: string | null;
   }) => Promise<void>;
 }
 
@@ -42,6 +44,7 @@ export function AddBookModal({
   const [title, setTitle] = useState('');
   const [authors, setAuthors] = useState('');
   const [pages, setPages] = useState('');
+  const [language, setLanguage] = useState('');
   const [status, setStatus] = useState<BookEntryStatus>(defaultStatus);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -86,6 +89,7 @@ export function AddBookModal({
         pageCount: hit.number_of_pages_median ?? null,
         publishedYear: hit.first_publish_year ?? null,
         externalIds: { open_library: openLibraryWorkId(hit.key) },
+        language: pickOpenLibraryLanguage(hit.language),
         status,
       });
       onClose();
@@ -112,6 +116,7 @@ export function AddBookModal({
         pageCount: pageCount && pageCount > 0 ? pageCount : null,
         publishedYear: null,
         externalIds: {},
+        language: language || null,
         status,
       });
       onClose();
@@ -273,6 +278,21 @@ export function AddBookModal({
                   onChange={(e) => setPages(e.target.value.replace(/[^0-9]/g, ''))}
                   placeholder="320"
                 />
+              </label>
+              <label className="dl-field">
+                <span className="dl-field-label">Мова (необов&apos;язково)</span>
+                <select
+                  className="dl-field-input"
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                >
+                  <option value="">Не вказано</option>
+                  {BOOK_LANGUAGE_OPTIONS.map(({ code, label }) => (
+                    <option key={code} value={code}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
               </label>
             </form>
           )}

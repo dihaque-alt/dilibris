@@ -47,6 +47,7 @@
 
 .dl-challenge-bar {
   position: relative;
+  z-index: 1;
   border-radius: 999px;
   background: var(--gold-light);
   border: 1px solid #f0e4be;
@@ -63,7 +64,97 @@
   transition: width var(--dur-base) var(--ease-warm);
 }
 
+.dl-panel-title-row.is-with-tip {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.dl-panel-title-row.is-with-tip .dl-panel-title {
+  margin: 0;
+}
+
+.dl-info-tip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+button.dl-info-tip-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1.5px solid rgba(58, 46, 36, 0.16);
+  background: #fff;
+  color: #8a7a6a;
+  cursor: help;
+  opacity: 1;
+}
+
+button.dl-info-tip-btn:hover:not(:disabled),
+button.dl-info-tip-btn:focus-visible {
+  background: #fffdf8;
+  color: #3d3428;
+  border-color: rgba(58, 46, 36, 0.28);
+  outline: none;
+  opacity: 1;
+}
+
+.dl-info-tip-icon {
+  width: 12px;
+  height: 12px;
+  display: block;
+}
+
+.dl-info-tip-popover {
+  visibility: hidden;
+  opacity: 0;
+  position: absolute;
+  z-index: 120;
+  left: 50%;
+  top: calc(100% + 10px);
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: min(280px, 70vw);
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: #2f2924;
+  color: #faf6ef;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  font-weight: 400;
+  line-height: 1.45;
+  text-align: left;
+  box-shadow: 0 10px 28px rgba(20, 14, 8, 0.28);
+  pointer-events: none;
+  transition: opacity var(--dur-fast) var(--ease-warm), visibility var(--dur-fast) var(--ease-warm);
+}
+
+.dl-info-tip:hover .dl-info-tip-popover,
+.dl-info-tip:focus-within .dl-info-tip-popover {
+  visibility: visible;
+  opacity: 1;
+}
+
+.dl-info-tip.is-tip-top .dl-info-tip-popover {
+  top: auto;
+  bottom: calc(100% + 10px);
+}
+
 .dl-challenge-head {
+  position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -73,6 +164,9 @@
 }
 
 .dl-challenge-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-family: var(--font-sans);
   font-size: var(--fs-sm);
   color: #8a6d14;

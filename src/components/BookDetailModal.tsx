@@ -6,6 +6,7 @@ import { StatChip } from './StatChip';
 import { StatusPill } from './StatusPill';
 import { readingDaysSpan, todayIsoDate } from '../lib/dates';
 import { defaultProgressMode, resolveProgressPercent } from '../lib/progress';
+import { BOOK_LANGUAGE_OPTIONS } from '../lib/language';
 import {
   addSession,
   createRereadEntry,
@@ -13,6 +14,7 @@ import {
   deleteSession,
   fetchEntry,
   fetchSessions,
+  updateBook,
   updateEntry,
 } from '../lib/offline/librarySync';
 import { formatAuthors, STATUS_LABELS } from '../lib/labels';
@@ -28,7 +30,7 @@ interface BookDetailModalProps {
   entry: UserBookEntry;
   userId: string;
   onClose: () => void;
-  onUpdated: () => void;
+  onUpdated?: () => void | Promise<void>;
   onDeleted?: () => void;
   onSession?: () => void;
 }
@@ -61,6 +63,7 @@ export function BookDetailModal({
 
   const [status, setStatus] = useState<BookEntryStatus>(entry.status);
   const [format, setFormat] = useState<ReadingFormat | ''>(entry.format ?? '');
+  const [bookLanguage, setBookLanguage] = useState(entry.book?.language ?? '');
   const [progressMode, setProgressMode] = useState<ProgressMode>(
     entry.progress_mode ?? defaultProgressMode(entry.format),
   );
@@ -133,6 +136,9 @@ export function BookDetailModal({
     setCountsTowardStats(refreshed.counts_toward_stats);
     if (refreshed.progress_mode) {
       setProgressMode(refreshed.progress_mode);
+    }
+    if (refreshed.book?.language != null) {
+      setBookLanguage(refreshed.book.language);
     }
     if (refreshed.rating != null) {
       setRating(String(refreshed.rating));
@@ -213,9 +219,9 @@ export function BookDetailModal({
       }
 
       await refreshPending();
-      onUpdated();
-      setSaving(false);
       onClose();
+      await onUpdated?.();
+      setSaving(false);
       return;
     }
 
@@ -233,6 +239,10 @@ export function BookDetailModal({
     const savedRating = snapRating(parseRating(rating));
 
     try {
+      if (book && bookLanguage !== (book.language ?? '')) {
+        await updateBook(userId, book.id, { language: bookLanguage || null });
+      }
+
       await updateEntry(userId, entry.id, {
         status,
         format: format || null,
@@ -252,9 +262,9 @@ export function BookDetailModal({
 
     await applyEntrySnapshot();
     await refreshPending();
-    onUpdated();
-    setSaving(false);
     onClose();
+    await onUpdated?.();
+    setSaving(false);
   }
 
   async function handleAddSession(e: FormEvent) {
@@ -285,7 +295,7 @@ export function BookDetailModal({
     setShowSessionForm(false);
     await loadSessions();
     await refreshPending();
-    onUpdated();
+    await onUpdated?.();
     setSessionSaving(false);
   }
 
@@ -303,7 +313,7 @@ export function BookDetailModal({
     await applyEntrySnapshot();
     await loadSessions();
     await refreshPending();
-    onUpdated();
+    await onUpdated?.();
   }
 
   async function handleDeleteEntry() {
@@ -439,6 +449,18 @@ export function BookDetailModal({
                   ))}
                 </div>
               </div>
+
+              <label>
+                Мова книги
+                <select value={bookLanguage} onChange={(e) => setBookLanguage(e.target.value)}>
+                  <option value="">Не вказано</option>
+                  {BOOK_LANGUAGE_OPTIONS.map(({ code, label }) => (
+                    <option key={code} value={code}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
               <div className="dl-field">
                 <span className="dl-field-label">Оцінка</span>

@@ -17,7 +17,6 @@ import {
   addBook,
   createShelf,
   deleteShelf,
-  fetchEntry,
   fetchLibrary,
   renameShelf,
   reorderShelves,
@@ -468,8 +467,6 @@ export function LibraryPage({ userId, userEmail }: LibraryPageProps) {
           onUpdated={async () => {
             await loadLibrary();
             await refreshPending();
-            const updated = await fetchEntry(selectedEntry.id);
-            if (updated) setSelectedEntry(updated);
           }}
           onDeleted={async () => {
             await loadLibrary();

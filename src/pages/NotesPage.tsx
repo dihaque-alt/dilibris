@@ -76,13 +76,6 @@ export function NotesPage({ userId, userEmail }: NotesPageProps) {
     return haystack.includes(term);
   });
 
-  async function refreshEntry(entryId: string) {
-    const updated = await fetchEntry(entryId);
-    if (updated) setSelectedEntry(updated);
-    const notes = await fetchAllUserNotes(userId);
-    setItems(notes);
-  }
-
   return (
     <div className="app-shell">
       <RoomBackdrop />
@@ -183,7 +176,19 @@ export function NotesPage({ userId, userEmail }: NotesPageProps) {
           entry={selectedEntry}
           userId={userId}
           onClose={() => setSelectedEntry(null)}
-          onUpdated={() => refreshEntry(selectedEntry.id)}
+          onUpdated={async () => {
+            const notes = await fetchAllUserNotes(userId);
+            setItems(notes);
+            setSelectedEntry((current) => {
+              if (!current) return null;
+              void fetchEntry(current.id).then((updated) => {
+                if (updated) {
+                  setSelectedEntry((open) => (open?.id === updated.id ? updated : open));
+                }
+              });
+              return current;
+            });
+          }}
           onDeleted={async () => {
             setSelectedEntry(null);
             const next = await fetchAllUserNotes(userId);

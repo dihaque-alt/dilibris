@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import { AppNav } from '../components/AppNav';
 import { ChallengeBar } from '../components/ChallengeBar';
 import { FormatDonut } from '../components/FormatDonut';
+import { InfoTooltip, PanelTitle } from '../components/InfoTooltip';
 import { PageHead } from '../components/PageHead';
 import { RoomBackdrop } from '../components/RoomBackdrop';
 import { StatBarRow } from '../components/StatBarRow';
@@ -240,7 +241,14 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
         <section className="dl-panel dl-challenge">
           <div className="dl-challenge-head">
             <div>
-              <div className="dl-challenge-kicker">Челендж {selectedYear}</div>
+              <div className="dl-challenge-kicker">
+                Челендж {selectedYear}
+                <InfoTooltip
+                  label="Як рахується челендж"
+                  placement="top"
+                  text="Книги зі статусом «Прочитано» (або перечитання з датою завершення), де увімкнено «Рахувати в challenge», і дата завершення у вибраному році."
+                />
+              </div>
               <div className="dl-challenge-title">
                 {finishedCount} з {target > 0 ? target : '—'} книг
               </div>
@@ -292,7 +300,11 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
 
         <div className="dl-dash-row is-chart-format">
           <section className="dl-panel">
-            <h2 className="dl-panel-title">Книги за місяць</h2>
+            <PanelTitle
+              title="Книги за місяць"
+              tipLabel="Як рахуються книги за місяць"
+              tip="Кількість прочитаних книг за кожен місяць обраного року — за датою завершення (finished_on)."
+            />
             {finishedCount === 0 ? (
               <p className="empty-hint">Познач книги як «Прочитано», щоб побачити графік.</p>
             ) : (
@@ -301,7 +313,11 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
           </section>
 
           <section className="dl-panel">
-            <h2 className="dl-panel-title">Формат</h2>
+            <PanelTitle
+              title="Формат"
+              tipLabel="Як рахується формат"
+              tip="Поле «Формат» з картки книги: паперова, електронна або аудіо. Без формату — у блоці «Не вказано»."
+            />
             <FormatDonut
               paper={formats.paper}
               ebook={formats.ebook}
@@ -314,7 +330,11 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
 
         <div className="dl-dash-row is-authors-langs">
           <section className="dl-panel">
-            <h2 className="dl-panel-title">Топ авторів</h2>
+            <PanelTitle
+              title="Топ авторів"
+              tipLabel="Як рахуються автори"
+              tip="Автори з прочитаних книг обраного року. Якщо в книзі кілька авторів — кожен отримує +1."
+            />
             {authors.length === 0 ? (
               <p className="empty-hint">Поки немає даних за цей рік.</p>
             ) : (
@@ -333,7 +353,11 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
           </section>
 
           <section className="dl-panel">
-            <h2 className="dl-panel-title">Мови</h2>
+            <PanelTitle
+              title="Мови"
+              tipLabel="Як рахуються мови"
+              tip="Мова з картки книги (вкладка «Прогрес» → «Мова книги»). Якщо не задано — потрапляє в «Мова не вказана»."
+            />
             {languages.length === 0 ? (
               <p className="empty-hint">Поки немає даних за цей рік.</p>
             ) : (
