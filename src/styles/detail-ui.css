@@ -342,7 +342,23 @@
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  margin-bottom: 8px;
+  margin-bottom: 0;
+}
+
+button.dl-toggle-row {
+  border: none;
+  background: none;
+  padding: 0;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+
+button.dl-toggle-row:focus-visible {
+  outline: 2px solid var(--accent-lime);
+  outline-offset: 2px;
+  border-radius: var(--r-sm);
 }
 
 .dl-toggle-track {
@@ -888,6 +904,29 @@
 }
 
 /* ---- Settings sheet -------------------------------------------------- */
+.settings-sheet.dl-detailcard.is-modal {
+  width: min(560px, 94vw);
+  max-height: min(90vh, 900px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.settings-sheet.dl-detailcard.is-sheet {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  max-height: min(92svh, 900px);
+}
+
+.settings-sheet-loading {
+  padding: 24px 28px;
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
 .dl-settings-head {
   display: flex;
   gap: 14px;
@@ -991,18 +1030,6 @@
   background: var(--accent-lime-light);
   border-color: var(--accent-lime);
   color: var(--accent-lime-deep);
-}
-
-.dl-toggle {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  cursor: pointer;
-}
-
-.dl-toggle input {
-  margin-top: 4px;
-  accent-color: var(--accent-lime);
 }
 
 .dl-toggle-text {

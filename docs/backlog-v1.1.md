@@ -35,7 +35,7 @@
 | 21 | Buddy detail — layout + shared notes | ✅ |
 | 22 | Add book — Google Books fallback | ✅ |
 | 23 | Add shelf — Choice chips замість select | ✅ |
-| 24 | Settings sheet — parity + заголовок | ⬜ |
+| 24 | Settings sheet — parity + заголовок | ✅ |
 | 25 | NotifBell — parity + deep links audit | ⬜ |
 | 26 | Goodreads import — polish + spec update | ⬜ |
 | 27 | Offline UX — один банер, без дублікатів | ⬜ |
@@ -393,6 +393,8 @@ Replace `<select>` status filter with `dl-choice` row like detail card.
 
 ### 24. Settings sheet — parity + заголовок
 Title «Профіль і налаштування»; sections order vs prototype; toggles styling.
+
+**Зроблено (2026-06-23):** заголовок; порядок профіль → toggles → бібліотека → кімната; switch toggles; portal + centering.
 
 **Файли:** `SettingsSheet.tsx`, `detail-ui.css`
 

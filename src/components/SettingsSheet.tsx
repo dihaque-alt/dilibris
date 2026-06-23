@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { useIsMobile } from '../hooks/useIsMobile';
 import {
   ACCENT_PRESETS,
@@ -30,6 +31,27 @@ type SettingsForm = {
   library: LibraryDisplayPrefs;
   appearance: AppearancePrefs;
 };
+
+function SettingsModalShell({
+  mobile,
+  onClose,
+  children,
+}: {
+  mobile: boolean;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  return createPortal(
+    <div
+      className={`dl-modal-backdrop${mobile ? ' is-sheet-backdrop' : ''}`}
+      onClick={onClose}
+      role="presentation"
+    >
+      <div className="dl-modal-backdrop-inner">{children}</div>
+    </div>,
+    document.body,
+  );
+}
 
 export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps) {
   const mobile = useIsMobile();
@@ -88,22 +110,29 @@ export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps
 
   if (!form) {
     return (
-      <div className="dl-modal-backdrop" onClick={handleClose} role="presentation">
-        <div className="dl-detailcard is-modal" onClick={(e) => e.stopPropagation()}>
-          <p style={{ padding: 24 }}>{error || 'Завантаження…'}</p>
+      <SettingsModalShell mobile={mobile} onClose={handleClose}>
+        <div
+          className={`dl-detailcard settings-sheet ${mobile ? 'is-sheet' : 'is-modal'}`}
+          onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="settings-title"
+        >
+          <p className="settings-sheet-loading">{error || 'Завантаження…'}</p>
         </div>
-      </div>
+      </SettingsModalShell>
     );
   }
 
   const letter = (form.profile.email || '?')[0]?.toUpperCase() ?? '?';
 
   return (
-    <div className="dl-modal-backdrop" onClick={handleClose} role="presentation">
+    <SettingsModalShell mobile={mobile} onClose={handleClose}>
       <div
-        className={`dl-detailcard ${mobile ? 'is-sheet' : 'is-modal'}`}
+        className={`dl-detailcard settings-sheet ${mobile ? 'is-sheet' : 'is-modal'}`}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
+        aria-modal="true"
         aria-labelledby="settings-title"
       >
         {mobile && <div className="dl-sheet-handle" aria-hidden="true" />}
@@ -112,7 +141,7 @@ export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps
             {letter}
           </span>
           <div className="dl-settings-head-text">
-            <h2 id="settings-title">Профіль</h2>
+            <h2 id="settings-title">Профіль і налаштування</h2>
             <p>{form.profile.email}</p>
           </div>
           <button type="button" className="dl-close" onClick={handleClose} aria-label="Закрити">
@@ -148,7 +177,9 @@ export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps
           </div>
 
           <label className="dl-field">
-            <span className="dl-field-label">Ціль на рік · {form.profile.yearTarget} книг</span>
+            <span className="dl-field-label">
+              Ціль на рік · {form.profile.yearTarget} книг
+            </span>
             <input
               type="range"
               min={6}
@@ -159,6 +190,27 @@ export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps
               className="dl-range"
             />
           </label>
+
+          <hr className="dl-settings-divider" />
+
+          <Toggle
+            checked={form.profile.defaultPrivate}
+            onChange={(v) => patchProfile('defaultPrivate', v)}
+            label="Нові нотатки — особисті"
+            hint="За замовчуванням ховати нотатки від інших"
+          />
+          <Toggle
+            checked={form.profile.weeklyDigest}
+            onChange={(v) => patchProfile('weeklyDigest', v)}
+            label="Тижневий дайджест"
+            hint="Лист щонеділі з підсумком читання"
+          />
+          <Toggle
+            checked={form.profile.reminders}
+            onChange={(v) => patchProfile('reminders', v)}
+            label="Нагадування читати"
+            hint="Делікатний поштовх у тихий вечір"
+          />
 
           <hr className="dl-settings-divider" />
 
@@ -230,27 +282,6 @@ export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps
             onChange={(v) => patchAppearance('accent', v as AccentPreset)}
           />
 
-          <hr className="dl-settings-divider" />
-
-          <Toggle
-            checked={form.profile.defaultPrivate}
-            onChange={(v) => patchProfile('defaultPrivate', v)}
-            label="Нові нотатки — особисті"
-            hint="За замовчуванням ховати нотатки від інших"
-          />
-          <Toggle
-            checked={form.profile.weeklyDigest}
-            onChange={(v) => patchProfile('weeklyDigest', v)}
-            label="Тижневий дайджест"
-            hint="Лист щонеділі з підсумком читання"
-          />
-          <Toggle
-            checked={form.profile.reminders}
-            onChange={(v) => patchProfile('reminders', v)}
-            label="Нагадування читати"
-            hint="Делікатний поштовх у тихий вечір"
-          />
-
           {error && <p className="banner-error">{error}</p>}
         </div>
 
@@ -263,7 +294,7 @@ export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps
           </button>
         </footer>
       </div>
-    </div>
+    </SettingsModalShell>
   );
 }
 
@@ -285,7 +316,7 @@ function SegmentedField({
   return (
     <div className="dl-field">
       <span className="dl-field-label">{label}</span>
-      <div className="dl-settings-segments">
+      <div className="dl-settings-segments" role="group" aria-label={label}>
         {options.map(([key, text]) => (
           <button
             key={key}
@@ -313,12 +344,20 @@ function Toggle({
   hint?: string;
 }) {
   return (
-    <label className="dl-toggle">
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} />
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      className="dl-toggle-row"
+      onClick={() => onChange(!checked)}
+    >
+      <span className={`dl-toggle-track${checked ? ' is-on' : ''}`} aria-hidden="true">
+        <span className="dl-toggle-thumb" />
+      </span>
       <span className="dl-toggle-text">
         <span className="dl-toggle-label">{label}</span>
         {hint && <span className="dl-toggle-hint">{hint}</span>}
       </span>
-    </label>
+    </button>
   );
 }
