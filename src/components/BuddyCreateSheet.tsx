@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
+import { errorMessage } from '../lib/buddyRead';
 import { BuddySheet } from './BuddySheet';
 import type { UserBookEntry } from '../types/database';
 
@@ -33,7 +34,7 @@ export function BuddyCreateSheet({ libraryBooks, onClose, onSubmit }: BuddyCreat
     try {
       await onSubmit({ bookId, title, description, deadline });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Не вдалося створити клуб');
+      setError(errorMessage(err, 'Не вдалося створити клуб'));
       setCreating(false);
     }
   }

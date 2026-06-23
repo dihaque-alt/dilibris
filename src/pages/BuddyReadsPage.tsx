@@ -7,7 +7,7 @@ import { BuddyJoinSheet } from '../components/BuddyJoinSheet';
 import { PageHead } from '../components/PageHead';
 import { RoomBackdrop } from '../components/RoomBackdrop';
 import { useIsMobile } from '../hooks/useIsMobile';
-import { averageMemberProgress, formatMemberCount, parseInviteToken } from '../lib/buddyRead';
+import { averageMemberProgress, formatMemberCount, newInviteToken, parseInviteToken } from '../lib/buddyRead';
 import { formatDateUk } from '../lib/dates';
 import { supabase } from '../lib/supabase';
 import type { BuddyReadListItem, UserBookEntry } from '../types/database';
@@ -135,21 +135,20 @@ export function BuddyReadsPage({ userId, userEmail }: BuddyReadsPageProps) {
     deadline: string;
   }) {
     const selected = libraryBooks.find((entry) => entry.book_id === payload.bookId);
-    const { data, error: insertError } = await supabase
-      .from('buddy_reads')
-      .insert({
-        owner_id: userId,
-        book_id: payload.bookId,
-        title: payload.title.trim() || selected?.book?.title || 'Клуб',
-        description: payload.description.trim() || null,
-        target_finish_on: payload.deadline || null,
-      })
-      .select('id')
-      .single();
+    const clubId = crypto.randomUUID();
+    const { error: insertError } = await supabase.from('buddy_reads').insert({
+      id: clubId,
+      owner_id: userId,
+      book_id: payload.bookId,
+      title: payload.title.trim() || selected?.book?.title || 'Клуб',
+      description: payload.description.trim() || null,
+      target_finish_on: payload.deadline || null,
+      invite_token: newInviteToken(),
+    });
 
     if (insertError) throw insertError;
     setShowCreate(false);
-    navigate(`/buddy-reads/${data.id}`);
+    navigate(`/buddy-reads/${clubId}`);
   }
 
   async function handleJoin(rawToken: string) {

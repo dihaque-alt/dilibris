@@ -28,6 +28,21 @@ export function parseInviteToken(input: string): string {
   return match ? match[1] : trimmed;
 }
 
+/** 32-char hex token for buddy_reads.invite_token (avoids DB default on pgcrypto). */
+export function newInviteToken(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+export function errorMessage(err: unknown, fallback: string): string {
+  if (err instanceof Error && err.message.trim()) return err.message;
+  if (typeof err === 'object' && err !== null && 'message' in err) {
+    const message = (err as { message: unknown }).message;
+    if (typeof message === 'string' && message.trim()) return message;
+  }
+  return fallback;
+}
+
 export function pickMemberProgress(
   entries: {
     id: string;
