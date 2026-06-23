@@ -1,9 +1,11 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useIsMobile } from '../hooks/useIsMobile';
-import { openLibraryCoverUrl, openLibraryWorkId, searchOpenLibrary } from '../lib/openLibrary';
-import { pickOpenLibraryLanguage, BOOK_LANGUAGE_OPTIONS } from '../lib/language';
+import { type BookSearchHit, searchGoogleBooks } from '../lib/googleBooks';
+import { errorMessage } from '../lib/buddyRead';
+import { openLibraryHitToSearchHit, searchOpenLibrary } from '../lib/openLibrary';
+import { BOOK_LANGUAGE_OPTIONS } from '../lib/language';
 import { formatAuthors, STATUS_LABELS } from '../lib/labels';
-import type { BookEntryStatus, OpenLibraryHit } from '../types/database';
+import type { BookEntryStatus } from '../types/database';
 import { BookCover } from './BookCover';
 
 interface AddBookModalProps {
@@ -25,6 +27,26 @@ interface AddBookModalProps {
 }
 
 type Tab = 'search' | 'manual';
+type SearchSource = BookSearchHit['source'] | null;
+
+async function searchBooks(query: string): Promise<{ hits: BookSearchHit[]; source: SearchSource }> {
+  try {
+    const olHits = await searchOpenLibrary(query);
+    if (olHits.length > 0) {
+      return { hits: olHits.map(openLibraryHitToSearchHit), source: 'open_library' };
+    }
+  } catch {
+    // fall through to Google Books
+  }
+
+  const gbHits = await searchGoogleBooks(query);
+  return { hits: gbHits, source: gbHits.length > 0 ? 'google_books' : null };
+}
+
+const SOURCE_LABELS: Record<NonNullable<SearchSource>, string> = {
+  open_library: 'Результати з Open Library',
+  google_books: 'Результати з Google Books',
+};
 
 export function AddBookModal({
   shelfId,
@@ -37,7 +59,8 @@ export function AddBookModal({
   const mobile = useIsMobile();
   const [tab, setTab] = useState<Tab>(searchEnabled ? 'search' : 'manual');
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<OpenLibraryHit[]>([]);
+  const [results, setResults] = useState<BookSearchHit[]>([]);
+  const [searchSource, setSearchSource] = useState<SearchSource>(null);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState('');
 
@@ -58,6 +81,7 @@ export function AddBookModal({
     const q = query.trim();
     if (q.length < 2) {
       setResults([]);
+      setSearchSource(null);
       return;
     }
 
@@ -65,10 +89,13 @@ export function AddBookModal({
       setSearching(true);
       setSearchError('');
       try {
-        setResults(await searchOpenLibrary(q));
+        const { hits, source } = await searchBooks(q);
+        setResults(hits);
+        setSearchSource(source);
       } catch {
-        setSearchError('Пошук не вдався');
+        setSearchError('Пошук не вдався — спробуй вручну');
         setResults([]);
+        setSearchSource(null);
       } finally {
         setSearching(false);
       }
@@ -77,24 +104,24 @@ export function AddBookModal({
     return () => window.clearTimeout(timer);
   }, [query, tab, searchEnabled]);
 
-  async function pickHit(hit: OpenLibraryHit) {
+  async function pickHit(hit: BookSearchHit) {
     if (!shelfId) return;
     setSaving(true);
     setError('');
     try {
       await onAdd({
         title: hit.title,
-        authors: hit.author_name ?? [],
-        coverUrl: openLibraryCoverUrl(hit.cover_i, 'L'),
-        pageCount: hit.number_of_pages_median ?? null,
-        publishedYear: hit.first_publish_year ?? null,
-        externalIds: { open_library: openLibraryWorkId(hit.key) },
-        language: pickOpenLibraryLanguage(hit.language),
+        authors: hit.authors,
+        coverUrl: hit.coverUrl,
+        pageCount: hit.pageCount,
+        publishedYear: hit.publishedYear,
+        externalIds: hit.externalIds,
+        language: hit.language,
         status,
       });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Не вдалося додати книгу');
+      setError(errorMessage(err, 'Не вдалося додати книгу'));
     } finally {
       setSaving(false);
     }
@@ -121,7 +148,7 @@ export function AddBookModal({
       });
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Не вдалося додати книгу');
+      setError(errorMessage(err, 'Не вдалося додати книгу'));
     } finally {
       setSaving(false);
     }
@@ -218,20 +245,20 @@ export function AddBookModal({
               {searchError && <p className="form-error">{searchError}</p>}
 
               <div className="add-book-results">
-                {!searching && queryReady && results.length === 0 && (
+                {!searching && queryReady && results.length === 0 && !searchError && (
                   <p className="add-book-empty">Нічого не знайдено — спробуй додати вручну</p>
                 )}
                 {results.map((hit) => (
-                  <div key={hit.key} className="add-book-hit">
+                  <div key={`${hit.source}:${hit.id}`} className="add-book-hit">
                     <BookCover
                       title={hit.title}
-                      authors={hit.author_name}
-                      coverUrl={openLibraryCoverUrl(hit.cover_i, 'S')}
+                      authors={hit.authors}
+                      coverUrl={hit.coverUrl}
                       size="sm"
                     />
                     <div className="add-book-hit-text">
                       <div className="add-book-hit-title">{hit.title}</div>
-                      <div className="add-book-hit-author">{formatAuthors(hit.author_name)}</div>
+                      <div className="add-book-hit-author">{formatAuthors(hit.authors)}</div>
                     </div>
                     <button
                       type="button"
@@ -245,7 +272,9 @@ export function AddBookModal({
                 ))}
               </div>
 
-              <p className="add-book-source">Результати з Open Library</p>
+              {searchSource && (
+                <p className="add-book-source">{SOURCE_LABELS[searchSource]}</p>
+              )}
             </>
           ) : (
             <form className="add-book-manual" onSubmit={handleManualSubmit}>

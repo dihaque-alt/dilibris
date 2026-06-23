@@ -1,4 +1,6 @@
 import type { OpenLibraryHit } from '../types/database';
+import type { BookSearchHit } from './googleBooks';
+import { pickOpenLibraryLanguage } from './language';
 
 const SEARCH_URL = 'https://openlibrary.org/search.json';
 
@@ -26,4 +28,18 @@ export function openLibraryCoverUrl(coverId?: number, size: 'S' | 'M' | 'L' = 'M
 
 export function openLibraryWorkId(key: string): string {
   return key.replace(/^\//, '');
+}
+
+export function openLibraryHitToSearchHit(hit: OpenLibraryHit): BookSearchHit {
+  return {
+    id: hit.key,
+    source: 'open_library',
+    title: hit.title,
+    authors: hit.author_name ?? [],
+    coverUrl: openLibraryCoverUrl(hit.cover_i, 'L'),
+    pageCount: hit.number_of_pages_median ?? null,
+    publishedYear: hit.first_publish_year ?? null,
+    language: pickOpenLibraryLanguage(hit.language),
+    externalIds: { open_library: openLibraryWorkId(hit.key) },
+  };
 }

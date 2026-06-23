@@ -31,3 +31,19 @@ export function pickOpenLibraryLanguage(codes?: string[]): string | null {
   if (normalized.includes('ukr') || normalized.includes('uk')) return 'ukr';
   return normalized[0] ?? null;
 }
+
+/** ISO 639-1 from Google Books → canonical `books.language` code. */
+export function pickGoogleBooksLanguage(code?: string | null): string | null {
+  if (!code?.trim()) return null;
+  const n = normalizeLanguageCode(code);
+  const iso2 = n.length === 2 ? n : n.slice(0, 2);
+  const map: Record<string, string> = {
+    uk: 'ukr',
+    en: 'eng',
+    pl: 'pol',
+    de: 'deu',
+    fr: 'fra',
+    ru: 'rus',
+  };
+  return map[iso2] ?? (BOOK_LANGUAGE_OPTIONS.some((o) => o.code === n) ? n : iso2);
+}

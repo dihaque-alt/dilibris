@@ -33,7 +33,7 @@
 | 19 | Notes feed — візуал + empty state | ✅ |
 | 20 | Buddy list — обкладинки + картки | ✅ |
 | 21 | Buddy detail — layout + shared notes | ✅ |
-| 22 | Add book — Google Books fallback | ⬜ |
+| 22 | Add book — Google Books fallback | ✅ |
 | 23 | Add shelf — Choice chips замість select | ⬜ |
 | 24 | Settings sheet — parity + заголовок | ⬜ |
 | 25 | NotifBell — parity + deep links audit | ⬜ |
@@ -376,7 +376,9 @@ Two-column layout; «Архівувати» copy; shared notes composer parity; 
 ### 22. Add book — Google Books fallback
 Spec chain: Open Library → Google Books → manual.
 
-**Файли:** new `googleBooks.ts`, `AddBookModal.tsx`
+**Зроблено (2026-06-23):** `googleBooks.ts`; ланцюг пошуку OL → GB; джерело в UI; `BookSearchHit`; мова з Google Books.
+
+**Файли:** `googleBooks.ts`, `openLibrary.ts`, `language.ts`, `AddBookModal.tsx`
 
 ---
 
