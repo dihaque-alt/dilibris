@@ -1108,19 +1108,24 @@ label {
 }
 
 .offline-banner {
-  padding: 0.55rem 1rem;
-  font-size: 0.88rem;
+  margin: 0;
+  padding: 10px var(--sp-5);
   text-align: center;
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
+  border-bottom: 1px solid rgba(201, 154, 18, 0.25);
 }
 
 .offline-banner--offline {
-  background: #fff6de;
-  color: #6b5a1e;
+  color: var(--gold-deep);
+  background: rgba(255, 249, 230, 0.92);
 }
 
 .offline-banner--sync {
-  background: #ecfccb;
   color: #4d5c1f;
+  background: #ecfccb;
+  border-bottom-color: rgba(77, 92, 31, 0.2);
 }
 
 .active-session-banner {
@@ -1195,16 +1200,6 @@ label {
   .active-session-banner-actions {
     justify-content: flex-end;
   }
-}
-
-.offline-hint {
-  margin: 0;
-  padding: 0.5rem 1rem;
-  background: var(--offline-bg);
-  color: var(--offline-text);
-  font-size: 0.88rem;
-  text-align: center;
-  border-bottom: 1px solid rgba(201, 162, 39, 0.2);
 }
 
 /* Library room + flyout → src/styles/library.css */

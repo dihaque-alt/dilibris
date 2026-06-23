@@ -7,6 +7,7 @@ import { PageHead } from '../components/PageHead';
 import { RoomBackdrop } from '../components/RoomBackdrop';
 import { StatBarRow } from '../components/StatBarRow';
 import { useIsMobile } from '../hooks/useIsMobile';
+import { useOfflinePageDetail } from '../components/OfflineProvider';
 import { formatDateTimeUk } from '../lib/dates';
 import { fetchDashboardData } from '../lib/offline/dashboardSync';
 import { isOnline } from '../lib/offline/db';
@@ -88,6 +89,12 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
   const [savingChallenge, setSavingChallenge] = useState(false);
   const [editChallengeTarget, setEditChallengeTarget] = useState(false);
   const [error, setError] = useState('');
+
+  const staleDetail =
+    fromCache && cachedAt && isOnline()
+      ? `Дані станом на ${formatDateTimeUk(cachedAt)}.`
+      : null;
+  useOfflinePageDetail(staleDetail);
 
   const challenge = useMemo(
     () => challenges.find((c) => c.year === selectedYear) ?? null,
@@ -208,12 +215,6 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
     <div className="app-shell">
       <RoomBackdrop />
       <AppNav userEmail={userEmail} userId={userId} active="dashboard" />
-
-      {fromCache && cachedAt && (
-        <p className="offline-hint">
-          Дані станом на {formatDateTimeUk(cachedAt)}.
-        </p>
-      )}
 
       <main className="dl-page dashboard-page">
         <PageHead

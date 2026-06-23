@@ -56,7 +56,6 @@ export function LibraryPage({ userId, userEmail }: LibraryPageProps) {
   const [searchParams, setSearchParams] = useSearchParams();
   const [shelves, setShelves] = useState<UserShelf[]>([]);
   const [entries, setEntries] = useState<UserBookEntry[]>([]);
-  const [fromCache, setFromCache] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showAddShelf, setShowAddShelf] = useState(false);
@@ -83,7 +82,6 @@ export function LibraryPage({ userId, userEmail }: LibraryPageProps) {
     const data = await fetchLibrary(userId);
     setShelves(data.shelves);
     setEntries(data.entries);
-    setFromCache(data.fromCache);
   }, [userId]);
 
   useEffect(() => {
@@ -260,12 +258,6 @@ export function LibraryPage({ userId, userEmail }: LibraryPageProps) {
         active="library"
         onAddShelf={() => setShowAddShelf(true)}
       />
-
-      {fromCache && !online && (
-        <p className="offline-hint">
-          Показано збережену копію — сервер тимчасово недоступний.
-        </p>
-      )}
 
       {error && <p className="banner-error">{error}</p>}
 

@@ -38,7 +38,7 @@
 | 24 | Settings sheet — parity + заголовок | ✅ |
 | 25 | NotifBell — parity + deep links audit | ✅ |
 | 26 | Goodreads import — polish + spec update | ✅ |
-| 27 | Offline UX — один банер, без дублікатів | ⬜ |
+| 27 | Offline UX — один банер, без дублікатів | ✅ |
 | 28 | Копірайт і labels — один прохід | ⬜ |
 | 29 | Mobile nav + safe area audit | ⬜ |
 | 30 | Accessibility pass (focus, aria, reduced motion) | ⬜ |
@@ -421,7 +421,9 @@ Preview list styling; error states; оновити `product-spec.md` (CSV shippe
 ### 27. Offline UX — один банер
 Прибрати дубль `OfflineBanner` + `LibraryPage` `.offline-hint`; один канал повідомлень.
 
-**Файли:** `OfflineProvider.tsx`, `LibraryPage.tsx`, `OfflineBanner.tsx`
+**Зроблено (2026-06-23):** прибрано page-level hints; `useOfflinePageDetail` для дашборду (stale timestamp лише online); єдиний `OfflineBanner`.
+
+**Файли:** `OfflineProvider.tsx`, `OfflineBanner.tsx`, `LibraryPage.tsx`, `DashboardPage.tsx`, `app-shell.css`, `index.css`
 
 ---
 
