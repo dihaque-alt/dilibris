@@ -694,13 +694,6 @@ button.dl-info-tip-btn:focus-visible {
   min-width: 0;
 }
 
-.dl-buddy-detail-desc {
-  margin: 6px 0 0;
-  font-family: var(--font-sans);
-  font-size: var(--fs-sm);
-  color: var(--text-muted);
-}
-
 .dl-buddy-detail-actions--mobile {
   margin-bottom: 16px;
   margin-left: 0;
@@ -776,26 +769,36 @@ button.dl-info-tip-btn:focus-visible {
   flex: 0 0 auto;
 }
 
+.buddy-read-detail .dl-buddy-detail-hero h1 {
+  margin: 2px 0 0;
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: var(--fs-h2);
+  color: var(--ink-room);
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.55);
+}
+
+.buddy-read-detail .dl-buddy-detail-kicker {
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  color: var(--ink-room-soft);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+}
+
+.buddy-read-detail .dl-buddy-detail-desc {
+  margin: 6px 0 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  color: var(--ink-room-soft);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+}
+
 .dl-buddy-detail-hero {
   display: flex;
   align-items: center;
   gap: 14px;
   margin-bottom: 18px;
   flex-wrap: wrap;
-}
-
-.dl-buddy-detail-hero h1 {
-  margin: 2px 0 0;
-  font-family: var(--font-serif);
-  font-weight: 700;
-  font-size: var(--fs-h2);
-  color: var(--text-main);
-}
-
-.dl-buddy-detail-kicker {
-  font-family: var(--font-sans);
-  font-size: var(--fs-sm);
-  color: var(--text-muted);
 }
 
 .dl-buddy-detail-actions {

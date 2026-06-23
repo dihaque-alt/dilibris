@@ -327,11 +327,11 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
 
         {!wide && (
           <div className="dl-buddy-detail-actions dl-buddy-detail-actions--mobile">
-            <button type="button" className="dl-ghost" onClick={copyInviteLink}>
+            <button type="button" className="dl-ghost dl-ghost-room" onClick={copyInviteLink}>
               {copied ? 'Скопійовано!' : 'Копіювати лінк'}
             </button>
             {isOwner && (
-              <button type="button" className="dl-ghost" onClick={toggleArchive}>
+              <button type="button" className="dl-ghost dl-ghost-room" onClick={toggleArchive}>
                 {buddyRead.is_archived ? 'Повернути з архіву' : 'Архівувати'}
               </button>
             )}
