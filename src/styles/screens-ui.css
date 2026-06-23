@@ -1002,7 +1002,23 @@ button.dl-info-tip-btn:focus-visible {
   width: 100%;
   text-align: left;
   padding: 18px;
-  border: none;
+  cursor: pointer;
+  transition: transform var(--dur-base) var(--ease-warm), box-shadow var(--dur-base) ease;
+}
+
+.notes-page .notes-card:hover,
+.notes-page .notes-card:focus-visible {
+  transform: translateY(-3px);
+  box-shadow:
+    0 26px 56px rgba(0, 0, 0, 0.46),
+    0 8px 18px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  outline: none;
+  opacity: 1;
+}
+
+.notes-page .notes-card:active {
+  transform: translateY(-1px);
 }
 
 .notes-page .notes-card-badges {
@@ -1064,4 +1080,90 @@ button.dl-info-tip-btn:focus-visible {
   font-size: var(--fs-xs);
   font-weight: 600;
   color: var(--text-faint);
+}
+
+/* Note detail modal */
+.note-detail-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 28px 0;
+}
+
+.note-detail-body {
+  padding-top: 16px;
+}
+
+.note-detail-text {
+  margin: 0 0 12px;
+}
+
+.note-detail-text.is-quote .note-detail-text-inner {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--text-main);
+}
+
+.note-detail-text-inner {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--text-main);
+  white-space: pre-wrap;
+}
+
+.note-detail-meta {
+  margin: 0 0 6px;
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.note-detail-date {
+  display: block;
+  margin-bottom: 20px;
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  color: var(--text-faint);
+}
+
+button.note-detail-book-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-top: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--bg-card-soft);
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  opacity: 1;
+}
+
+button.note-detail-book-link:hover:not(:disabled) {
+  border-color: var(--line-strong);
+  background: #fff;
+  opacity: 1;
+}
+
+.note-detail-book-cta {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--accent-lime-deep);
+}
+
+@media (max-width: 720px) {
+  .note-detail-header {
+    padding: 12px 18px 0;
+  }
 }

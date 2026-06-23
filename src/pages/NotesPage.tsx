@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { AppNav } from '../components/AppNav';
 import { BookCover } from '../components/BookCover';
 import { BookDetailModal } from '../components/BookDetailModal';
 import { NoteBadge } from '../components/NoteBadge';
+import { NoteDetailModal } from '../components/NoteDetailModal';
 import { NotesEmptyState } from '../components/NotesEmptyState';
 import { PageHead } from '../components/PageHead';
 import { RoomBackdrop } from '../components/RoomBackdrop';
@@ -41,18 +42,23 @@ export function NotesPage({ userId, userEmail }: NotesPageProps) {
   const [error, setError] = useState('');
   const [kind, setKind] = useState<KindFilter>('all');
   const [q, setQ] = useState('');
+  const [selectedNote, setSelectedNote] = useState<NoteFeedItem | null>(null);
   const [selectedEntry, setSelectedEntry] = useState<UserBookEntry | null>(null);
+
+  const refreshNotes = useCallback(async () => {
+    const notes = await fetchAllUserNotes(userId);
+    setItems(notes);
+  }, [userId]);
 
   useEffect(() => {
     setLoading(true);
     setError('');
-    fetchAllUserNotes(userId)
-      .then(setItems)
+    refreshNotes()
       .catch((err) => {
         setError(err instanceof Error ? err.message : 'Не вдалося завантажити нотатки');
       })
       .finally(() => setLoading(false));
-  }, [userId]);
+  }, [refreshNotes]);
 
   const counts = useMemo(() => {
     const base = { all: items.length, quote: 0, thought: 0, general: 0 };
@@ -78,6 +84,16 @@ export function NotesPage({ userId, userEmail }: NotesPageProps) {
   });
 
   const emptyVariant = items.length === 0 ? 'empty' : 'filtered';
+
+  function openNote(item: NoteFeedItem) {
+    setSelectedNote(item);
+  }
+
+  function openBookFromNote() {
+    if (!selectedNote) return;
+    setSelectedEntry(selectedNote.entry);
+    setSelectedNote(null);
+  }
 
   return (
     <div className="app-shell">
@@ -124,14 +140,22 @@ export function NotesPage({ userId, userEmail }: NotesPageProps) {
           <NotesEmptyState variant={emptyVariant} />
         ) : (
           <div className="notes-masonry">
-            {filtered.map(({ note, entry }) => {
+            {filtered.map((item) => {
+              const { note, entry } = item;
               const book = entry.book;
               return (
                 <div key={note.id} className="notes-masonry-item">
-                  <button
-                    type="button"
-                    className="dl-panel is-clickable notes-card"
-                    onClick={() => setSelectedEntry(entry)}
+                  <article
+                    className="dl-panel notes-card"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => openNote(item)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        openNote(item);
+                      }
+                    }}
                   >
                     <div className="notes-card-badges">
                       <NoteBadge tone={noteBadgeTone(note.note_type)}>
@@ -162,13 +186,23 @@ export function NotesPage({ userId, userEmail }: NotesPageProps) {
                         <span className="notes-card-page">стор. {note.page_number}</span>
                       )}
                     </div>
-                  </button>
+                  </article>
                 </div>
               );
             })}
           </div>
         )}
       </main>
+
+      {selectedNote && (
+        <NoteDetailModal
+          item={selectedNote}
+          userId={userId}
+          onClose={() => setSelectedNote(null)}
+          onOpenBook={openBookFromNote}
+          onUpdated={refreshNotes}
+        />
+      )}
 
       {selectedEntry && (
         <BookDetailModal
@@ -177,8 +211,7 @@ export function NotesPage({ userId, userEmail }: NotesPageProps) {
           initialTab="notes"
           onClose={() => setSelectedEntry(null)}
           onUpdated={async () => {
-            const notes = await fetchAllUserNotes(userId);
-            setItems(notes);
+            await refreshNotes();
             setSelectedEntry((current) => {
               if (!current) return null;
               void fetchEntry(current.id).then((updated) => {
@@ -191,8 +224,7 @@ export function NotesPage({ userId, userEmail }: NotesPageProps) {
           }}
           onDeleted={async () => {
             setSelectedEntry(null);
-            const next = await fetchAllUserNotes(userId);
-            setItems(next);
+            await refreshNotes();
           }}
           onSession={() => {
             const e = selectedEntry;

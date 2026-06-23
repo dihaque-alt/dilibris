@@ -9,6 +9,7 @@ import {
 } from '../lib/offline/notesSync';
 import { loadLocalPrefs } from '../lib/userSettings';
 import type { Note, NoteType, NoteVisibility } from '../types/database';
+import { NoteBody } from './NoteBody';
 import { useOffline } from './OfflineProvider';
 
 interface BookNotesSectionProps {
@@ -19,25 +20,6 @@ interface BookNotesSectionProps {
   formId?: string;
   onFormOpenChange?: (open: boolean) => void;
   onSavingChange?: (saving: boolean) => void;
-}
-
-function NoteBody({ body, containsSpoilers }: { body: string; containsSpoilers: boolean }) {
-  const [revealed, setRevealed] = useState(!containsSpoilers);
-
-  if (!body.trim()) return null;
-
-  if (!revealed) {
-    return (
-      <div className="review-spoiler">
-        <p className="form-hint">Містить спойлери</p>
-        <button type="button" className="dl-ghost" onClick={() => setRevealed(true)}>
-          Показати нотатку
-        </button>
-      </div>
-    );
-  }
-
-  return <p className="review-body">{body}</p>;
 }
 
 function emptyForm() {
