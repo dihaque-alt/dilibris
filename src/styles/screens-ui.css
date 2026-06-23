@@ -654,6 +654,14 @@ button.dl-info-tip-btn:focus-visible {
   color: var(--text-main);
 }
 
+.buddy-sheet.dl-detailcard {
+  padding: 24px;
+}
+
+.buddy-sheet.dl-detailcard.is-sheet {
+  padding: 14px 18px calc(20px + env(safe-area-inset-bottom, 0px));
+}
+
 .buddy-sheet-form {
   display: flex;
   flex-direction: column;
