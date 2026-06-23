@@ -30,7 +30,7 @@
 | 16 | Notifications — прибрати seed, persist | ✅ |
 | 17 | Re-read (parent_entry_id) | ✅ |
 | 18 | Dashboard — візуал до прототипу | ✅ |
-| 19 | Notes feed — візуал + empty state | ⬜ |
+| 19 | Notes feed — візуал + empty state | ✅ |
 | 20 | Buddy list — обкладинки + картки | ⬜ |
 | 21 | Buddy detail — layout + shared notes | ⬜ |
 | 22 | Add book — Google Books fallback | ⬜ |
@@ -347,7 +347,9 @@ Gold challenge bar, stat cards, monthly bars, donut, authors — spacing, colors
 ### 19. Notes feed — візуал + empty state
 Masonry cards, filter chips, search, empty illustration, eyebrow copy.
 
-**Файли:** `NotesPage.tsx`, `screens-ui.css`
+**Зроблено (2026-06-18):** `PageHead`; masonry CSS; filter/search toolbar; empty illustration + filtered vs empty copy; opens book card on «Нотатки» tab; page number on cards.
+
+**Файли:** `NotesPage.tsx`, `NotesEmptyState.tsx`, `NotesEmptyIllustration.tsx`, `screens-ui.css`, `BookDetailModal.tsx`
 
 ---
 
@@ -457,4 +459,4 @@ Focus trap у modals; `aria-label` на ✕; keyboard fly-out/detail; `prefers-r
 
 ---
 
-*Останнє оновлення: 2026-06-18 — #18 dashboard visual parity*
+*Останнє оновлення: 2026-06-18 — #19 notes feed visual parity*

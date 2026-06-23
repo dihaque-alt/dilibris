@@ -33,6 +33,7 @@ interface BookDetailModalProps {
   onUpdated?: () => void | Promise<void>;
   onDeleted?: () => void;
   onSession?: () => void;
+  initialTab?: DetailTab;
 }
 
 const FORMAT_LABELS: Record<ReadingFormat, string> = {
@@ -55,11 +56,12 @@ export function BookDetailModal({
   onUpdated,
   onDeleted,
   onSession,
+  initialTab,
 }: BookDetailModalProps) {
   const mobile = useIsMobile();
   const { refreshPending } = useOffline();
   const book = entry.book;
-  const [tab, setTab] = useState<DetailTab>('progress');
+  const [tab, setTab] = useState<DetailTab>(initialTab ?? 'progress');
 
   const [status, setStatus] = useState<BookEntryStatus>(entry.status);
   const [format, setFormat] = useState<ReadingFormat | ''>(entry.format ?? '');
@@ -106,6 +108,10 @@ export function BookDetailModal({
       })
       .finally(() => setLoadingSessions(false));
   }, [loadSessions]);
+
+  useEffect(() => {
+    setTab(initialTab ?? 'progress');
+  }, [entry.id, initialTab]);
 
   useEffect(() => {
     const prev = document.body.style.overflow;

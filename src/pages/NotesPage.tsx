@@ -3,14 +3,16 @@ import { AppNav } from '../components/AppNav';
 import { BookCover } from '../components/BookCover';
 import { BookDetailModal } from '../components/BookDetailModal';
 import { NoteBadge } from '../components/NoteBadge';
+import { NotesEmptyState } from '../components/NotesEmptyState';
+import { PageHead } from '../components/PageHead';
 import { RoomBackdrop } from '../components/RoomBackdrop';
 import { useAppOverlays } from '../components/AppOverlays';
-import { useIsMobile } from '../hooks/useIsMobile';
 import { fetchAllUserNotes, type NoteFeedItem } from '../lib/notesFeed';
 import { formatAuthors, NOTE_TYPE_LABELS, NOTE_VISIBILITY_LABELS } from '../lib/labels';
 import { fetchEntry } from '../lib/offline/librarySync';
 import type { NoteType, UserBookEntry } from '../types/database';
 import '../styles/library.css';
+import '../styles/screens-ui.css';
 
 type KindFilter = 'all' | NoteType;
 
@@ -33,7 +35,6 @@ function noteBadgeTone(type: NoteType): 'quote' | 'thought' | 'general' {
 }
 
 export function NotesPage({ userId, userEmail }: NotesPageProps) {
-  const wide = !useIsMobile(760);
   const overlays = useAppOverlays();
   const [items, setItems] = useState<NoteFeedItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,19 +77,19 @@ export function NotesPage({ userId, userEmail }: NotesPageProps) {
     return haystack.includes(term);
   });
 
+  const emptyVariant = items.length === 0 ? 'empty' : 'filtered';
+
   return (
     <div className="app-shell">
       <RoomBackdrop />
       <AppNav userEmail={userEmail} userId={userId} active="notes" />
 
-      <div className="dl-page" style={{ maxWidth: 900 }}>
-        <header className="dl-pagehead">
-          <div>
-            <p className="dl-pagehead-eyebrow">На полях</p>
-            <h1 className="dl-pagehead-title">Нотатки</h1>
-            <p className="dl-pagehead-sub">Цитати й думки з усіх книг — зібрані в одному місці</p>
-          </div>
-        </header>
+      <main className="dl-page notes-page" style={{ maxWidth: 900 }}>
+        <PageHead
+          eyebrow="На полях"
+          title="Нотатки"
+          sub="Цитати й думки з усіх книг — зібрані в одному місці"
+        />
 
         {error && <p className="banner-error">{error}</p>}
 
@@ -118,16 +119,11 @@ export function NotesPage({ userId, userEmail }: NotesPageProps) {
         </div>
 
         {loading ? (
-          <p className="empty-hint">Завантажуємо нотатки…</p>
+          <p className="notes-loading">Завантажуємо нотатки…</p>
         ) : filtered.length === 0 ? (
-          <div className="dl-panel is-soft notes-empty">
-            Тут поки порожньо — додай нотатку з картки будь-якої книги.
-          </div>
+          <NotesEmptyState variant={emptyVariant} />
         ) : (
-          <div
-            className="notes-masonry"
-            style={{ columns: wide ? '2 320px' : '1', columnGap: 16 }}
-          >
+          <div className="notes-masonry">
             {filtered.map(({ note, entry }) => {
               const book = entry.book;
               return (
@@ -162,6 +158,9 @@ export function NotesPage({ userId, userEmail }: NotesPageProps) {
                         <div className="notes-card-title">{book?.title ?? 'Книга'}</div>
                         <div className="notes-card-author">{formatAuthors(book?.authors)}</div>
                       </div>
+                      {note.page_number != null && note.page_number > 0 && (
+                        <span className="notes-card-page">стор. {note.page_number}</span>
+                      )}
                     </div>
                   </button>
                 </div>
@@ -169,12 +168,13 @@ export function NotesPage({ userId, userEmail }: NotesPageProps) {
             })}
           </div>
         )}
-      </div>
+      </main>
 
       {selectedEntry && (
         <BookDetailModal
           entry={selectedEntry}
           userId={userId}
+          initialTab="notes"
           onClose={() => setSelectedEntry(null)}
           onUpdated={async () => {
             const notes = await fetchAllUserNotes(userId);
