@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { createPortal } from 'react-dom';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { type BookSearchHit, searchGoogleBooks } from '../lib/googleBooks';
 import { errorMessage } from '../lib/buddyRead';
@@ -162,14 +163,20 @@ export function AddBookModal({
   const showSearch = searchEnabled;
   const queryReady = query.trim().length >= 2;
 
-  return (
-    <div className="dl-modal-backdrop" onClick={onClose} role="presentation">
-      <div
-        className={`dl-detailcard add-book-sheet ${mobile ? 'is-sheet' : 'is-modal'}`}
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-labelledby="add-book-title"
-      >
+  return createPortal(
+    <div
+      className={`dl-modal-backdrop${mobile ? ' is-sheet-backdrop' : ''}`}
+      onClick={onClose}
+      role="presentation"
+    >
+      <div className="dl-modal-backdrop-inner">
+        <div
+          className={`dl-detailcard add-book-sheet ${mobile ? 'is-sheet' : 'is-modal'}`}
+          onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="add-book-title"
+        >
         {mobile && <div className="dl-sheet-handle" aria-hidden="true" />}
         <header className="add-book-head">
           <div>
@@ -348,7 +355,9 @@ export function AddBookModal({
             </button>
           )}
         </footer>
+        </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
