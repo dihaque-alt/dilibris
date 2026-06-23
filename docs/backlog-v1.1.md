@@ -29,7 +29,7 @@
 | 15 | Settings prefs → Supabase | ✅ |
 | 16 | Notifications — прибрати seed, persist | ✅ |
 | 17 | Re-read (parent_entry_id) | ✅ |
-| 18 | Dashboard — візуал до прототипу | ⬜ |
+| 18 | Dashboard — візуал до прототипу | ✅ |
 | 19 | Notes feed — візуал + empty state | ⬜ |
 | 20 | Buddy list — обкладинки + картки | ⬜ |
 | 21 | Buddy detail — layout + shared notes | ⬜ |
@@ -338,7 +338,9 @@
 ### 18. Dashboard — візуал до прототипу
 Gold challenge bar, stat cards, monthly bars, donut, authors — spacing, colors, typography vs `screens.jsx`.
 
-**Файли:** `DashboardPage.tsx`, `screens-ui.css`, `FormatDonut.tsx`
+**Зроблено (2026-06-18):** soft stat cards; bar list spacing 13px; donut center = finished count; collapsible «Змінити ціль»; month labels + statbar typography parity.
+
+**Файли:** `DashboardPage.tsx`, `screens-ui.css`, `FormatDonut.tsx`, `StatBarRow.tsx`
 
 ---
 
@@ -455,4 +457,4 @@ Focus trap у modals; `aria-label` на ✕; keyboard fly-out/detail; `prefers-r
 
 ---
 
-*Останнє оновлення: 2026-06-18 — #17 re-read parent_entry_id*
+*Останнє оновлення: 2026-06-18 — #18 dashboard visual parity*

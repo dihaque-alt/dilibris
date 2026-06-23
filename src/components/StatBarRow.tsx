@@ -11,7 +11,7 @@ export function StatBarRow({ label, note, frac, variant = 'lime' }: StatBarRowPr
   return (
     <div className="dl-statbar">
       <div className="dl-statbar-head">
-        <span>{label}</span>
+        <span className="dl-statbar-label">{label}</span>
         <span className="dl-statbar-note">{note}</span>
       </div>
       <div className={`dl-statbar-track is-${variant}`}>

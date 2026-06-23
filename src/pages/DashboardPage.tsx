@@ -67,9 +67,7 @@ function MonthChart({ data }: { data: { month: number; count: number }[] }) {
             }}
             title={`${count} книг`}
           />
-          <span style={{ fontFamily: 'var(--font-sans)', fontSize: '10px', color: 'var(--text-faint)' }}>
-            {MONTH_NAMES_UK[month - 1]}
-          </span>
+          <span className="dl-month-label">{MONTH_NAMES_UK[month - 1]}</span>
         </div>
       ))}
     </div>
@@ -87,6 +85,7 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
   const [targetBooks, setTargetBooks] = useState('12');
   const [loading, setLoading] = useState(true);
   const [savingChallenge, setSavingChallenge] = useState(false);
+  const [editChallengeTarget, setEditChallengeTarget] = useState(false);
   const [error, setError] = useState('');
 
   const challenge = useMemo(
@@ -118,7 +117,8 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
     } else {
       setTargetBooks('12');
     }
-  }, [challenge]);
+    setEditChallengeTarget(false);
+  }, [challenge, selectedYear]);
 
   const yearOptions = availableYears(entries);
   const finishedThisYear = finishedInYear(entries, selectedYear);
@@ -254,25 +254,36 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
             </span>
             {challengeHint(finishedCount, target, selectedYear)}
           </div>
-          <form className="dl-challenge-edit" onSubmit={handleSaveChallenge}>
-            <label>
-              Ціль на рік
-              <input
-                type="number"
-                min={0}
-                value={targetBooks}
-                onChange={(e) => setTargetBooks(e.target.value)}
-              />
-            </label>
-            <button type="submit" className="dl-ghost" disabled={savingChallenge || !isOnline()}>
-              {savingChallenge ? 'Зберігаємо…' : 'Зберегти ціль'}
+          <div className="dl-challenge-edit-wrap">
+            <button
+              type="button"
+              className="dl-challenge-edit-toggle"
+              onClick={() => setEditChallengeTarget((open) => !open)}
+            >
+              {editChallengeTarget ? 'Сховати' : 'Змінити ціль'}
             </button>
-          </form>
+            {editChallengeTarget && (
+              <form className="dl-challenge-edit" onSubmit={handleSaveChallenge}>
+                <label>
+                  Ціль на рік
+                  <input
+                    type="number"
+                    min={0}
+                    value={targetBooks}
+                    onChange={(e) => setTargetBooks(e.target.value)}
+                  />
+                </label>
+                <button type="submit" className="dl-ghost" disabled={savingChallenge || !isOnline()}>
+                  {savingChallenge ? 'Зберігаємо…' : 'Зберегти ціль'}
+                </button>
+              </form>
+            )}
+          </div>
         </section>
 
         <div className={`dl-stat-grid${wide ? ' is-wide' : ''}`}>
           {stats.map(([value, label]) => (
-            <section key={label} className="dl-panel dl-stat-card">
+            <section key={label} className="dl-panel is-soft dl-stat-card">
               <div className="dl-stat-card-value">{value}</div>
               <div className="dl-stat-card-label">{label}</div>
             </section>
@@ -291,7 +302,13 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
 
           <section className="dl-panel">
             <h2 className="dl-panel-title">Формат</h2>
-            <FormatDonut paper={formats.paper} ebook={formats.ebook} unknown={formats.unknown} />
+            <FormatDonut
+              paper={formats.paper}
+              ebook={formats.ebook}
+              audiobook={formats.audiobook}
+              unknown={formats.unknown}
+              centerValue={finishedCount}
+            />
           </section>
         </div>
 
@@ -301,7 +318,7 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
             {authors.length === 0 ? (
               <p className="empty-hint">Поки немає даних за цей рік.</p>
             ) : (
-              <div>
+              <div className="dl-statbar-list">
                 {authors.map((a) => (
                   <StatBarRow
                     key={a.author}
@@ -320,7 +337,7 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
             {languages.length === 0 ? (
               <p className="empty-hint">Поки немає даних за цей рік.</p>
             ) : (
-              <div>
+              <div className="dl-statbar-list">
                 {languages.map((l) => (
                   <StatBarRow
                     key={l.language}
@@ -338,7 +355,7 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
         {yearly.length > 1 && (
           <section className="dl-panel" style={{ marginTop: 16 }}>
             <h2 className="dl-panel-title">Порівняння років</h2>
-            <div>
+            <div className="dl-statbar-list">
               {yearly.map((y) => {
                 const maxY = Math.max(...yearly.map((row) => row.count));
                 return (

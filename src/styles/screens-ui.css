@@ -6,6 +6,10 @@
   max-width: var(--maxw);
 }
 
+.dashboard-page .dl-challenge {
+  margin-bottom: 16px;
+}
+
 .dl-year-pill {
   display: inline-flex;
   align-items: center;
@@ -107,14 +111,35 @@
   color: var(--gold-deep);
 }
 
+.dl-challenge-edit-wrap {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(240, 228, 190, 0.65);
+}
+
+.dl-challenge-edit-toggle {
+  border: none;
+  background: none;
+  padding: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: #8a6d14;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.dl-challenge-edit-toggle:hover {
+  color: var(--gold-deep);
+}
+
 .dl-challenge-edit {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
   align-items: flex-end;
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(240, 228, 190, 0.65);
+  margin-top: 12px;
 }
 
 .dl-challenge-edit label {
@@ -227,14 +252,37 @@
   min-width: 0;
 }
 
+.dl-month-label {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  color: var(--text-faint);
+}
+
+.dl-statbar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.dl-statbar-list .dl-statbar {
+  margin-bottom: 0;
+}
+
 .dl-statbar-head {
   display: flex;
   justify-content: space-between;
   font-family: var(--font-sans);
   font-size: var(--fs-sm);
   color: var(--text-main);
-  margin-bottom: 5px;
-  gap: 8px;
+  margin-bottom: 6px;
+  gap: 10px;
+}
+
+.dl-statbar-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .dl-statbar-note {
@@ -247,7 +295,7 @@
 }
 
 .dl-statbar-track {
-  height: 8px;
+  height: 9px;
   border-radius: 999px;
   overflow: hidden;
 }
@@ -333,6 +381,10 @@
 
 .dl-format-donut-legend i.is-ebook {
   background: var(--status-done);
+}
+
+.dl-format-donut-legend i.is-audiobook {
+  background: var(--gold-deep);
 }
 
 .dl-format-donut-legend i.is-unknown {

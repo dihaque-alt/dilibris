@@ -31,6 +31,7 @@ import {
   loadLibraryDisplayPrefs,
   type LibraryDisplayPrefs,
 } from '../lib/libraryDisplayPrefs';
+import { defaultProgressMode, resolveProgressPercent } from '../lib/progress';
 import type { BookEntryStatus, UserBookEntry, UserShelf } from '../types/database';
 import '../styles/library.css';
 import '../styles/library-overrides.css';
@@ -43,9 +44,9 @@ interface LibraryPageProps {
 type SortMode = 'shelf' | 'title' | 'progress';
 
 function entryProgress(entry: UserBookEntry): number {
-  const total = entry.total_pages ?? entry.book?.page_count;
-  if (!total || total <= 0) return 0;
-  return Math.min(100, Math.round((entry.current_page / total) * 100));
+  const mode = entry.progress_mode ?? defaultProgressMode(entry.format);
+  const total = entry.total_pages ?? entry.book?.page_count ?? null;
+  return resolveProgressPercent(mode, entry.current_page, total) ?? 0;
 }
 
 export function LibraryPage({ userId, userEmail }: LibraryPageProps) {

@@ -5,6 +5,7 @@ import { executeReviewOp, refreshUserReviewsCache } from './reviewsSync';
 import { offlineDb, isOnline, nowIso, type PendingOp } from './db';
 import type { BookEntryStatus, ReadingFormat, ReadingSession, UserBookEntry, UserShelf } from '../../types/database';
 import { todayIsoDate } from '../dates';
+import { defaultProgressMode } from '../progress';
 
 const ENTRY_SELECT = `
   *,
@@ -336,6 +337,7 @@ export async function createRereadEntry(
     parent_entry_id: parent.id,
     status: 're_reading',
     format: opts.format ?? parent.format ?? null,
+    progress_mode: parent.progress_mode ?? defaultProgressMode(parent.format),
     rating: null,
     current_page: 0,
     total_pages: parent.total_pages ?? parent.book?.page_count ?? null,
@@ -356,6 +358,7 @@ export async function createRereadEntry(
     parent_entry_id: parent.id,
     status: 're_reading' as const,
     format: child.format,
+    progress_mode: child.progress_mode,
     total_pages: child.total_pages,
     current_page: 0,
     total_minutes: 0,

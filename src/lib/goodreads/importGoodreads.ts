@@ -51,6 +51,9 @@ function mapStatus(row: GoodreadsCsvRow): BookEntryStatus {
 
 function mapFormat(binding: string): ReadingFormat | null {
   const b = binding.toLowerCase();
+  if (b.includes('audio') || b.includes('audible')) {
+    return 'audiobook';
+  }
   if (b.includes('kindle') || b.includes('ebook') || b.includes('nook') || b.includes('digital')) {
     return 'ebook';
   }

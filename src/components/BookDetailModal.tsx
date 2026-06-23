@@ -4,7 +4,8 @@ import { useOffline } from './OfflineProvider';
 import { DetailTabs, type DetailTab } from './DetailTabs';
 import { StatChip } from './StatChip';
 import { StatusPill } from './StatusPill';
-import { daysBetween, todayIsoDate } from '../lib/dates';
+import { readingDaysSpan, todayIsoDate } from '../lib/dates';
+import { defaultProgressMode, resolveProgressPercent } from '../lib/progress';
 import {
   addSession,
   createRereadEntry,
@@ -17,7 +18,7 @@ import {
 import { formatAuthors, STATUS_LABELS } from '../lib/labels';
 import { formatMinutes, parseRating, snapRating } from '../lib/rating';
 import { useIsMobile } from '../hooks/useIsMobile';
-import type { BookEntryStatus, ReadingFormat, ReadingSession, UserBookEntry } from '../types/database';
+import type { BookEntryStatus, ProgressMode, ReadingFormat, ReadingSession, UserBookEntry } from '../types/database';
 import { BookCover } from './BookCover';
 import { BookNotesSection } from './BookNotesSection';
 import { BookReviewsSection } from './BookReviewsSection';
@@ -35,6 +36,12 @@ interface BookDetailModalProps {
 const FORMAT_LABELS: Record<ReadingFormat, string> = {
   paper: 'Паперова',
   ebook: 'Електронна',
+  audiobook: 'Аудіо',
+};
+
+const PROGRESS_MODE_LABELS: Record<ProgressMode, string> = {
+  pages: 'Сторінки',
+  percent: 'Відсотки',
 };
 
 const STATUS_KEYS = Object.keys(STATUS_LABELS) as BookEntryStatus[];
@@ -54,6 +61,9 @@ export function BookDetailModal({
 
   const [status, setStatus] = useState<BookEntryStatus>(entry.status);
   const [format, setFormat] = useState<ReadingFormat | ''>(entry.format ?? '');
+  const [progressMode, setProgressMode] = useState<ProgressMode>(
+    entry.progress_mode ?? defaultProgressMode(entry.format),
+  );
   const [rating, setRating] = useState(String(entry.rating ?? ''));
   const [startedOn, setStartedOn] = useState(entry.started_on ?? '');
   const [finishedOn, setFinishedOn] = useState(entry.finished_on ?? '');
@@ -121,6 +131,9 @@ export function BookDetailModal({
     setStartedOn(refreshed.started_on ?? '');
     setFinishedOn(refreshed.finished_on ?? '');
     setCountsTowardStats(refreshed.counts_toward_stats);
+    if (refreshed.progress_mode) {
+      setProgressMode(refreshed.progress_mode);
+    }
     if (refreshed.rating != null) {
       setRating(String(refreshed.rating));
     }
@@ -128,11 +141,19 @@ export function BookDetailModal({
 
   const totalPagesNum = totalPages ? Number(totalPages) : null;
   const currentPageNum = Number(currentPage) || 0;
-  const progressPct =
-    totalPagesNum && totalPagesNum > 0
-      ? Math.min(100, Math.round((currentPageNum / totalPagesNum) * 100))
-      : null;
-  const readingDays = daysBetween(startedOn || null, finishedOn || null);
+  const progressPct = resolveProgressPercent(progressMode, currentPageNum, totalPagesNum);
+  const effectiveStart = startedOn || entry.started_on || null;
+  const effectiveFinished =
+    status === 'finished' || status === 'dnf' ? finishedOn || entry.finished_on || null : null;
+  const readingDays =
+    status !== 'want_to_read' ? readingDaysSpan(effectiveStart, effectiveFinished) : null;
+
+  function handleFormatChange(next: ReadingFormat | '') {
+    setFormat(next);
+    if (next === 'audiobook' && progressMode === 'pages') {
+      setProgressMode('percent');
+    }
+  }
   const showReadingActions =
     status !== 'want_to_read' && status !== 'finished' && onSession;
 
@@ -215,11 +236,12 @@ export function BookDetailModal({
       await updateEntry(userId, entry.id, {
         status,
         format: format || null,
+        progress_mode: progressMode,
         rating: savedRating,
         started_on: nextStarted,
         finished_on: status === 'finished' || status === 'dnf' ? nextFinished : null,
-        current_page: currentPageNum,
-        total_pages: totalPagesNum,
+        current_page: progressMode === 'percent' ? Math.min(100, Math.max(0, currentPageNum)) : currentPageNum,
+        total_pages: progressMode === 'percent' ? null : totalPagesNum,
         counts_toward_stats: countsTowardStats,
       });
     } catch (err) {
@@ -401,7 +423,7 @@ export function BookDetailModal({
                   <button
                     type="button"
                     className={format === '' ? 'dl-choice is-active' : 'dl-choice'}
-                    onClick={() => setFormat('')}
+                    onClick={() => handleFormatChange('')}
                   >
                     Не вказано
                   </button>
@@ -410,7 +432,7 @@ export function BookDetailModal({
                       key={value}
                       type="button"
                       className={format === value ? 'dl-choice is-active' : 'dl-choice'}
-                      onClick={() => setFormat(value)}
+                      onClick={() => handleFormatChange(value)}
                     >
                       {label}
                     </button>
@@ -443,26 +465,55 @@ export function BookDetailModal({
                 </label>
               </div>
 
-              <div className="dl-form-row">
+              <div className="dl-field">
+                <span className="dl-field-label">Прогрес</span>
+                <div className="dl-choice-row">
+                  {(Object.entries(PROGRESS_MODE_LABELS) as [ProgressMode, string][]).map(([value, label]) => (
+                    <button
+                      key={value}
+                      type="button"
+                      className={progressMode === value ? 'dl-choice is-active' : 'dl-choice'}
+                      onClick={() => setProgressMode(value)}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {progressMode === 'pages' ? (
+                <div className="dl-form-row">
+                  <label>
+                    Поточна сторінка
+                    <input
+                      type="number"
+                      min={0}
+                      value={currentPage}
+                      onChange={(e) => setCurrentPage(e.target.value)}
+                    />
+                  </label>
+                  <label>
+                    Всього сторінок
+                    <input
+                      type="number"
+                      min={1}
+                      value={totalPages}
+                      onChange={(e) => setTotalPages(e.target.value)}
+                    />
+                  </label>
+                </div>
+              ) : (
                 <label>
-                  Поточна сторінка
+                  Прогрес, %
                   <input
                     type="number"
                     min={0}
+                    max={100}
                     value={currentPage}
                     onChange={(e) => setCurrentPage(e.target.value)}
                   />
                 </label>
-                <label>
-                  Всього сторінок
-                  <input
-                    type="number"
-                    min={1}
-                    value={totalPages}
-                    onChange={(e) => setTotalPages(e.target.value)}
-                  />
-                </label>
-              </div>
+              )}
 
               {(status === 'finished' || status === 're_reading') && (
                 <div

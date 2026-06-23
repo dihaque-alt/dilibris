@@ -5,7 +5,8 @@ export type BookEntryStatus =
   | 'dnf'
   | 're_reading';
 
-export type ReadingFormat = 'paper' | 'ebook';
+export type ReadingFormat = 'paper' | 'ebook' | 'audiobook';
+export type ProgressMode = 'pages' | 'percent';
 
 export interface Profile {
   id: string;
@@ -50,6 +51,7 @@ export interface UserBookEntry {
   shelf_id: string | null;
   status: BookEntryStatus;
   format: ReadingFormat | null;
+  progress_mode?: ProgressMode;
   rating: number | null;
   current_page: number;
   total_pages: number | null;

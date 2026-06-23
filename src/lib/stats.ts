@@ -99,6 +99,7 @@ export function formatBreakdown(entries: StatsEntry[], year: number) {
   return {
     paper: finished.filter((e) => e.format === 'paper').length,
     ebook: finished.filter((e) => e.format === 'ebook').length,
+    audiobook: finished.filter((e) => e.format === 'audiobook').length,
     unknown: finished.filter((e) => !e.format).length,
   };
 }
