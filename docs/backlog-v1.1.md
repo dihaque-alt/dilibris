@@ -36,7 +36,7 @@
 | 22 | Add book — Google Books fallback | ✅ |
 | 23 | Add shelf — Choice chips замість select | ✅ |
 | 24 | Settings sheet — parity + заголовок | ✅ |
-| 25 | NotifBell — parity + deep links audit | ⬜ |
+| 25 | NotifBell — parity + deep links audit | ✅ |
 | 26 | Goodreads import — polish + spec update | ⬜ |
 | 27 | Offline UX — один банер, без дублікатів | ⬜ |
 | 28 | Копірайт і labels — один прохід | ⬜ |
@@ -403,7 +403,9 @@ Title «Профіль і налаштування»; sections order vs prototyp
 ### 25. NotifBell — parity + deep links audit
 Flyout styling; кожен тип веде куди треба; empty state.
 
-**Файли:** `NotifBell.tsx`, `app-shell.css`
+**Зроблено (2026-06-23):** flyout parity (spacing, borders, 380px list); deep links: msg→#chat, note→#notes, deadline/challenge→club/dashboard; `?entry=` для library/notes; read events sync badge.
+
+**Файли:** `NotifBell.tsx`, `notificationRoutes.ts`, `app-shell.css`, `BuddyReadDetailPage.tsx`, `LibraryPage.tsx`, `NotesPage.tsx`
 
 ---
 

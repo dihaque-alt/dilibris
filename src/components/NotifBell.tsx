@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { notificationRoute } from '../lib/notificationRoutes';
 import {
   hydrateNotificationTimes,
   loadNotifications,
@@ -7,24 +8,10 @@ import {
   markNotifRead,
   notifGlyph,
   type AppNotification,
-  type NotificationPage,
 } from '../lib/notificationsStore';
 
 interface NotifBellProps {
   userId: string;
-}
-
-const PAGE_ROUTES: Record<NotificationPage, string> = {
-  library: '/',
-  dashboard: '/dashboard',
-  notes: '/notes',
-  'buddy-reads': '/buddy-reads',
-};
-
-function routeFor(n: AppNotification): string | null {
-  if (!n.go?.page) return null;
-  if (n.go.buddyReadId) return `/buddy-reads/${n.go.buddyReadId}`;
-  return PAGE_ROUTES[n.go.page] ?? null;
 }
 
 export function NotifBell({ userId }: NotifBellProps) {
@@ -51,7 +38,7 @@ export function NotifBell({ userId }: NotifBellProps) {
   function handleOpen(id: string, n: AppNotification) {
     setItems(markNotifRead(userId, id));
     setOpen(false);
-    const path = routeFor(n);
+    const path = notificationRoute(n);
     if (path) navigate(path);
   }
 
@@ -94,7 +81,7 @@ export function NotifBell({ userId }: NotifBellProps) {
             </div>
             <div className="notif-list">
               {items.length === 0 ? (
-                <p className="notif-empty">Поки тихо 🌙</p>
+                <div className="notif-empty">Поки тихо 🌙</div>
               ) : (
                 items.map((n) => (
                   <button

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { AppNav } from '../components/AppNav';
 import { BookCover } from '../components/BookCover';
 import { BookDetailModal } from '../components/BookDetailModal';
@@ -37,6 +38,7 @@ function noteBadgeTone(type: NoteType): 'quote' | 'thought' | 'general' {
 
 export function NotesPage({ userId, userEmail }: NotesPageProps) {
   const overlays = useAppOverlays();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [items, setItems] = useState<NoteFeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -59,6 +61,18 @@ export function NotesPage({ userId, userEmail }: NotesPageProps) {
       })
       .finally(() => setLoading(false));
   }, [refreshNotes]);
+
+  useEffect(() => {
+    const entryId = searchParams.get('entry');
+    if (!entryId || loading) return;
+
+    void fetchEntry(entryId).then((entry) => {
+      if (entry) setSelectedEntry(entry);
+      const next = new URLSearchParams(searchParams);
+      next.delete('entry');
+      setSearchParams(next, { replace: true });
+    });
+  }, [loading, searchParams, setSearchParams]);
 
   const counts = useMemo(() => {
     const base = { all: items.length, quote: 0, thought: 0, general: 0 };

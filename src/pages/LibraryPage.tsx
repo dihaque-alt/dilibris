@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { AppNav } from '../components/AppNav';
 import { useAppOverlays } from '../components/AppOverlays';
 import { useOffline } from '../components/OfflineProvider';
@@ -17,6 +18,7 @@ import {
   addBook,
   createShelf,
   deleteShelf,
+  fetchEntry,
   fetchLibrary,
   renameShelf,
   reorderShelves,
@@ -51,6 +53,7 @@ function entryProgress(entry: UserBookEntry): number {
 export function LibraryPage({ userId, userEmail }: LibraryPageProps) {
   const { online, refreshPending } = useOffline();
   const overlays = useAppOverlays();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [shelves, setShelves] = useState<UserShelf[]>([]);
   const [entries, setEntries] = useState<UserBookEntry[]>([]);
   const [fromCache, setFromCache] = useState(false);
@@ -92,6 +95,18 @@ export function LibraryPage({ userId, userEmail }: LibraryPageProps) {
       })
       .finally(() => setLoading(false));
   }, [loadLibrary, online]);
+
+  useEffect(() => {
+    const entryId = searchParams.get('entry');
+    if (!entryId || loading) return;
+
+    void fetchEntry(entryId).then((entry) => {
+      if (entry) setSelectedEntry(entry);
+      const next = new URLSearchParams(searchParams);
+      next.delete('entry');
+      setSearchParams(next, { replace: true });
+    });
+  }, [loading, searchParams, setSearchParams]);
 
   useEffect(() => {
     const onImported = () => {

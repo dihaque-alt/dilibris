@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent, type KeyboardEvent } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { AppNav } from '../components/AppNav';
 import { BookCover } from '../components/BookCover';
 import { MemberAvatar } from '../components/MemberAvatar';
@@ -43,6 +43,7 @@ function memberBarColor(name: string): string {
 
 export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPageProps) {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   const navigate = useNavigate();
   const wide = !useIsMobile(760);
   const [buddyRead, setBuddyRead] = useState<BuddyRead | null>(null);
@@ -144,6 +145,20 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
       })
       .finally(() => setLoading(false));
   }, [loadDetail]);
+
+  useEffect(() => {
+    if (loading || !buddyRead) return;
+    const hash = location.hash.slice(1);
+    if (hash !== 'chat' && hash !== 'notes') return;
+
+    window.requestAnimationFrame(() => {
+      const target =
+        hash === 'chat'
+          ? document.querySelector('.dl-panel--chat')
+          : document.getElementById('buddy-shared-notes');
+      target?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+  }, [loading, buddyRead, location.hash]);
 
   const isOwner = buddyRead?.owner_id === userId;
 
@@ -377,7 +392,7 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
               </div>
             </section>
 
-            <section className="dl-panel">
+            <section className="dl-panel" id="buddy-shared-notes">
               <div className="dl-panel-title-row">
                 <h2 className="dl-panel-title">Спільні нотатки</h2>
                 {myEntryId && (

@@ -104,6 +104,10 @@ function cacheNotifications(userId: string, items: AppNotification[]) {
   localStorage.setItem(CACHE_KEY(userId), JSON.stringify(withoutLegacySeed(items).slice(0, 40)));
 }
 
+function emitNotificationsChanged() {
+  window.dispatchEvent(new CustomEvent('dilibris:notifications'));
+}
+
 async function fetchRemoteNotifications(userId: string): Promise<AppNotification[]> {
   const { data, error } = await supabase
     .from('user_notifications')
@@ -184,6 +188,7 @@ export function markNotifRead(userId: string, id: string): AppNotification[] {
       .eq('id', id);
   }
 
+  emitNotificationsChanged();
   return hydrateNotificationTimes(items);
 }
 
@@ -195,6 +200,7 @@ export function markAllNotifsRead(userId: string): AppNotification[] {
     void supabase.from('user_notifications').update({ read: true }).eq('user_id', userId);
   }
 
+  emitNotificationsChanged();
   return hydrateNotificationTimes(items);
 }
 
@@ -238,7 +244,7 @@ export async function addNotification(
     if (error) throw error;
   }
 
-  window.dispatchEvent(new CustomEvent('dilibris:notifications'));
+  emitNotificationsChanged();
   return hydrateNotificationTimes(items);
 }
 
