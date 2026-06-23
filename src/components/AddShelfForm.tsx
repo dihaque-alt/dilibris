@@ -7,6 +7,8 @@ interface AddShelfFormProps {
   onCancel: () => void;
 }
 
+const STATUS_KEYS = Object.keys(STATUS_LABELS) as BookEntryStatus[];
+
 export function AddShelfForm({ onSubmit, onCancel }: AddShelfFormProps) {
   const [name, setName] = useState('');
   const [statusFilter, setStatusFilter] = useState<BookEntryStatus | ''>('');
@@ -43,21 +45,28 @@ export function AddShelfForm({ onSubmit, onCancel }: AddShelfFormProps) {
           autoFocus
         />
       </label>
-      <label className="dl-field">
+      <div className="dl-field">
         <span className="dl-field-label">Статус (необов&apos;язково)</span>
-        <select
-          className="dl-field-input"
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value as BookEntryStatus | '')}
-        >
-          <option value="">Будь-який</option>
-          {(Object.entries(STATUS_LABELS) as [BookEntryStatus, string][]).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
+        <div className="dl-choice-row" role="group" aria-label="Фільтр за статусом">
+          <button
+            type="button"
+            className={statusFilter === '' ? 'dl-choice is-active' : 'dl-choice'}
+            onClick={() => setStatusFilter('')}
+          >
+            Будь-який
+          </button>
+          {STATUS_KEYS.map((key) => (
+            <button
+              key={key}
+              type="button"
+              className={statusFilter === key ? 'dl-choice is-active' : 'dl-choice'}
+              onClick={() => setStatusFilter(key)}
+            >
+              {STATUS_LABELS[key]}
+            </button>
           ))}
-        </select>
-      </label>
+        </div>
+      </div>
       {error && <p className="form-error">{error}</p>}
       <div className="add-shelf-actions">
         <button type="button" className="dl-ghost" onClick={onCancel}>

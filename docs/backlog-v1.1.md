@@ -34,7 +34,7 @@
 | 20 | Buddy list — обкладинки + картки | ✅ |
 | 21 | Buddy detail — layout + shared notes | ✅ |
 | 22 | Add book — Google Books fallback | ✅ |
-| 23 | Add shelf — Choice chips замість select | ⬜ |
+| 23 | Add shelf — Choice chips замість select | ✅ |
 | 24 | Settings sheet — parity + заголовок | ⬜ |
 | 25 | NotifBell — parity + deep links audit | ⬜ |
 | 26 | Goodreads import — polish + spec update | ⬜ |
@@ -385,7 +385,9 @@ Spec chain: Open Library → Google Books → manual.
 ### 23. Add shelf — Choice chips
 Replace `<select>` status filter with `dl-choice` row like detail card.
 
-**Файли:** `AddShelfSheet.tsx`, `AddShelfForm.tsx`
+**Зроблено (2026-06-23):** `dl-choice-row` з «Будь-який» + статуси; padding sheet.
+
+**Файли:** `AddShelfForm.tsx`, `library-overrides.css`
 
 ---
 

@@ -137,6 +137,11 @@
 /* add shelf sheet */
 .add-shelf-sheet {
   width: min(520px, 94vw);
+  padding: 24px;
+}
+
+.add-shelf-sheet.is-sheet {
+  padding: 14px 18px calc(20px + env(safe-area-inset-bottom, 0px));
 }
 
 .add-shelf-head {
