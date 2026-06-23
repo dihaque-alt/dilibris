@@ -505,12 +505,38 @@ button.dl-info-tip-btn:focus-visible {
   text-decoration: none;
   color: inherit;
   display: block;
+  position: relative;
+}
+
+.dl-buddy-card.is-archived {
+  opacity: 0.82;
+  background: var(--bg-card-soft) !important;
 }
 
 .dl-buddy-card-head {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+}
+
+.dl-buddy-card-chevron {
+  flex-shrink: 0;
+  color: var(--text-faint);
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.dl-buddy-archived-badge {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 2px 9px;
+  border-radius: var(--r-pill);
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-card-soft);
+  border: 1px solid var(--line);
 }
 
 .dl-buddy-card-meta {
@@ -524,20 +550,33 @@ button.dl-info-tip-btn:focus-visible {
   font-size: var(--fs-title);
   color: var(--text-main);
   margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .dl-buddy-card-sub {
   font-family: var(--font-sans);
   font-size: var(--fs-xs);
   color: var(--text-muted);
-  margin-top: 4px;
+  margin: 2px 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dl-buddy-progress-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
 }
 
 .dl-buddy-progress {
+  flex: 1;
   height: 8px;
   border-radius: 999px;
   background: var(--accent-lime-light);
-  margin-top: 14px;
   overflow: hidden;
 }
 
@@ -546,6 +585,21 @@ button.dl-info-tip-btn:focus-visible {
   border-radius: 999px;
   background: var(--accent-lime);
   transition: width var(--dur-base) var(--ease-warm);
+}
+
+.dl-buddy-progress-pct {
+  flex-shrink: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.dl-buddy-card-deadline {
+  margin: 10px 0 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  color: var(--text-faint);
 }
 
 .dl-buddy-progress-note {
@@ -625,6 +679,93 @@ button.dl-info-tip-btn:focus-visible {
 
 .dl-shelf-titles {
   align-items: center;
+}
+
+.dl-buddy-detail-head {
+  flex: 1;
+  min-width: 0;
+}
+
+.dl-buddy-detail-desc {
+  margin: 6px 0 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.dl-buddy-detail-actions--mobile {
+  margin-bottom: 16px;
+  margin-left: 0;
+}
+
+.dl-buddy-avg-pct {
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--accent-lime-deep);
+}
+
+.dl-member-owner-tag {
+  margin-left: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-xs);
+}
+
+.dl-ghost-compact {
+  padding: 6px 12px;
+}
+
+.dl-composer-textarea {
+  width: 100%;
+  resize: vertical;
+  box-sizing: border-box;
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  padding: 10px 12px;
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  color: var(--text-main);
+  background: var(--bg-card);
+  outline: none;
+  line-height: 1.45;
+  margin-bottom: 10px;
+}
+
+.dl-composer-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.dl-composer-page {
+  width: 120px;
+  box-sizing: border-box;
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--r-sm);
+  padding: 9px 12px;
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  color: var(--text-main);
+  background: var(--bg-card);
+  outline: none;
+}
+
+.dl-composer-actions .dl-primary {
+  margin-left: auto;
+}
+
+.dl-shared-notes-empty,
+.dl-chat-empty {
+  text-align: center;
+  padding: 12px 0;
+}
+
+.dl-chat-bubble:not(.is-mine) .dl-chat-author {
+  color: var(--text-muted);
+}
+
+.dl-chat-send {
+  flex: 0 0 auto;
 }
 
 .dl-buddy-detail-hero {
@@ -751,18 +892,19 @@ button.dl-info-tip-btn:focus-visible {
 }
 
 .dl-chat-compose {
-  padding: 11px 14px;
-  border: 1.5px solid var(--line-strong);
-  border-radius: var(--r-md);
   display: flex;
   gap: 8px;
   align-items: center;
+  margin-top: 14px;
 }
 
 .dl-chat-compose input {
   flex: 1;
-  border: none;
-  background: transparent;
+  min-width: 0;
+  padding: 11px 14px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: var(--r-md);
+  background: var(--bg-card);
   font-family: var(--font-sans);
   font-size: var(--fs-sm);
   color: var(--text-main);

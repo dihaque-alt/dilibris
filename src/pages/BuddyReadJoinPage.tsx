@@ -27,10 +27,10 @@ export function BuddyReadJoinPage() {
     return (
       <div className="center-page">
         <p className="form-error">{error}</p>
-        <Link to="/buddy-reads">До buddy reads</Link>
+        <Link to="/buddy-reads">До Спільночиту</Link>
       </div>
     );
   }
 
-  return <div className="center-page">Приєднуємось до buddy read…</div>;
+  return <div className="center-page">Приєднуємось до клубу…</div>;
 }

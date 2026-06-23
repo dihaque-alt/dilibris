@@ -111,7 +111,7 @@ export function AppNav({ userEmail, userId, active, onAddShelf }: AppNavProps) {
     { key: 'library' as const, label: 'Бібліотека', to: '/' },
     { key: 'dashboard' as const, label: 'Дашборд', to: '/dashboard' },
     { key: 'notes' as const, label: 'Нотатки', to: '/notes' },
-    { key: 'buddy-reads' as const, label: 'Спільне читання', to: '/buddy-reads' },
+    { key: 'buddy-reads' as const, label: 'Спільночит', to: '/buddy-reads' },
   ];
 
   return (

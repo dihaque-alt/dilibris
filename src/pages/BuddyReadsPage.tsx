@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AppNav } from '../components/AppNav';
+import { BookCover } from '../components/BookCover';
 import { BuddyCreateSheet } from '../components/BuddyCreateSheet';
 import { BuddyJoinSheet } from '../components/BuddyJoinSheet';
-import { MemberAvatar } from '../components/MemberAvatar';
 import { PageHead } from '../components/PageHead';
 import { RoomBackdrop } from '../components/RoomBackdrop';
 import { useIsMobile } from '../hooks/useIsMobile';
-import { averageMemberProgress, parseInviteToken } from '../lib/buddyRead';
+import { averageMemberProgress, formatMemberCount, parseInviteToken } from '../lib/buddyRead';
+import { formatDateUk } from '../lib/dates';
 import { supabase } from '../lib/supabase';
 import type { BuddyReadListItem, UserBookEntry } from '../types/database';
 import '../styles/library.css';
@@ -107,7 +108,7 @@ export function BuddyReadsPage({ userId, userEmail }: BuddyReadsPageProps) {
   useEffect(() => {
     loadData()
       .catch((err) => {
-        setError(err instanceof Error ? err.message : 'Не вдалося завантажити buddy reads');
+        setError(err instanceof Error ? err.message : 'Не вдалося завантажити Спільночит');
       })
       .finally(() => setLoading(false));
   }, [loadData]);
@@ -139,7 +140,7 @@ export function BuddyReadsPage({ userId, userEmail }: BuddyReadsPageProps) {
       .insert({
         owner_id: userId,
         book_id: payload.bookId,
-        title: payload.title.trim() || selected?.book?.title || 'Buddy read',
+        title: payload.title.trim() || selected?.book?.title || 'Клуб',
         description: payload.description.trim() || null,
         target_finish_on: payload.deadline || null,
       })
@@ -168,7 +169,7 @@ export function BuddyReadsPage({ userId, userEmail }: BuddyReadsPageProps) {
         <RoomBackdrop />
         <AppNav userEmail={userEmail} userId={userId} active="buddy-reads" />
         <div className="center-page" style={{ color: 'var(--ink-room-soft)' }}>
-          Завантажуємо спільне читання…
+          Завантажуємо спільночит…
         </div>
       </div>
     );
@@ -182,8 +183,8 @@ export function BuddyReadsPage({ userId, userEmail }: BuddyReadsPageProps) {
       <main className="dl-page buddy-reads-page">
         <PageHead
           eyebrow="Читаємо разом"
-          title="Спільне читання"
-          sub="Маленькі клуби, спільний дедлайн і нотатки на полях"
+          title="Спільночит"
+          sub="Клуби з дедлайном, спільночатами й нотатками на полях"
         >
           <button type="button" className="dl-primary" onClick={() => setShowCreate(true)}>
             + Створити
@@ -203,25 +204,50 @@ export function BuddyReadsPage({ userId, userEmail }: BuddyReadsPageProps) {
             </button>
           </section>
         ) : (
-          <div className={`dl-buddy-grid${wide ? '' : ''}`}>
+          <div className={`dl-buddy-grid${wide ? ' is-wide' : ''}`}>
             {visibleItems.map(({ buddy_read: br }) => {
               const meta = progressByRead.get(br.id) ?? { count: 0, pct: 0 };
+              const bookTitle = br.book?.title ?? 'Книга';
+              const deadline = br.target_finish_on ? formatDateUk(br.target_finish_on) : null;
               return (
-                <Link key={br.id} to={`/buddy-reads/${br.id}`} className="dl-panel dl-buddy-card is-clickable">
+                <Link
+                  key={br.id}
+                  to={`/buddy-reads/${br.id}`}
+                  className={`dl-panel dl-buddy-card is-clickable${br.is_archived ? ' is-archived' : ''}`}
+                >
                   <div className="dl-buddy-card-head">
-                    <MemberAvatar name={br.title} />
+                    <BookCover
+                      title={bookTitle}
+                      authors={br.book?.authors}
+                      coverUrl={br.book?.cover_url}
+                      entryId={br.book_id}
+                      width={44}
+                    />
                     <div className="dl-buddy-card-meta">
                       <h3 className="dl-buddy-card-title">{br.title}</h3>
                       <p className="dl-buddy-card-sub">
-                        {meta.count} учасники · «{br.book?.title ?? 'Книга'}»
-                        {br.is_archived && ' · Архів'}
+                        {formatMemberCount(meta.count)} · «{bookTitle}»
                       </p>
                     </div>
+                    <span className="dl-buddy-card-chevron" aria-hidden="true">
+                      ›
+                    </span>
                   </div>
-                  <div className="dl-buddy-progress">
-                    <div className="dl-buddy-progress-fill" style={{ width: `${meta.pct}%` }} />
+
+                  {br.is_archived && (
+                    <span className="dl-buddy-archived-badge">Архів</span>
+                  )}
+
+                  <div className="dl-buddy-progress-row">
+                    <div className="dl-buddy-progress">
+                      <div className="dl-buddy-progress-fill" style={{ width: `${meta.pct}%` }} />
+                    </div>
+                    <span className="dl-buddy-progress-pct">{meta.pct}%</span>
                   </div>
-                  <p className="dl-buddy-progress-note">Середній прогрес {meta.pct}%</p>
+
+                  {deadline && (
+                    <p className="dl-buddy-card-deadline">до {deadline}</p>
+                  )}
                 </Link>
               );
             })}

@@ -1,12 +1,17 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useCallback, useEffect, useState, type FormEvent, type KeyboardEvent } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AppNav } from '../components/AppNav';
 import { BookCover } from '../components/BookCover';
 import { MemberAvatar } from '../components/MemberAvatar';
 import { RoomBackdrop } from '../components/RoomBackdrop';
-import { inviteUrl, pickMemberProgress, progressLabel, progressPercent } from '../lib/buddyRead';
-import { formatDateUk, formatDateTimeUk } from '../lib/dates';
-import { NOTE_TYPE_LABELS, STATUS_LABELS } from '../lib/labels';
+import { useIsMobile } from '../hooks/useIsMobile';
+import {
+  averageMemberProgress,
+  inviteUrl,
+  pickMemberProgress,
+  progressPercent,
+} from '../lib/buddyRead';
+import { formatDateUk } from '../lib/dates';
 import { supabase } from '../lib/supabase';
 import type {
   BookEntryStatus,
@@ -14,7 +19,6 @@ import type {
   BuddyReadMember,
   BuddyReadMessage,
   Note,
-  NoteType,
 } from '../types/database';
 import '../styles/library.css';
 import '../styles/screens-ui.css';
@@ -39,6 +43,8 @@ function memberBarColor(name: string): string {
 
 export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPageProps) {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const wide = !useIsMobile(760);
   const [buddyRead, setBuddyRead] = useState<BuddyRead | null>(null);
   const [members, setMembers] = useState<BuddyReadMember[]>([]);
   const [messages, setMessages] = useState<BuddyReadMessage[]>([]);
@@ -64,10 +70,7 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
   const [chatSaving, setChatSaving] = useState(false);
 
   const [noteBody, setNoteBody] = useState('');
-  const [noteType, setNoteType] = useState<NoteType>('thought');
   const [notePage, setNotePage] = useState('');
-  const [noteChapter, setNoteChapter] = useState('');
-  const [noteSpoilers, setNoteSpoilers] = useState(false);
   const [noteSaving, setNoteSaving] = useState(false);
   const [noteComposerOpen, setNoteComposerOpen] = useState(false);
 
@@ -137,7 +140,7 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
   useEffect(() => {
     loadDetail()
       .catch((err) => {
-        setError(err instanceof Error ? err.message : 'Не вдалося завантажити buddy read');
+        setError(err instanceof Error ? err.message : 'Не вдалося завантажити клуб');
       })
       .finally(() => setLoading(false));
   }, [loadDetail]);
@@ -155,9 +158,10 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
     if (!buddyRead || !isOwner) return;
     setError('');
 
+    const nextArchived = !buddyRead.is_archived;
     const { error: updateError } = await supabase
       .from('buddy_reads')
-      .update({ is_archived: !buddyRead.is_archived })
+      .update({ is_archived: nextArchived })
       .eq('id', buddyRead.id);
 
     if (updateError) {
@@ -165,12 +169,17 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
       return;
     }
 
+    if (nextArchived) {
+      navigate('/buddy-reads');
+      return;
+    }
+
     await loadDetail();
   }
 
-  async function handleSendMessage(e: FormEvent) {
-    e.preventDefault();
-    if (!id || !chatBody.trim()) return;
+  async function handleSendMessage(e?: FormEvent) {
+    e?.preventDefault();
+    if (!id || !chatBody.trim() || chatSaving) return;
 
     setChatSaving(true);
     setError('');
@@ -192,6 +201,13 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
     setChatSaving(false);
   }
 
+  function handleChatKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      void handleSendMessage();
+    }
+  }
+
   async function handleAddNote(e: FormEvent) {
     e.preventDefault();
     if (!id || !buddyRead || !noteBody.trim()) return;
@@ -209,12 +225,12 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
       entry_id: myEntryId,
       book_id: buddyRead.book_id,
       buddy_read_id: id,
-      note_type: noteType,
+      note_type: 'thought',
       visibility: 'private',
       body: noteBody.trim(),
       page_number: notePage ? Number(notePage) : null,
-      chapter: noteChapter.trim() || null,
-      contains_spoilers: noteSpoilers,
+      chapter: null,
+      contains_spoilers: false,
     });
 
     if (insertError) {
@@ -225,8 +241,6 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
 
     setNoteBody('');
     setNotePage('');
-    setNoteChapter('');
-    setNoteSpoilers(false);
     setNoteComposerOpen(false);
     await loadDetail();
     setNoteSaving(false);
@@ -238,7 +252,7 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
         <RoomBackdrop />
         <AppNav userEmail={userEmail} userId={userId} active="buddy-reads" />
         <div className="center-page" style={{ color: 'var(--ink-room-soft)' }}>
-          Завантажуємо…
+          Завантажуємо клуб…
         </div>
       </div>
     );
@@ -252,16 +266,21 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
         <div className="center-page">
           <p className="form-error">Клуб не знайдено</p>
           <Link to="/buddy-reads" className="dl-back-link">
-            ← Назад
+            ‹ Усі клуби
           </Link>
         </div>
       </div>
     );
   }
 
+  const bookTitle = buddyRead.book?.title ?? 'Книга';
   const deadlineLabel = buddyRead.target_finish_on
     ? `Читаємо до ${formatDateUk(buddyRead.target_finish_on)}`
-    : 'Спільне читання';
+    : buddyRead.title;
+  const avgPct = averageMemberProgress(
+    members.map((m) => m.user_id),
+    bookEntries,
+  );
 
   return (
     <div className="app-shell">
@@ -270,45 +289,62 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
 
       <main className="dl-page buddy-read-detail">
         <Link to="/buddy-reads" className="dl-back-link">
-          ← Спільне читання
+          ‹ Усі клуби
         </Link>
 
         {error && <p className="banner-error">{error}</p>}
 
         <div className="dl-buddy-detail-hero">
           <BookCover
-            title={buddyRead.book?.title ?? buddyRead.title}
+            title={bookTitle}
+            authors={buddyRead.book?.authors}
             coverUrl={buddyRead.book?.cover_url}
-            width={56}
-            size="sm"
+            entryId={buddyRead.book_id}
+            width={58}
           />
-          <div style={{ flex: 1, minWidth: 0 }}>
+          <div className="dl-buddy-detail-head">
             <p className="dl-buddy-detail-kicker">
-              {buddyRead.title} · «{buddyRead.book?.title ?? 'Книга'}»
+              {buddyRead.title} · «{bookTitle}»
             </p>
             <h1>{deadlineLabel}</h1>
             {buddyRead.description && (
-              <p className="dl-buddy-detail-kicker" style={{ marginTop: 6 }}>
-                {buddyRead.description}
-              </p>
+              <p className="dl-buddy-detail-desc">{buddyRead.description}</p>
             )}
           </div>
-          <div className="dl-buddy-detail-actions">
+          {wide && (
+            <div className="dl-buddy-detail-actions">
+              <button type="button" className="dl-ghost dl-ghost-room" onClick={copyInviteLink}>
+                {copied ? 'Скопійовано!' : 'Копіювати лінк'}
+              </button>
+              {isOwner && (
+                <button type="button" className="dl-ghost dl-ghost-room" onClick={toggleArchive}>
+                  {buddyRead.is_archived ? 'Повернути з архіву' : 'Архівувати'}
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {!wide && (
+          <div className="dl-buddy-detail-actions dl-buddy-detail-actions--mobile">
             <button type="button" className="dl-ghost" onClick={copyInviteLink}>
               {copied ? 'Скопійовано!' : 'Копіювати лінк'}
             </button>
             {isOwner && (
               <button type="button" className="dl-ghost" onClick={toggleArchive}>
-                {buddyRead.is_archived ? 'Повернути з архіву' : 'Архів'}
+                {buddyRead.is_archived ? 'Повернути з архіву' : 'Архівувати'}
               </button>
             )}
           </div>
-        </div>
+        )}
 
         <div className="dl-buddy-columns">
           <div className="dl-buddy-stack">
             <section className="dl-panel">
-              <h2 className="dl-panel-title">Прогрес учасників</h2>
+              <div className="dl-panel-title-row">
+                <h2 className="dl-panel-title">Прогрес учасників</h2>
+                <span className="dl-buddy-avg-pct">сер. {avgPct}%</span>
+              </div>
               <div className="dl-member-list">
                 {members.map((member) => {
                   const name = member.profile?.display_name || 'Читач';
@@ -323,9 +359,7 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
                           <span>
                             {name}
                             {member.role === 'owner' && (
-                              <span style={{ marginLeft: 6, color: 'var(--text-muted)', fontSize: 'var(--fs-xs)' }}>
-                                · організатор
-                              </span>
+                              <span className="dl-member-owner-tag"> · організатор</span>
                             )}
                           </span>
                           <span className="dl-member-row-pct">{pct}%</span>
@@ -336,9 +370,6 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
                             style={{ width: `${pct}%`, background: barColor }}
                           />
                         </div>
-                        <p className="dl-buddy-progress-note">
-                          {progress.status ? STATUS_LABELS[progress.status] : '—'} · {progressLabel(progress)}
-                        </p>
                       </div>
                     </div>
                   );
@@ -352,7 +383,7 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
                 {myEntryId && (
                   <button
                     type="button"
-                    className="dl-ghost"
+                    className="dl-ghost dl-ghost-compact"
                     onClick={() => setNoteComposerOpen((o) => !o)}
                   >
                     {noteComposerOpen ? 'Згорнути' : '+ Нотатка'}
@@ -361,58 +392,42 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
               </div>
               {!myEntryId && (
                 <p className="empty-hint">
-                  Додай «{buddyRead.book?.title}» в <Link to="/">бібліотеку</Link>, щоб писати нотатки в групі.
+                  Додай «{bookTitle}» в <Link to="/">бібліотеку</Link>, щоб писати нотатки в клубі.
                 </p>
               )}
               {noteComposerOpen && myEntryId && (
-                <form className="dl-composer-box inline-form" onSubmit={handleAddNote}>
-                  <label>
-                    Тип
-                    <select value={noteType} onChange={(e) => setNoteType(e.target.value as NoteType)}>
-                      {(Object.entries(NOTE_TYPE_LABELS) as [NoteType, string][]).map(([value, label]) => (
-                        <option key={value} value={value}>
-                          {label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <div className="form-row">
-                    <label>
-                      Сторінка
-                      <input type="number" min={1} value={notePage} onChange={(e) => setNotePage(e.target.value)} />
-                    </label>
-                    <label>
-                      Глава
-                      <input value={noteChapter} onChange={(e) => setNoteChapter(e.target.value)} />
-                    </label>
-                  </div>
-                  <label>
-                    Текст
-                    <textarea
-                      value={noteBody}
-                      onChange={(e) => setNoteBody(e.target.value)}
-                      rows={3}
-                      required
-                      placeholder="Думка, цитата, спостереження для клубу…"
-                    />
-                  </label>
-                  <label className="checkbox-label">
+                <form className="dl-composer-box" onSubmit={handleAddNote}>
+                  <textarea
+                    value={noteBody}
+                    onChange={(e) => setNoteBody(e.target.value)}
+                    rows={3}
+                    required
+                    autoFocus
+                    placeholder="Думка, цитата, спостереження для клубу…"
+                    className="dl-composer-textarea"
+                  />
+                  <div className="dl-composer-actions">
                     <input
-                      type="checkbox"
-                      checked={noteSpoilers}
-                      onChange={(e) => setNoteSpoilers(e.target.checked)}
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      value={notePage}
+                      onChange={(e) => setNotePage(e.target.value.replace(/[^0-9]/g, ''))}
+                      placeholder="Сторінка"
+                      className="dl-composer-page"
                     />
-                    Спойлери
-                  </label>
-                  <button type="submit" className="dl-primary" disabled={noteSaving}>
-                    {noteSaving ? 'Додаємо…' : 'Додати нотатку'}
-                  </button>
+                    <button type="submit" className="dl-primary" disabled={noteSaving}>
+                      {noteSaving ? 'Додаємо…' : 'Додати нотатку'}
+                    </button>
+                  </div>
                 </form>
               )}
 
               <ul className="note-list dl-shared-notes-list">
                 {sharedNotes.length === 0 ? (
-                  <li className="empty-hint">Ще немає спільних нотаток — поділися першою думкою про книгу</li>
+                  <li className="empty-hint dl-shared-notes-empty">
+                    Ще немає спільних нотаток — поділися першою думкою про книгу
+                  </li>
                 ) : (
                   sharedNotes.map((note) => {
                     const name = note.user_id === userId ? 'Ти' : note.profile?.display_name || 'Читач';
@@ -430,7 +445,6 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
                             {note.contains_spoilers ? '⚠️ ' : ''}
                             {note.body}
                           </p>
-                          <time className="review-date">{formatDateTimeUk(note.created_at)}</time>
                         </div>
                       </li>
                     );
@@ -441,10 +455,10 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
           </div>
 
           <section className="dl-panel dl-panel--chat">
-            <h2 className="dl-panel-title">Чат</h2>
+            <h2 className="dl-panel-title">Спільночат</h2>
             <div className="dl-chat-feed">
               {messages.length === 0 ? (
-                <p className="empty-hint">Поки тихо. Напиши перше повідомлення.</p>
+                <p className="empty-hint dl-chat-empty">Ще тихо — напиши першим</p>
               ) : (
                 messages.map((msg) => (
                   <div
@@ -455,7 +469,6 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
                       {msg.user_id === userId ? 'Ти' : msg.profile?.display_name || 'Читач'}
                     </div>
                     <div className="dl-chat-body">{msg.body}</div>
-                    <time className="dl-chat-time">{formatDateTimeUk(msg.created_at)}</time>
                   </div>
                 ))
               )}
@@ -464,10 +477,10 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
               <input
                 value={chatBody}
                 onChange={(e) => setChatBody(e.target.value)}
+                onKeyDown={handleChatKeyDown}
                 placeholder="Написати повідомлення…"
-                required
               />
-              <button type="submit" className="dl-primary" disabled={chatSaving}>
+              <button type="submit" className="dl-primary dl-chat-send" disabled={chatSaving}>
                 {chatSaving ? '…' : 'Надіслати'}
               </button>
             </form>

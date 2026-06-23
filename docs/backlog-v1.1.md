@@ -31,8 +31,8 @@
 | 17 | Re-read (parent_entry_id) | ✅ |
 | 18 | Dashboard — візуал до прототипу | ✅ |
 | 19 | Notes feed — візуал + empty state | ✅ |
-| 20 | Buddy list — обкладинки + картки | ⬜ |
-| 21 | Buddy detail — layout + shared notes | ⬜ |
+| 20 | Buddy list — обкладинки + картки | ✅ |
+| 21 | Buddy detail — layout + shared notes | ✅ |
 | 22 | Add book — Google Books fallback | ⬜ |
 | 23 | Add shelf — Choice chips замість select | ⬜ |
 | 24 | Settings sheet — parity + заголовок | ⬜ |
@@ -356,14 +356,20 @@ Masonry cards, filter chips, search, empty illustration, eyebrow copy.
 ### 20. Buddy list — обкладинки + картки
 `BookCover` на картці; progress bar; pluralization «1 учасник / 2 учасники»; archived state.
 
-**Файли:** `BuddyReadsPage.tsx`, `screens-ui.css`
+**Зроблено (2026-06-18):** `BookCover` 44px; progress row з %; `formatMemberCount`; badge «Архів»; дедлайн; chevron.
+
+**Файли:** `BuddyReadsPage.tsx`, `buddyRead.ts`, `screens-ui.css`
 
 ---
 
 ### 21. Buddy detail — layout + shared notes
 Two-column layout; «Архівувати» copy; shared notes composer parity; chat bubbles.
 
-**Файли:** `BuddyReadDetailPage.tsx`, `screens-ui.css`
+**Термінологія:** розділ **Спільночит**; один **спільночат** на клуб (`buddy_read_messages`).
+
+**Зроблено (2026-06-18):** hero + двоколонковий layout; сер. %; composer як у прототипі; бульбашки чату; «‹ Усі клуби»; «Архівувати»; nav «Спільночит» / панель «Спільночат».
+
+**Файли:** `BuddyReadDetailPage.tsx`, `BuddyReadsPage.tsx`, `AppNav.tsx`, `screens-ui.css`
 
 ---
 
