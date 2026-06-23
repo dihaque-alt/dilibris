@@ -37,7 +37,7 @@
 | 23 | Add shelf — Choice chips замість select | ✅ |
 | 24 | Settings sheet — parity + заголовок | ✅ |
 | 25 | NotifBell — parity + deep links audit | ✅ |
-| 26 | Goodreads import — polish + spec update | ⬜ |
+| 26 | Goodreads import — polish + spec update | ✅ |
 | 27 | Offline UX — один банер, без дублікатів | ⬜ |
 | 28 | Копірайт і labels — один прохід | ⬜ |
 | 29 | Mobile nav + safe area audit | ⬜ |
@@ -412,7 +412,9 @@ Flyout styling; кожен тип веде куди треба; empty state.
 ### 26. Goodreads import — polish + spec update
 Preview list styling; error states; оновити `product-spec.md` (CSV shipped).
 
-**Файли:** `GoodreadsImportSheet.tsx`, `docs/product-spec.md`
+**Зроблено (2026-06-23):** portal centering; preview з status pills + breakdown; rating у рядку; offline/file alerts; errors panel; spec оновлено.
+
+**Файли:** `GoodreadsImportSheet.tsx`, `importGoodreads.ts`, `detail-ui.css`, `docs/product-spec.md`
 
 ---
 

@@ -1,7 +1,16 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { useIsMobile } from '../hooks/useIsMobile';
+import { isOnline } from '../lib/offline/db';
+import { STATUS_LABELS } from '../lib/labels';
 import { parseGoodreadsCsv, type GoodreadsCsvRow } from '../lib/goodreads/parseCsv';
-import { importGoodreadsLibrary, type ImportResult } from '../lib/goodreads/importGoodreads';
+import {
+  importGoodreadsLibrary,
+  mapGoodreadsRowStatus,
+  type ImportResult,
+} from '../lib/goodreads/importGoodreads';
+import { StatusPill } from './StatusPill';
+import type { BookEntryStatus } from '../types/database';
 
 interface GoodreadsImportSheetProps {
   userId: string;
@@ -9,6 +18,43 @@ interface GoodreadsImportSheetProps {
 }
 
 type Step = 'pick' | 'preview' | 'importing' | 'done';
+
+const PREVIEW_LIMIT = 8;
+
+function bookCountLabel(n: number): string {
+  if (n === 1) return 'книгу';
+  if (n < 5) return 'книги';
+  return 'книг';
+}
+
+function GoodreadsModalShell({
+  mobile,
+  onClose,
+  children,
+}: {
+  mobile: boolean;
+  onClose: () => void;
+  children: ReactNode;
+}) {
+  return createPortal(
+    <div
+      className={`dl-modal-backdrop${mobile ? ' is-sheet-backdrop' : ''}`}
+      onClick={onClose}
+      role="presentation"
+    >
+      <div className="dl-modal-backdrop-inner">{children}</div>
+    </div>,
+    document.body,
+  );
+}
+
+function ImportAlert({ message }: { message: string }) {
+  return (
+    <div className="gr-import-alert" role="alert">
+      {message}
+    </div>
+  );
+}
 
 export function GoodreadsImportSheet({ userId, onClose }: GoodreadsImportSheetProps) {
   const mobile = useIsMobile();
@@ -19,14 +65,28 @@ export function GoodreadsImportSheet({ userId, onClose }: GoodreadsImportSheetPr
   const [error, setError] = useState('');
   const [progress, setProgress] = useState({ done: 0, total: 0, currentTitle: '' });
   const [result, setResult] = useState<ImportResult | null>(null);
+  const offline = !isOnline();
+
+  const statusCounts = useMemo(() => {
+    const counts: Partial<Record<BookEntryStatus, number>> = {};
+    for (const row of rows) {
+      const status = mapGoodreadsRowStatus(row);
+      counts[status] = (counts[status] ?? 0) + 1;
+    }
+    return counts;
+  }, [rows]);
 
   async function handleFile(file: File) {
     setError('');
+    if (!file.name.toLowerCase().endsWith('.csv') && file.type !== 'text/csv') {
+      setError('Потрібен CSV-файл — з Goodreads це goodreads_export.csv.');
+      return;
+    }
     try {
       const text = await file.text();
       const parsed = parseGoodreadsCsv(text);
       if (!parsed.length) {
-        setError('У файлі не знайдено жодної книги.');
+        setError('У файлі не знайдено жодної книги — перевір, що це експорт бібліотеки Goodreads.');
         return;
       }
       setRows(parsed);
@@ -38,6 +98,10 @@ export function GoodreadsImportSheet({ userId, onClose }: GoodreadsImportSheetPr
   }
 
   async function startImport() {
+    if (offline) {
+      setError('Підключись до інтернету — імпорт працює лише онлайн.');
+      return;
+    }
     setStep('importing');
     setError('');
     try {
@@ -53,7 +117,7 @@ export function GoodreadsImportSheet({ userId, onClose }: GoodreadsImportSheetPr
   const pct = progress.total ? Math.round((progress.done / progress.total) * 100) : 0;
 
   return (
-    <div className="dl-modal-backdrop" onClick={onClose} role="presentation">
+    <GoodreadsModalShell mobile={mobile} onClose={onClose}>
       <div
         className={`dl-detailcard gr-import ${mobile ? 'is-sheet' : 'is-modal'}`}
         onClick={(e) => e.stopPropagation()}
@@ -73,14 +137,24 @@ export function GoodreadsImportSheet({ userId, onClose }: GoodreadsImportSheetPr
         </header>
 
         <div className="gr-import-body">
+          {offline && step !== 'done' && (
+            <ImportAlert message="Зараз офлайн — імпорт працює лише з інтернетом." />
+          )}
+
           {step === 'pick' && (
             <>
               <ol className="gr-import-steps">
                 <li>
                   У Goodreads відкрий <strong>My Books</strong> → <strong>Import and export</strong>
                 </li>
-                <li>Натисни <strong>Export Library</strong> — завантажиться файл <code>goodreads_export.csv</code></li>
-                <li>Завантаж його сюди — ми створимо полиці за статусами й перенесемо книги, оцінки та відгуки</li>
+                <li>
+                  Натисни <strong>Export Library</strong> — завантажиться файл{' '}
+                  <code>goodreads_export.csv</code>
+                </li>
+                <li>
+                  Завантаж його сюди — ми створимо полиці за статусами й перенесемо книги, оцінки та
+                  відгуки
+                </li>
               </ol>
 
               <input
@@ -91,6 +165,7 @@ export function GoodreadsImportSheet({ userId, onClose }: GoodreadsImportSheetPr
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) void handleFile(file);
+                  e.target.value = '';
                 }}
               />
               <button
@@ -107,18 +182,33 @@ export function GoodreadsImportSheet({ userId, onClose }: GoodreadsImportSheetPr
             <>
               <p className="gr-import-summary">
                 Файл <strong>{fileName}</strong> — знайдено <strong>{rows.length}</strong>{' '}
-                {rows.length === 1 ? 'книгу' : rows.length < 5 ? 'книги' : 'книг'}.
-                Книги, які вже є в бібліотеці (за Goodreads ID), будуть пропущені.
+                {bookCountLabel(rows.length)}. Книги, які вже є в бібліотеці (за Goodreads ID), будуть
+                пропущені.
               </p>
+
+              <div className="gr-import-stats">
+                {(Object.entries(statusCounts) as [BookEntryStatus, number][]).map(([status, count]) => (
+                  <span key={status} className="gr-import-stat-chip">
+                    {STATUS_LABELS[status]} · {count}
+                  </span>
+                ))}
+              </div>
+
               <div className="gr-import-preview-list">
-                {rows.slice(0, 6).map((row) => (
+                {rows.slice(0, PREVIEW_LIMIT).map((row) => (
                   <div key={row.bookId || row.title} className="gr-import-preview-item">
-                    <span className="gr-import-preview-title">{row.title}</span>
-                    <span className="gr-import-preview-meta">{row.author || '—'}</span>
+                    <div className="gr-import-preview-copy">
+                      <span className="gr-import-preview-title">{row.title}</span>
+                      <span className="gr-import-preview-meta">
+                        {row.author || '—'}
+                        {row.myRating > 0 ? ` · ★ ${row.myRating}` : ''}
+                      </span>
+                    </div>
+                    <StatusPill status={mapGoodreadsRowStatus(row)} size="sm" />
                   </div>
                 ))}
-                {rows.length > 6 && (
-                  <p className="gr-import-more">…і ще {rows.length - 6}</p>
+                {rows.length > PREVIEW_LIMIT && (
+                  <p className="gr-import-more">…і ще {rows.length - PREVIEW_LIMIT}</p>
                 )}
               </div>
             </>
@@ -139,7 +229,8 @@ export function GoodreadsImportSheet({ userId, onClose }: GoodreadsImportSheetPr
           {step === 'done' && result && (
             <div className="gr-import-result">
               <p className="gr-import-result-main">
-                Готово! Додано <strong>{result.imported}</strong>
+                {result.failed === 0 ? 'Готово!' : 'Імпорт завершено з помилками.'} Додано{' '}
+                <strong>{result.imported}</strong>
                 {result.skipped > 0 && (
                   <>
                     , пропущено <strong>{result.skipped}</strong> (вже були)
@@ -153,27 +244,42 @@ export function GoodreadsImportSheet({ userId, onClose }: GoodreadsImportSheetPr
                 .
               </p>
               {result.errors.length > 0 && (
-                <ul className="gr-import-errors">
-                  {result.errors.map((e) => (
-                    <li key={e}>{e}</li>
-                  ))}
-                </ul>
+                <div className="gr-import-errors-panel" role="alert">
+                  <p className="gr-import-errors-title">Не вдалося імпортувати:</p>
+                  <ul className="gr-import-errors">
+                    {result.errors.map((e) => (
+                      <li key={e}>{e}</li>
+                    ))}
+                  </ul>
+                  {result.failed > result.errors.length && (
+                    <p className="gr-import-errors-more">
+                      …і ще {result.failed - result.errors.length} помилок
+                    </p>
+                  )}
+                </div>
               )}
-              <p className="gr-import-hint">Перейди в бібліотеку — там уже мають бути твої полиці з книгами.</p>
+              <p className="gr-import-hint">
+                Перейди в бібліотеку — там уже мають бути твої полиці з книгами.
+              </p>
             </div>
           )}
 
-          {error && <p className="banner-error">{error}</p>}
+          {error && <ImportAlert message={error} />}
         </div>
 
         <footer className="gr-import-foot">
           {step === 'preview' && (
             <>
-              <button type="button" className="dl-ghost" onClick={() => setStep('pick')}>
+              <button type="button" className="dl-ghost" onClick={() => { setStep('pick'); setError(''); }}>
                 Назад
               </button>
-              <button type="button" className="dl-primary" onClick={() => void startImport()}>
-                Імпортувати {rows.length} {rows.length === 1 ? 'книгу' : rows.length < 5 ? 'книги' : 'книг'}
+              <button
+                type="button"
+                className="dl-primary"
+                disabled={offline}
+                onClick={() => void startImport()}
+              >
+                Імпортувати {rows.length} {bookCountLabel(rows.length)}
               </button>
             </>
           )}
@@ -189,6 +295,6 @@ export function GoodreadsImportSheet({ userId, onClose }: GoodreadsImportSheetPr
           )}
         </footer>
       </div>
-    </div>
+    </GoodreadsModalShell>
   );
 }

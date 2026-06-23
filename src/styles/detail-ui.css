@@ -1383,25 +1383,46 @@ button.dl-toggle-row:focus-visible {
 }
 
 .gr-import-summary {
-  margin: 0 0 16px;
+  margin: 0 0 12px;
   font-family: var(--font-sans);
   font-size: var(--fs-sm);
   color: var(--text-muted);
   line-height: var(--lh-body);
 }
 
+.gr-import-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 14px;
+}
+
+.gr-import-stat-chip {
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  background: var(--bg-card-soft);
+  border: 1px solid var(--line);
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
 .gr-import-preview-list {
   background: var(--bg-card-soft);
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
-  padding: 12px;
+  padding: 4px 12px;
+  max-height: 280px;
+  overflow-y: auto;
 }
 
 .gr-import-preview-item {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 8px 4px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
   border-bottom: 1px solid var(--line);
 }
 
@@ -1409,24 +1430,51 @@ button.dl-toggle-row:focus-visible {
   border-bottom: none;
 }
 
+.gr-import-preview-copy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
 .gr-import-preview-title {
   font-family: var(--font-serif);
   font-weight: 700;
   font-size: var(--fs-sm);
   color: var(--text-main);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .gr-import-preview-meta {
   font-family: var(--font-sans);
   font-size: var(--fs-xs);
   color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .gr-import-more {
-  margin: 8px 4px 0;
+  margin: 6px 0 4px;
   font-family: var(--font-sans);
   font-size: var(--fs-xs);
   color: var(--text-faint);
+  text-align: center;
+}
+
+.gr-import-alert {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  border: 1px solid rgba(180, 60, 50, 0.25);
+  background: var(--error-bg);
+  color: var(--error);
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
 }
 
 .gr-import-progress {
@@ -1469,12 +1517,36 @@ button.dl-toggle-row:focus-visible {
   line-height: var(--lh-body);
 }
 
-.gr-import-errors {
+.gr-import-errors-panel {
   margin: 0 0 12px;
+  padding: 12px 14px;
+  border-radius: var(--r-md);
+  border: 1px solid rgba(180, 60, 50, 0.22);
+  background: var(--error-bg);
+}
+
+.gr-import-errors-title {
+  margin: 0 0 8px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: var(--fs-xs);
+  color: var(--error);
+}
+
+.gr-import-errors {
+  margin: 0;
   padding-left: 1.1rem;
   font-family: var(--font-sans);
   font-size: var(--fs-xs);
-  color: var(--status-dnf);
+  color: var(--error);
+  line-height: 1.45;
+}
+
+.gr-import-errors-more {
+  margin: 8px 0 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
 }
 
 .gr-import-hint {

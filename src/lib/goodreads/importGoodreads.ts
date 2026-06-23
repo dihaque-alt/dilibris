@@ -31,7 +31,7 @@ function parseAuthors(row: GoodreadsCsvRow): string[] {
   return all.length ? all : ['Невідомий автор'];
 }
 
-function mapStatus(row: GoodreadsCsvRow): BookEntryStatus {
+function mapGoodreadsRowStatus(row: GoodreadsCsvRow): BookEntryStatus {
   const shelves = row.bookshelves;
   const exclusive = row.exclusiveShelf.toLowerCase().trim();
 
@@ -77,6 +77,8 @@ function existingGoodreadsIds(entries: UserBookEntry[]): Set<string> {
   }
   return ids;
 }
+
+export { mapGoodreadsRowStatus };
 
 async function importOneRow(
   userId: string,
@@ -207,7 +209,7 @@ export async function importGoodreadsLibrary(
   onProgress?: (p: ImportProgress) => void,
 ): Promise<ImportResult> {
   if (!isOnline()) {
-    throw new Error('Підключись до інternet — імпорт працює лише онлайн.');
+    throw new Error('Підключись до інтернету — імпорт працює лише онлайн.');
   }
 
   const library = await fetchLibrary(userId);
@@ -227,7 +229,7 @@ export async function importGoodreadsLibrary(
     }
 
     try {
-      const status = mapStatus(row);
+      const status = mapGoodreadsRowStatus(row);
       const shelfId = await ensureStatusShelf(userId, status, shelves);
       await importOneRow(userId, row, shelfId, status);
       if (row.bookId) seen.add(row.bookId);
