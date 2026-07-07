@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDialogA11y } from '../hooks/useDialogA11y';
 import { notificationRoute } from '../lib/notificationRoutes';
 import {
   hydrateNotificationTimes,
@@ -21,6 +22,8 @@ export function NotifBell({ userId }: NotifBellProps) {
     hydrateNotificationTimes(loadNotifications(userId)),
   );
   const ref = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  useDialogA11y(panelRef, () => setOpen(false), open);
 
   function refresh() {
     setItems(hydrateNotificationTimes(loadNotifications(userId)));
@@ -66,7 +69,13 @@ export function NotifBell({ userId }: NotifBellProps) {
       {open && (
         <>
           <div className="menu-backdrop menu-backdrop--header" onClick={() => setOpen(false)} aria-hidden="true" />
-          <div className="notif-panel" role="dialog" aria-label="Сповіщення">
+          <div
+            ref={panelRef}
+            className="notif-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Сповіщення"
+          >
             <div className="notif-panel-head">
               <span className="notif-panel-title">Сповіщення</span>
               {unread > 0 && (

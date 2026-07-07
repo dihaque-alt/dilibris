@@ -1247,7 +1247,14 @@ button.dl-toggle-row:focus-visible {
 
 /* ---- Session timer --------------------------------------------------- */
 .session-timer {
+  position: relative;
   text-align: center;
+}
+
+.session-timer-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
 }
 
 .session-kicker {
@@ -1801,5 +1808,14 @@ button.dl-toggle-row:focus-visible {
   font-size: var(--fs-sm);
   color: var(--text-muted);
   margin-left: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dl-modal-backdrop,
+  .dl-detailcard.is-modal,
+  .dl-detailcard.is-sheet,
+  .reader-view {
+    animation: none !important;
+  }
 }
 

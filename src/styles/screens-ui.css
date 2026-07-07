@@ -647,11 +647,24 @@ button.dl-info-tip-btn:focus-visible {
 }
 
 .buddy-sheet-title {
-  margin: 0 0 16px;
+  margin: 0;
   font-family: var(--font-serif);
   font-weight: 700;
   font-size: var(--fs-h2);
   color: var(--text-main);
+}
+
+.buddy-sheet-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.buddy-sheet-head .buddy-sheet-title {
+  flex: 1;
+  min-width: 0;
 }
 
 .buddy-sheet.dl-detailcard {

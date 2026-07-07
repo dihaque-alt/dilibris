@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type MutableRefObject } from 'react';
 import { createPortal } from 'react-dom';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { useDialogA11y } from '../hooks/useDialogA11y';
 import { useIsMobile } from '../hooks/useIsMobile';
 import {
   clearActiveSession,
@@ -54,6 +56,10 @@ export function SessionTimer({
   onFinish,
 }: SessionTimerProps) {
   const mobile = useIsMobile();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeDialogRef = useRef<() => void>(() => {});
+  useDialogA11y(dialogRef, () => closeDialogRef.current());
+  useBodyScrollLock();
   const [session, setSession] = useState<ActiveReadingSession | null>(null);
   const [sec, setSec] = useState(0);
   const [running, setRunning] = useState(true);
@@ -160,14 +166,6 @@ export function SessionTimer({
     return () => document.removeEventListener('visibilitychange', onHide);
   }, []);
 
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, []);
-
   async function togglePause() {
     const current = sessionRef.current;
     if (!current) return;
@@ -217,6 +215,10 @@ export function SessionTimer({
   const clock = formatSessionClock(sec);
   const canUseSession = !loading && session != null;
 
+  closeDialogRef.current = () => {
+    void handleDismiss();
+  };
+
   return createPortal(
     <div
       className={`dl-modal-backdrop${mobile ? ' is-sheet-backdrop' : ''}`}
@@ -225,11 +227,21 @@ export function SessionTimer({
     >
       <div className="dl-modal-backdrop-inner">
         <div
+          ref={dialogRef}
           className={`dl-detailcard session-timer ${mobile ? 'is-sheet' : 'is-modal is-narrow'}`}
           onClick={(e) => e.stopPropagation()}
           role="dialog"
+          aria-modal="true"
           aria-labelledby="session-title"
         >
+          <button
+            type="button"
+            className="dl-close session-timer-close"
+            onClick={() => void handleDismiss()}
+            aria-label="Закрити"
+          >
+            ×
+          </button>
           {mobile && <div className="dl-sheet-handle" aria-hidden="true" />}
           {loading ? (
             <p className="session-kicker">Завантаження сесії…</p>

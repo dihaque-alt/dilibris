@@ -41,7 +41,7 @@
 | 27 | Offline UX — один банер, без дублікатів | ✅ |
 | 28 | Копірайт і labels — один прохід | ✅ |
 | 29 | Mobile nav + safe area audit | ✅ |
-| 30 | Accessibility pass (focus, aria, reduced motion) | ⬜ |
+| 30 | Accessibility pass (focus, aria, reduced motion) | ✅ |
 
 ---
 
@@ -450,7 +450,9 @@ Nav pills <820px; bottom sheets; banner/timer safe-area; tap targets ≥44px.
 ### 30. Accessibility pass
 Focus trap у modals; `aria-label` на ✕; keyboard fly-out/detail; `prefers-reduced-motion` audit.
 
-**Файли:** modals, `BookFlyout.tsx`, `BookDetailModal.tsx`
+**Зроблено (2026-07-07):** `useDialogA11y` (focus trap, Escape, restore focus); aria-modal/aria-label на всіх sheets; fly-out keyboard + reduced motion; NotifBell trap.
+
+**Файли:** `hooks/useDialogA11y.ts`, `BookFlyout.tsx`, `BookDetailModal.tsx`, modals, `NotifBell.tsx`, `detail-ui.css`
 
 ---
 

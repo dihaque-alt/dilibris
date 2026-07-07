@@ -1,5 +1,7 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { useDialogA11y } from '../hooks/useDialogA11y';
 import { useIsMobile } from '../hooks/useIsMobile';
 import {
   ACCENT_PRESETS,
@@ -55,9 +57,18 @@ function SettingsModalShell({
 
 export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps) {
   const mobile = useIsMobile();
+  const dialogRef = useRef<HTMLDivElement>(null);
   const [form, setForm] = useState<SettingsForm | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+
+  const handleClose = useCallback(() => {
+    applyAppearancePrefs(loadAppearancePrefs(userId));
+    onClose();
+  }, [userId, onClose]);
+
+  useDialogA11y(dialogRef, handleClose);
+  useBodyScrollLock();
 
   useEffect(() => {
     void loadUserSettings(userId, userEmail)
@@ -87,11 +98,6 @@ export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps
     setForm((f) => (f ? { ...f, appearance: { ...f.appearance, [key]: value } } : f));
   }
 
-  function handleClose() {
-    applyAppearancePrefs(loadAppearancePrefs(userId));
-    onClose();
-  }
-
   async function handleSave() {
     if (!form) return;
     setSaving(true);
@@ -112,12 +118,19 @@ export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps
     return (
       <SettingsModalShell mobile={mobile} onClose={handleClose}>
         <div
+          ref={dialogRef}
           className={`dl-detailcard settings-sheet ${mobile ? 'is-sheet' : 'is-modal'}`}
           onClick={(e) => e.stopPropagation()}
           role="dialog"
           aria-modal="true"
           aria-labelledby="settings-title"
         >
+          <header className="dl-settings-head">
+            <h2 id="settings-title">Профіль і налаштування</h2>
+            <button type="button" className="dl-close" onClick={handleClose} aria-label="Закрити">
+              ✕
+            </button>
+          </header>
           <p className="settings-sheet-loading">{error || 'Завантаження…'}</p>
         </div>
       </SettingsModalShell>
@@ -129,6 +142,7 @@ export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps
   return (
     <SettingsModalShell mobile={mobile} onClose={handleClose}>
       <div
+        ref={dialogRef}
         className={`dl-detailcard settings-sheet ${mobile ? 'is-sheet' : 'is-modal'}`}
         onClick={(e) => e.stopPropagation()}
         role="dialog"

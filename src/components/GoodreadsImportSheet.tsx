@@ -1,5 +1,7 @@
 import { useMemo, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { useDialogA11y } from '../hooks/useDialogA11y';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { isOnline } from '../lib/offline/db';
 import { STATUS_LABELS } from '../lib/labels';
@@ -58,7 +60,10 @@ function ImportAlert({ message }: { message: string }) {
 
 export function GoodreadsImportSheet({ userId, onClose }: GoodreadsImportSheetProps) {
   const mobile = useIsMobile();
+  const dialogRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  useDialogA11y(dialogRef, onClose);
+  useBodyScrollLock();
   const [step, setStep] = useState<Step>('pick');
   const [rows, setRows] = useState<GoodreadsCsvRow[]>([]);
   const [fileName, setFileName] = useState('');
@@ -119,9 +124,11 @@ export function GoodreadsImportSheet({ userId, onClose }: GoodreadsImportSheetPr
   return (
     <GoodreadsModalShell mobile={mobile} onClose={onClose}>
       <div
+        ref={dialogRef}
         className={`dl-detailcard gr-import ${mobile ? 'is-sheet' : 'is-modal'}`}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
+        aria-modal="true"
         aria-labelledby="gr-import-title"
       >
         {mobile && <div className="dl-sheet-handle" aria-hidden="true" />}

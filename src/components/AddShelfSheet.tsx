@@ -1,4 +1,7 @@
+import { useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { useDialogA11y } from '../hooks/useDialogA11y';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { AddShelfForm } from './AddShelfForm';
 import type { BookEntryStatus } from '../types/database';
@@ -10,6 +13,9 @@ interface AddShelfSheetProps {
 
 export function AddShelfSheet({ onClose, onSubmit }: AddShelfSheetProps) {
   const mobile = useIsMobile();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDialogA11y(dialogRef, onClose);
+  useBodyScrollLock();
 
   return createPortal(
     <div
@@ -19,6 +25,7 @@ export function AddShelfSheet({ onClose, onSubmit }: AddShelfSheetProps) {
     >
       <div className="dl-modal-backdrop-inner">
         <div
+          ref={dialogRef}
           className={`dl-detailcard add-shelf-sheet ${mobile ? 'is-sheet' : 'is-modal'}`}
           onClick={(e) => e.stopPropagation()}
           role="dialog"

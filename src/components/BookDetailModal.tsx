@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { useDialogA11y } from '../hooks/useDialogA11y';
 import { useOffline } from './OfflineProvider';
 import { DetailTabs, type DetailTab } from './DetailTabs';
 import { StatChip } from './StatChip';
@@ -59,7 +61,10 @@ export function BookDetailModal({
   initialTab,
 }: BookDetailModalProps) {
   const mobile = useIsMobile();
+  const dialogRef = useRef<HTMLDivElement>(null);
   const { refreshPending } = useOffline();
+  useDialogA11y(dialogRef, onClose);
+  useBodyScrollLock();
   const book = entry.book;
   const [tab, setTab] = useState<DetailTab>(initialTab ?? 'progress');
 
@@ -112,14 +117,6 @@ export function BookDetailModal({
   useEffect(() => {
     setTab(initialTab ?? 'progress');
   }, [entry.id, initialTab]);
-
-  useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, []);
 
   useEffect(() => {
     if (status === 'reading' || status === 're_reading' || status === 'finished' || status === 'dnf') {
@@ -354,6 +351,7 @@ export function BookDetailModal({
     >
       <div className="dl-modal-backdrop-inner">
         <div
+          ref={dialogRef}
           className={`dl-detailcard ${mobile ? 'is-sheet' : 'is-modal'}`}
           onClick={(e) => e.stopPropagation()}
           role="dialog"

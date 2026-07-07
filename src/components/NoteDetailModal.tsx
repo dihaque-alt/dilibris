@@ -1,5 +1,7 @@
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { useDialogA11y } from '../hooks/useDialogA11y';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { formatDateTimeUk } from '../lib/dates';
 import { NOTE_TYPE_LABELS, NOTE_VISIBILITY_LABELS, formatAuthors } from '../lib/labels';
@@ -39,6 +41,9 @@ export function NoteDetailModal({
   onOpenBook,
 }: NoteDetailModalProps) {
   const mobile = useIsMobile();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDialogA11y(dialogRef, onClose);
+  useBodyScrollLock();
   const { refreshPending } = useOffline();
   const { note, entry } = item;
   const book = entry.book;
@@ -119,6 +124,7 @@ export function NoteDetailModal({
     >
       <div className="dl-modal-backdrop-inner">
         <div
+          ref={dialogRef}
           className={`dl-detailcard note-detail-card ${mobile ? 'is-sheet' : 'is-modal'}`}
           onClick={(e) => e.stopPropagation()}
           role="dialog"

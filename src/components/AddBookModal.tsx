@@ -1,5 +1,7 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { createPortal } from 'react-dom';
+import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
+import { useDialogA11y } from '../hooks/useDialogA11y';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { type BookSearchHit, searchGoogleBooks } from '../lib/googleBooks';
 import { errorMessage } from '../lib/buddyRead';
@@ -58,6 +60,9 @@ export function AddBookModal({
   searchEnabled = true,
 }: AddBookModalProps) {
   const mobile = useIsMobile();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDialogA11y(dialogRef, onClose);
+  useBodyScrollLock();
   const [tab, setTab] = useState<Tab>(searchEnabled ? 'search' : 'manual');
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<BookSearchHit[]>([]);
@@ -171,6 +176,7 @@ export function AddBookModal({
     >
       <div className="dl-modal-backdrop-inner">
         <div
+          ref={dialogRef}
           className={`dl-detailcard add-book-sheet ${mobile ? 'is-sheet' : 'is-modal'}`}
           onClick={(e) => e.stopPropagation()}
           role="dialog"
