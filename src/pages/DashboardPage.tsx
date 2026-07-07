@@ -92,7 +92,7 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
 
   const staleDetail =
     fromCache && cachedAt && isOnline()
-      ? `Дані станом на ${formatDateTimeUk(cachedAt)}.`
+      ? `Дані станом на ${formatDateTimeUk(cachedAt)}`
       : null;
   useOfflinePageDetail(staleDetail);
 
@@ -114,7 +114,7 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
     setError('');
     loadData()
       .catch((err) => {
-        setError(err instanceof Error ? err.message : 'Не вдалося завантажити дашборд');
+        setError(err instanceof Error ? err.message : 'Не вдалося завантажити читацьку статистику');
       })
       .finally(() => setLoading(false));
   }, [loadData]);
@@ -149,14 +149,14 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
     [String(finishedCount), 'книг'],
     [pages.toLocaleString('uk-UA'), 'сторінок'],
     [formatMinutes(minutes), 'часу'],
-    [avgRating != null ? formatStarRating(Math.round(avgRating * 2) / 2) : '—', 'сер. оцінка'],
+    [avgRating != null ? formatStarRating(Math.round(avgRating * 2) / 2) : '—', 'середня оцінка'],
     ...(breakDays != null ? [[`${breakDays} днів`, 'найдовша пауза']] : []),
   ] as const;
 
   async function handleSaveChallenge(e: FormEvent) {
     e.preventDefault();
     if (!isOnline()) {
-      setError('Зберегти ціль можна лише з підключенням до інternet');
+      setError('Зберегти ціль можна лише після підключення');
       return;
     }
 
@@ -219,8 +219,8 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
       <main className="dl-page dashboard-page">
         <PageHead
           eyebrow="Твій читацький рік"
-          title="Дашборд"
-          sub="Теплі підсумки — без тиску, лише радість від прочитаного"
+          title="Читацька статистика"
+          sub="Читацькі підсумки"
         >
           <label className="dl-year-pill">
             Рік
@@ -247,7 +247,7 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
                 <InfoTooltip
                   label="Як рахується челендж"
                   placement="top"
-                  text="Книги зі статусом «Прочитано» (або перечитання з датою завершення), де увімкнено «Рахувати в challenge», і дата завершення у вибраному році."
+                  text="Книги зі статусом «Прочитано» (або перечитання з датою завершення), де увімкнено «Зарахувати до цьогорічної цілі», і дата завершення у вибраному році."
                 />
               </div>
               <div className="dl-challenge-title">
@@ -307,7 +307,7 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
               tip="Кількість прочитаних книг за кожен місяць обраного року — за датою завершення (finished_on)."
             />
             {finishedCount === 0 ? (
-              <p className="empty-hint">Познач книги як «Прочитано», щоб побачити графік.</p>
+              <p className="empty-hint">Познач книги як «Прочитано», щоб побачити статистику</p>
             ) : (
               <MonthChart data={monthData} />
             )}
@@ -337,7 +337,7 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
               tip="Автори з прочитаних книг обраного року. Якщо в книзі кілька авторів — кожен отримує +1."
             />
             {authors.length === 0 ? (
-              <p className="empty-hint">Поки немає даних за цей рік.</p>
+              <p className="empty-hint">Поки немає даних за цей рік</p>
             ) : (
               <div className="dl-statbar-list">
                 {authors.map((a) => (
@@ -360,7 +360,7 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
               tip="Мова з картки книги (вкладка «Прогрес» → «Мова книги»). Якщо не задано — потрапляє в «Мова не вказана»."
             />
             {languages.length === 0 ? (
-              <p className="empty-hint">Поки немає даних за цей рік.</p>
+              <p className="empty-hint">Поки немає даних за цей рік</p>
             ) : (
               <div className="dl-statbar-list">
                 {languages.map((l) => (

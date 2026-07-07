@@ -205,7 +205,7 @@ export function BookDetailModal({
     if (startingReread) {
       if (
         !window.confirm(
-          'Почати новий прохід? Попереднє прочитання збережеться окремо — зʼявиться новий запис на полиці.',
+          'Почати нове прочитання? Попереднє прочитання збережеться окремо — зʼявиться новий запис на полиці.',
         )
       ) {
         setStatus(entry.status);
@@ -326,7 +326,7 @@ export function BookDetailModal({
     const title = book?.title ?? 'Книга';
     if (
       !window.confirm(
-        `Видалити «${title}» з бібліотеки? Сесії та нотатки до цієї книги теж зникнуть.`,
+        `Видалити «${title}» з бібліотеки? Сесії та нотатки теж будуть видалені.`,
       )
     ) {
       return;
@@ -379,7 +379,7 @@ export function BookDetailModal({
             <StatusPill status={status} size="sm" />
             {entry.parent_entry_id && (
               <p className="form-hint" style={{ marginTop: 6 }}>
-                Перечитання · попередній прохід збережено
+                Перечитування · попереднє знайомство з книгою збережено
               </p>
             )}
           </div>
@@ -390,13 +390,13 @@ export function BookDetailModal({
 
         <div className="dl-detail-stats">
           <StatChip
-            label="прогрес"
+            label="Прогрес"
             value={progressPct !== null ? `${progressPct}%` : '—'}
             accent="var(--accent-lime-deep)"
           />
-          <StatChip label="днів читання" value={readingDays !== null ? String(readingDays) : '—'} />
+          <StatChip label="Днів читання" value={readingDays !== null ? String(readingDays) : '—'} />
           <StatChip
-            label="загалом"
+            label="Загалом"
             value={totalMinutes > 0 ? formatMinutes(totalMinutes) : '—'}
             accent="var(--gold-deep)"
           />
@@ -560,7 +560,7 @@ export function BookDetailModal({
                     <div className="dl-toggle-thumb" />
                   </div>
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: 'var(--fs-body)' }}>Рахувати в challenge</div>
+                    <div style={{ fontWeight: 600, fontSize: 'var(--fs-body)' }}>Зарахувати до цьогорічної цілі</div>
                     <div style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-muted)', marginTop: 2 }}>
                       Книга зараховується у твою річну ціль
                     </div>
@@ -671,7 +671,7 @@ export function BookDetailModal({
               {loadingSessions ? (
                 <p className="form-hint">Завантажуємо…</p>
               ) : sessions.length === 0 ? (
-                <p className="empty-hint">Ще немає сесій читання.</p>
+                <p className="empty-hint">Ще немає сесій читання</p>
               ) : (
                 <ul className="dl-session-list">
                   {sessions.map((session) => (

@@ -195,7 +195,7 @@ export function LibraryPage({ userId, userEmail }: LibraryPageProps) {
   }
 
   async function handleDeleteShelf(shelfId: string) {
-    if (!window.confirm('Видалити полицю? Книги залишаться без полиці.')) return;
+    if (!window.confirm('Видалити полицю? Книги залишаться наодинці')) return;
     await deleteShelf(userId, shelfId);
     await loadLibrary();
     await refreshPending();
@@ -266,7 +266,7 @@ export function LibraryPage({ userId, userEmail }: LibraryPageProps) {
           <p className="eyebrow">
             Твоя бібліотека{totalBooks > 0 ? ` · ${totalBooks} ${totalBooks === 1 ? 'книга' : totalBooks < 5 ? 'книги' : 'книг'}` : ''}
           </p>
-          <h1>Вечір удома з книгами</h1>
+          <h1>Місця завжди достатньо, тож купуй ще</h1>
         </div>
       </div>
 

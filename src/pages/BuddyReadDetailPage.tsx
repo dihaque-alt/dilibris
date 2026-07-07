@@ -329,7 +329,7 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
           {wide && (
             <div className="dl-buddy-detail-actions">
               <button type="button" className="dl-ghost dl-ghost-room" onClick={copyInviteLink}>
-                {copied ? 'Скопійовано!' : 'Копіювати лінк'}
+                {copied ? 'Скопійовано' : 'Копіювати лінк'}
               </button>
               {isOwner && (
                 <button type="button" className="dl-ghost dl-ghost-room" onClick={toggleArchive}>
@@ -343,7 +343,7 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
         {!wide && (
           <div className="dl-buddy-detail-actions dl-buddy-detail-actions--mobile">
             <button type="button" className="dl-ghost dl-ghost-room" onClick={copyInviteLink}>
-              {copied ? 'Скопійовано!' : 'Копіювати лінк'}
+              {copied ? 'Скопійовано' : 'Копіювати лінк'}
             </button>
             {isOwner && (
               <button type="button" className="dl-ghost dl-ghost-room" onClick={toggleArchive}>
@@ -374,7 +374,7 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
                           <span>
                             {name}
                             {member.role === 'owner' && (
-                              <span className="dl-member-owner-tag"> · організатор</span>
+                              <span className="dl-member-owner-tag"> · Організатор</span>
                             )}
                           </span>
                           <span className="dl-member-row-pct">{pct}%</span>
@@ -473,7 +473,7 @@ export function BuddyReadDetailPage({ userId, userEmail }: BuddyReadDetailPagePr
             <h2 className="dl-panel-title">Спільночат</h2>
             <div className="dl-chat-feed">
               {messages.length === 0 ? (
-                <p className="empty-hint dl-chat-empty">Ще тихо — напиши першим</p>
+                <p className="empty-hint dl-chat-empty">Нумо ділитися враженнями</p>
               ) : (
                 messages.map((msg) => (
                   <div

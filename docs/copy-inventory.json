@@ -1,0 +1,2464 @@
+{
+  "_readme": {
+    "version": 1,
+    "how_to_edit": "Варіант A: Canvas «DiLibris — інвентар копірайту» — клікни в колонку «Текст (UI)». Варіант B: відкрий copy-inventory.csv у Cursor (не Excel preview) і редагуй колонку text (4-та колонка). НЕ змінюй id і original_text. Коли готово — «застосуй copy-inventory».",
+    "columns": {
+      "id": "стабільний ключ",
+      "original_text": "snapshot prod — для diff",
+      "text": "НОВИЙ текст — редагуй тут",
+      "apply_ref": "labels:* або replace:шлях/файлу"
+    }
+  },
+  "entries": [
+    {
+      "id": "copy-001",
+      "category": "Labels",
+      "original_text": "Хочу прочитати",
+      "text": "Хочу прочитати",
+      "where": "Статус книги",
+      "file": "src/lib/labels.ts",
+      "apply_ref": "labels:status.want_to_read",
+      "notes": ""
+    },
+    {
+      "id": "copy-002",
+      "category": "Labels",
+      "original_text": "Читаю зараз",
+      "text": "Читаю зараз",
+      "where": "Статус книги",
+      "file": "src/lib/labels.ts",
+      "apply_ref": "labels:status.reading",
+      "notes": ""
+    },
+    {
+      "id": "copy-003",
+      "category": "Labels",
+      "original_text": "Прочитано",
+      "text": "Прочитано",
+      "where": "Статус книги",
+      "file": "src/lib/labels.ts",
+      "apply_ref": "labels:status.finished",
+      "notes": ""
+    },
+    {
+      "id": "copy-004",
+      "category": "Labels",
+      "original_text": "Не дочитала",
+      "text": "Не дочитала",
+      "where": "Статус книги",
+      "file": "src/lib/labels.ts",
+      "apply_ref": "labels:status.dnf",
+      "notes": "⚠️ жіночий рід"
+    },
+    {
+      "id": "copy-005",
+      "category": "Labels",
+      "original_text": "Перечитую",
+      "text": "Перечитую",
+      "where": "Статус книги",
+      "file": "src/lib/labels.ts",
+      "apply_ref": "labels:status.re_reading",
+      "notes": ""
+    },
+    {
+      "id": "copy-006",
+      "category": "Labels",
+      "original_text": "Цитата",
+      "text": "Цитата",
+      "where": "Тип нотатки",
+      "file": "src/lib/labels.ts",
+      "apply_ref": "labels:note_type.quote",
+      "notes": ""
+    },
+    {
+      "id": "copy-007",
+      "category": "Labels",
+      "original_text": "Думка",
+      "text": "Думка",
+      "where": "Тип нотатки",
+      "file": "src/lib/labels.ts",
+      "apply_ref": "labels:note_type.thought",
+      "notes": ""
+    },
+    {
+      "id": "copy-008",
+      "category": "Labels",
+      "original_text": "Загальна",
+      "text": "Загальна",
+      "where": "Тип нотатки",
+      "file": "src/lib/labels.ts",
+      "apply_ref": "labels:note_type.general",
+      "notes": ""
+    },
+    {
+      "id": "copy-009",
+      "category": "Labels",
+      "original_text": "Особиста",
+      "text": "Особиста",
+      "where": "Видимість нотатки",
+      "file": "src/lib/labels.ts",
+      "apply_ref": "labels:note_visibility.private",
+      "notes": ""
+    },
+    {
+      "id": "copy-010",
+      "category": "Labels",
+      "original_text": "Публічна",
+      "text": "Публічна",
+      "where": "Видимість нотатки",
+      "file": "src/lib/labels.ts",
+      "apply_ref": "labels:note_visibility.public",
+      "notes": ""
+    },
+    {
+      "id": "copy-011",
+      "category": "Labels",
+      "original_text": "Невідомий автор",
+      "text": "Невідомий автор",
+      "where": "Fallback автор",
+      "file": "src/lib/labels.ts",
+      "apply_ref": "labels:unknown_author",
+      "notes": ""
+    },
+    {
+      "id": "copy-012",
+      "category": "Labels",
+      "original_text": "Компактно",
+      "text": "Компактно",
+      "where": "Розмір полиць",
+      "file": "src/lib/libraryDisplayPrefs.ts",
+      "apply_ref": "labels:book_size.compact",
+      "notes": ""
+    },
+    {
+      "id": "copy-013",
+      "category": "Labels",
+      "original_text": "Затишно",
+      "text": "Затишно",
+      "where": "Розмір полиць",
+      "file": "src/lib/libraryDisplayPrefs.ts",
+      "apply_ref": "labels:book_size.cozy",
+      "notes": ""
+    },
+    {
+      "id": "copy-014",
+      "category": "Labels",
+      "original_text": "Велично",
+      "text": "Велично",
+      "where": "Розмір полиць",
+      "file": "src/lib/libraryDisplayPrefs.ts",
+      "apply_ref": "labels:book_size.grand",
+      "notes": ""
+    },
+    {
+      "id": "copy-015",
+      "category": "Labels",
+      "original_text": "Українська",
+      "text": "Українська",
+      "where": "Мова книги",
+      "file": "src/lib/language.ts",
+      "apply_ref": "labels:language.ukr",
+      "notes": ""
+    },
+    {
+      "id": "copy-016",
+      "category": "Labels",
+      "original_text": "Англійська",
+      "text": "Англійська",
+      "where": "Мова книги",
+      "file": "src/lib/language.ts",
+      "apply_ref": "labels:language.eng",
+      "notes": ""
+    },
+    {
+      "id": "copy-017",
+      "category": "Labels",
+      "original_text": "Польська",
+      "text": "Польська",
+      "where": "Мова книги",
+      "file": "src/lib/language.ts",
+      "apply_ref": "labels:language.pol",
+      "notes": ""
+    },
+    {
+      "id": "copy-018",
+      "category": "Labels",
+      "original_text": "Німецька",
+      "text": "Німецька",
+      "where": "Мова книги",
+      "file": "src/lib/language.ts",
+      "apply_ref": "labels:language.deu",
+      "notes": ""
+    },
+    {
+      "id": "copy-019",
+      "category": "Labels",
+      "original_text": "Французька",
+      "text": "Французька",
+      "where": "Мова книги",
+      "file": "src/lib/language.ts",
+      "apply_ref": "labels:language.fra",
+      "notes": ""
+    },
+    {
+      "id": "copy-020",
+      "category": "Labels",
+      "original_text": "Російська",
+      "text": "Російська",
+      "where": "Мова книги",
+      "file": "src/lib/language.ts",
+      "apply_ref": "labels:language.rus",
+      "notes": ""
+    },
+    {
+      "id": "copy-021",
+      "category": "Labels",
+      "original_text": "Мова не вказана",
+      "text": "Мова не вказана",
+      "where": "Dashboard stats",
+      "file": "src/lib/language.ts",
+      "apply_ref": "labels:language_unknown",
+      "notes": ""
+    },
+    {
+      "id": "copy-022",
+      "category": "Labels",
+      "original_text": "Паперова",
+      "text": "Паперова",
+      "where": "Формат книги",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "labels:format.paper",
+      "notes": ""
+    },
+    {
+      "id": "copy-023",
+      "category": "Labels",
+      "original_text": "Електронна",
+      "text": "Електронна",
+      "where": "Формат книги",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "labels:format.ebook",
+      "notes": ""
+    },
+    {
+      "id": "copy-024",
+      "category": "Labels",
+      "original_text": "Аудіо",
+      "text": "Аудіо",
+      "where": "Формат книги",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "labels:format.audiobook",
+      "notes": ""
+    },
+    {
+      "id": "copy-025",
+      "category": "Labels",
+      "original_text": "Не вказано",
+      "text": "Не вказано",
+      "where": "Empty select/chip",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "labels:unspecified",
+      "notes": ""
+    },
+    {
+      "id": "copy-026",
+      "category": "Labels",
+      "original_text": "Сторінки",
+      "text": "Сторінки",
+      "where": "Progress mode",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "labels:progress_mode.pages",
+      "notes": ""
+    },
+    {
+      "id": "copy-027",
+      "category": "Labels",
+      "original_text": "Відсотки",
+      "text": "Відсотки",
+      "where": "Progress mode",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "labels:progress_mode.percent",
+      "notes": ""
+    },
+    {
+      "id": "copy-028",
+      "category": "Labels",
+      "original_text": "Січ",
+      "text": "Січ",
+      "where": "Month label",
+      "file": "src/lib/stats.ts",
+      "apply_ref": "labels:month.1",
+      "notes": ""
+    },
+    {
+      "id": "copy-029",
+      "category": "Labels",
+      "original_text": "Лют",
+      "text": "Лют",
+      "where": "Month label",
+      "file": "src/lib/stats.ts",
+      "apply_ref": "labels:month.2",
+      "notes": ""
+    },
+    {
+      "id": "copy-030",
+      "category": "Labels",
+      "original_text": "Бер",
+      "text": "Бер",
+      "where": "Month label",
+      "file": "src/lib/stats.ts",
+      "apply_ref": "labels:month.3",
+      "notes": ""
+    },
+    {
+      "id": "copy-031",
+      "category": "Labels",
+      "original_text": "Кві",
+      "text": "Кві",
+      "where": "Month label",
+      "file": "src/lib/stats.ts",
+      "apply_ref": "labels:month.4",
+      "notes": ""
+    },
+    {
+      "id": "copy-032",
+      "category": "Labels",
+      "original_text": "Тра",
+      "text": "Тра",
+      "where": "Month label",
+      "file": "src/lib/stats.ts",
+      "apply_ref": "labels:month.5",
+      "notes": ""
+    },
+    {
+      "id": "copy-033",
+      "category": "Labels",
+      "original_text": "Чер",
+      "text": "Чер",
+      "where": "Month label",
+      "file": "src/lib/stats.ts",
+      "apply_ref": "labels:month.6",
+      "notes": ""
+    },
+    {
+      "id": "copy-034",
+      "category": "Labels",
+      "original_text": "Лип",
+      "text": "Лип",
+      "where": "Month label",
+      "file": "src/lib/stats.ts",
+      "apply_ref": "labels:month.7",
+      "notes": ""
+    },
+    {
+      "id": "copy-035",
+      "category": "Labels",
+      "original_text": "Сер",
+      "text": "Сер",
+      "where": "Month label",
+      "file": "src/lib/stats.ts",
+      "apply_ref": "labels:month.8",
+      "notes": ""
+    },
+    {
+      "id": "copy-036",
+      "category": "Labels",
+      "original_text": "Вер",
+      "text": "Вер",
+      "where": "Month label",
+      "file": "src/lib/stats.ts",
+      "apply_ref": "labels:month.9",
+      "notes": ""
+    },
+    {
+      "id": "copy-037",
+      "category": "Labels",
+      "original_text": "Жов",
+      "text": "Жов",
+      "where": "Month label",
+      "file": "src/lib/stats.ts",
+      "apply_ref": "labels:month.10",
+      "notes": ""
+    },
+    {
+      "id": "copy-038",
+      "category": "Labels",
+      "original_text": "Лис",
+      "text": "Лис",
+      "where": "Month label",
+      "file": "src/lib/stats.ts",
+      "apply_ref": "labels:month.11",
+      "notes": ""
+    },
+    {
+      "id": "copy-039",
+      "category": "Labels",
+      "original_text": "Гру",
+      "text": "Гру",
+      "where": "Month label",
+      "file": "src/lib/stats.ts",
+      "apply_ref": "labels:month.12",
+      "notes": ""
+    },
+    {
+      "id": "copy-040",
+      "category": "Навігація",
+      "original_text": "DiLibris",
+      "text": "DiLibris",
+      "where": "Brand",
+      "file": "src/components/AppNav.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-041",
+      "category": "Навігація",
+      "original_text": "Бібліотека",
+      "text": "Бібліотека",
+      "where": "Nav link",
+      "file": "src/components/AppNav.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-042",
+      "category": "Навігація",
+      "original_text": "Дашборд",
+      "text": "Дашборд",
+      "where": "Nav link",
+      "file": "src/components/AppNav.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-043",
+      "category": "Навігація",
+      "original_text": "Нотатки",
+      "text": "Нотатки",
+      "where": "Nav link",
+      "file": "src/components/AppNav.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-044",
+      "category": "Навігація",
+      "original_text": "Спільночит",
+      "text": "Спільночит",
+      "where": "Nav link",
+      "file": "src/components/AppNav.tsx",
+      "apply_ref": "кириличне ч",
+      "notes": ""
+    },
+    {
+      "id": "copy-045",
+      "category": "Навігація",
+      "original_text": "+ Полиця",
+      "text": "+ Полиця",
+      "where": "Header CTA",
+      "file": "src/components/AppNav.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-046",
+      "category": "Навігація",
+      "original_text": "Профіль і налаштування",
+      "text": "Профіль і налаштування",
+      "where": "Profile menu",
+      "file": "src/components/AppNav.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-047",
+      "category": "Навігація",
+      "original_text": "Імпорт із Goodreads",
+      "text": "Імпорт із Goodreads",
+      "where": "Profile menu",
+      "file": "src/components/AppNav.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-048",
+      "category": "Навігація",
+      "original_text": "Вийти",
+      "text": "Вийти",
+      "where": "Profile menu",
+      "file": "src/components/AppNav.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-049",
+      "category": "Навігація",
+      "original_text": "Головна навігація",
+      "text": "Головна навігація",
+      "where": "aria-label",
+      "file": "src/components/AppNav.tsx",
+      "apply_ref": "a11y",
+      "notes": ""
+    },
+    {
+      "id": "copy-050",
+      "category": "Auth",
+      "original_text": "Твоя віртуальна бібліотека",
+      "text": "Твоя віртуальна бібліотека",
+      "where": "Login title",
+      "file": "src/components/LoginForm.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-051",
+      "category": "Auth",
+      "original_text": "Увійти через Google",
+      "text": "Увійти через Google",
+      "where": "Button",
+      "file": "src/components/LoginForm.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-052",
+      "category": "Auth",
+      "original_text": "Перенаправляємо…",
+      "text": "Перенаправляємо…",
+      "where": "Loading",
+      "file": "src/components/LoginForm.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-053",
+      "category": "Auth",
+      "original_text": "або email",
+      "text": "або email",
+      "where": "Divider",
+      "file": "src/components/LoginForm.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-054",
+      "category": "Auth",
+      "original_text": "твоя@пошта.com",
+      "text": "твоя@пошта.com",
+      "where": "Placeholder",
+      "file": "src/components/LoginForm.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-055",
+      "category": "Auth",
+      "original_text": "Надіслати лінк",
+      "text": "Надіслати лінк",
+      "where": "Button",
+      "file": "src/components/LoginForm.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-056",
+      "category": "Auth",
+      "original_text": "Надсилаємо…",
+      "text": "Надсилаємо…",
+      "where": "Loading",
+      "file": "src/components/LoginForm.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-057",
+      "category": "Auth",
+      "original_text": "Без паролів — лише безпечний лінк на пошту",
+      "text": "Без паролів — лише безпечний лінк на пошту",
+      "where": "Hint",
+      "file": "src/components/LoginForm.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-058",
+      "category": "Auth",
+      "original_text": "Перевір пошту",
+      "text": "Перевір пошту",
+      "where": "Sent title",
+      "file": "src/components/LoginForm.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-059",
+      "category": "Auth",
+      "original_text": "Надіслати ще раз",
+      "text": "Надіслати ще раз",
+      "where": "Resend",
+      "file": "src/components/LoginForm.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-060",
+      "category": "Auth",
+      "original_text": "‹ Інша пошта",
+      "text": "‹ Інша пошта",
+      "where": "Back",
+      "file": "src/components/LoginForm.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-061",
+      "category": "Auth",
+      "original_text": "Надіслали ще раз — перевір пошту.",
+      "text": "Надіслали ще раз — перевір пошту.",
+      "where": "Resend ok",
+      "file": "src/components/LoginForm.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-062",
+      "category": "Auth",
+      "original_text": "Трохи про тебе",
+      "text": "Трохи про тебе",
+      "where": "Onboarding title",
+      "file": "src/components/OnboardingWelcome.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-063",
+      "category": "Auth",
+      "original_text": "Ім'я",
+      "text": "Ім'я",
+      "where": "Label",
+      "file": "src/components/OnboardingWelcome.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-064",
+      "category": "Auth",
+      "original_text": "Як до тебе звертатися?",
+      "text": "Як до тебе звертатися?",
+      "where": "Placeholder",
+      "file": "src/components/OnboardingWelcome.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-065",
+      "category": "Auth",
+      "original_text": "Зайти в бібліотеку",
+      "text": "Зайти в бібліотеку",
+      "where": "CTA",
+      "file": "src/components/OnboardingWelcome.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-066",
+      "category": "Auth",
+      "original_text": "Зберігаємо…",
+      "text": "Зберігаємо…",
+      "where": "Saving",
+      "file": "src/components/OnboardingWelcome.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-067",
+      "category": "Auth",
+      "original_text": "Читач",
+      "text": "Читач",
+      "where": "Default name",
+      "file": "src/components/OnboardingWelcome.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-068",
+      "category": "Auth",
+      "original_text": "Завантаження…",
+      "text": "Завантаження…",
+      "where": "App boot",
+      "file": "src/App.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-069",
+      "category": "Бібліотека",
+      "original_text": "Вечір удома з книгами",
+      "text": "Вечір удома з книгами",
+      "where": "Hero h1",
+      "file": "src/pages/LibraryPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-070",
+      "category": "Бібліотека",
+      "original_text": "Шукати книгу або автора…",
+      "text": "Шукати книгу або автора…",
+      "where": "Search",
+      "file": "src/pages/LibraryPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-071",
+      "category": "Бібліотека",
+      "original_text": "За полицею",
+      "text": "За полицею",
+      "where": "Sort",
+      "file": "src/pages/LibraryPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-072",
+      "category": "Бібліотека",
+      "original_text": "Назва",
+      "text": "Назва",
+      "where": "Sort",
+      "file": "src/pages/LibraryPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-073",
+      "category": "Бібліотека",
+      "original_text": "Прогрес",
+      "text": "Прогрес",
+      "where": "Sort / tab",
+      "file": "src/pages/LibraryPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-074",
+      "category": "Бібліотека",
+      "original_text": "Тут з'явиться твоя кімната з книгами",
+      "text": "Тут з'явиться твоя кімната з книгами",
+      "where": "Empty room",
+      "file": "src/components/EmptyRoom.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-075",
+      "category": "Бібліотека",
+      "original_text": "Створи першу полицю — і почни розставляти улюблені книжки.",
+      "text": "Створи першу полицю — і почни розставляти улюблені книжки.",
+      "where": "Empty sub",
+      "file": "src/components/EmptyRoom.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-076",
+      "category": "Бібліотека",
+      "original_text": "+ Створити полицю",
+      "text": "+ Створити полицю",
+      "where": "Empty CTA",
+      "file": "src/components/EmptyRoom.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-077",
+      "category": "Бібліотека",
+      "original_text": "Назва полиці",
+      "text": "Назва полиці",
+      "where": "Add shelf",
+      "file": "src/components/AddShelfForm.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-078",
+      "category": "Бібліотека",
+      "original_text": "Статус (необов'язково)",
+      "text": "Статус (необов'язково)",
+      "where": "Add shelf",
+      "file": "src/components/AddShelfForm.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-079",
+      "category": "Бібліотека",
+      "original_text": "Будь-який",
+      "text": "Будь-який",
+      "where": "Shelf status chip",
+      "file": "src/components/AddShelfForm.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-080",
+      "category": "Бібліотека",
+      "original_text": "напр. Літо 2026",
+      "text": "напр. Літо 2026",
+      "where": "Placeholder",
+      "file": "src/components/AddShelfForm.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-081",
+      "category": "Бібліотека",
+      "original_text": "Створити полицю",
+      "text": "Створити полицю",
+      "where": "Submit",
+      "file": "src/components/AddShelfForm.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-082",
+      "category": "Бібліотека",
+      "original_text": "Додати книгу",
+      "text": "Додати книгу",
+      "where": "Modal title",
+      "file": "src/components/AddBookModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-083",
+      "category": "Бібліотека",
+      "original_text": "Пошук",
+      "text": "Пошук",
+      "where": "Tab",
+      "file": "src/components/AddBookModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-084",
+      "category": "Бібліотека",
+      "original_text": "Вручну",
+      "text": "Вручну",
+      "where": "Tab",
+      "file": "src/components/AddBookModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-085",
+      "category": "Бібліотека",
+      "original_text": "Offline — лише ручне додавання.",
+      "text": "Offline — лише ручне додавання.",
+      "where": "Offline hint",
+      "file": "src/components/AddBookModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-086",
+      "category": "Бібліотека",
+      "original_text": "Результати з Open Library",
+      "text": "Результати з Open Library",
+      "where": "Search source",
+      "file": "src/components/AddBookModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-087",
+      "category": "Бібліотека",
+      "original_text": "Результати з Google Books",
+      "text": "Результати з Google Books",
+      "where": "Search source",
+      "file": "src/components/AddBookModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-088",
+      "category": "Бібліотека",
+      "original_text": "Пошук не вдався — спробуй вручну",
+      "text": "Пошук не вдався — спробуй вручну",
+      "where": "Search error",
+      "file": "src/components/AddBookModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-089",
+      "category": "Бібліотека",
+      "original_text": "Спочатку обери або створи полицю.",
+      "text": "Спочатку обери або створи полицю.",
+      "where": "Hint",
+      "file": "src/components/AddBookModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-090",
+      "category": "Бібліотека",
+      "original_text": "Назва, автор або ISBN…",
+      "text": "Назва, автор або ISBN…",
+      "where": "Search ph",
+      "file": "src/components/AddBookModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-091",
+      "category": "Бібліотека",
+      "original_text": "Книга",
+      "text": "Книга",
+      "where": "Fallback title",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-092",
+      "category": "Картка книги",
+      "original_text": "Відгук",
+      "text": "Відгук",
+      "where": "Tab",
+      "file": "src/components/DetailTabs.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-093",
+      "category": "Картка книги",
+      "original_text": "Нотатки",
+      "text": "Нотатки",
+      "where": "Tab",
+      "file": "src/components/DetailTabs.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-094",
+      "category": "Картка книги",
+      "original_text": "Сесії",
+      "text": "Сесії",
+      "where": "Tab",
+      "file": "src/components/DetailTabs.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-095",
+      "category": "Картка книги",
+      "original_text": "прогрес",
+      "text": "прогрес",
+      "where": "Stat chip",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-096",
+      "category": "Картка книги",
+      "original_text": "днів читання",
+      "text": "днів читання",
+      "where": "Stat chip",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-097",
+      "category": "Картка книги",
+      "original_text": "загалом",
+      "text": "загалом",
+      "where": "Stat chip",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-098",
+      "category": "Картка книги",
+      "original_text": "⏱ Почати сесію",
+      "text": "⏱ Почати сесію",
+      "where": "Primary",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-099",
+      "category": "Картка книги",
+      "original_text": "Мова книги",
+      "text": "Мова книги",
+      "where": "Label",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-100",
+      "category": "Картка книги",
+      "original_text": "Оцінка",
+      "text": "Оцінка",
+      "where": "Label",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-101",
+      "category": "Картка книги",
+      "original_text": "Початок",
+      "text": "Початок",
+      "where": "Date",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-102",
+      "category": "Картка книги",
+      "original_text": "Завершення",
+      "text": "Завершення",
+      "where": "Date",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-103",
+      "category": "Картка книги",
+      "original_text": "Поточна сторінка",
+      "text": "Поточна сторінка",
+      "where": "Field",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-104",
+      "category": "Картка книги",
+      "original_text": "Всього сторінок",
+      "text": "Всього сторінок",
+      "where": "Field",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-105",
+      "category": "Картка книги",
+      "original_text": "Прогрес, %",
+      "text": "Прогрес, %",
+      "where": "Field",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-106",
+      "category": "Картка книги",
+      "original_text": "Рахувати в challenge",
+      "text": "Рахувати в challenge",
+      "where": "Toggle",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-107",
+      "category": "Картка книги",
+      "original_text": "Книга зараховується у твою річну ціль",
+      "text": "Книга зараховується у твою річну ціль",
+      "where": "Toggle hint",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-108",
+      "category": "Картка книги",
+      "original_text": "Перечитання · попередній прохід збережено",
+      "text": "Перечитання · попередній прохід збережено",
+      "where": "Re-read",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-109",
+      "category": "Картка книги",
+      "original_text": "Відгуки завжди публічні — їх бачать інші читачі.",
+      "text": "Відгуки завжди публічні — їх бачать інші читачі.",
+      "where": "Reviews",
+      "file": "src/components/BookReviewsSection.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-110",
+      "category": "Картка книги",
+      "original_text": "Що сподобалось, що ні… (можна лише зірки)",
+      "text": "Що сподобалось, що ні… (можна лише зірки)",
+      "where": "Placeholder",
+      "file": "src/components/BookReviewsSection.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-111",
+      "category": "Картка книги",
+      "original_text": "Ще немає твого відгуку. Поділись враженнями — інші читачі побачать його тут.",
+      "text": "Ще немає твого відгуку. Поділись враженнями — інші читачі побачать його тут.",
+      "where": "Empty",
+      "file": "src/components/BookReviewsSection.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-112",
+      "category": "Картка книги",
+      "original_text": "Ще немає нотаток. Зберігай цитати, думки або спостереження під час читання.",
+      "text": "Ще немає нотаток. Зберігай цитати, думки або спостереження під час читання.",
+      "where": "Empty",
+      "file": "src/components/BookNotesSection.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-113",
+      "category": "Картка книги",
+      "original_text": "Цитата, думка або спостереження…",
+      "text": "Цитата, думка або спостереження…",
+      "where": "Placeholder",
+      "file": "src/components/BookNotesSection.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-114",
+      "category": "Картка книги",
+      "original_text": "Ще немає сесій читання.",
+      "text": "Ще немає сесій читання.",
+      "where": "Empty",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-115",
+      "category": "Картка книги",
+      "original_text": "Записати",
+      "text": "Записати",
+      "where": "Session btn",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-116",
+      "category": "Картка книги",
+      "original_text": "Зберегти",
+      "text": "Зберегти",
+      "where": "Footer",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-117",
+      "category": "Картка книги",
+      "original_text": "Зберігаємо…",
+      "text": "Зберігаємо…",
+      "where": "Saving",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-118",
+      "category": "Картка книги",
+      "original_text": "Видалити",
+      "text": "Видалити",
+      "where": "Delete",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-119",
+      "category": "Сесія",
+      "original_text": "Сесія читання",
+      "text": "Сесія читання",
+      "where": "Banner/Timer",
+      "file": "src/components/ActiveSessionBanner.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-120",
+      "category": "Сесія",
+      "original_text": "Сесія на паузі",
+      "text": "Сесія на паузі",
+      "where": "Banner",
+      "file": "src/components/ActiveSessionBanner.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-121",
+      "category": "Сесія",
+      "original_text": "Скинути",
+      "text": "Скинути",
+      "where": "Button",
+      "file": "src/components/ActiveSessionBanner.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-122",
+      "category": "Сесія",
+      "original_text": "Пауза",
+      "text": "Пауза",
+      "where": "Button",
+      "file": "src/components/ActiveSessionBanner.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-123",
+      "category": "Сесія",
+      "original_text": "Відновити",
+      "text": "Відновити",
+      "where": "Button",
+      "file": "src/components/ActiveSessionBanner.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-124",
+      "category": "Сесія",
+      "original_text": "Завершити",
+      "text": "Завершити",
+      "where": "Button",
+      "file": "src/components/ActiveSessionBanner.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-125",
+      "category": "Сесія",
+      "original_text": "❚❚ Пауза",
+      "text": "❚❚ Пауза",
+      "where": "Timer",
+      "file": "src/components/SessionTimer.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-126",
+      "category": "Сесія",
+      "original_text": "▷ Далі",
+      "text": "▷ Далі",
+      "where": "Timer",
+      "file": "src/components/SessionTimer.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-127",
+      "category": "Сесія",
+      "original_text": "Сторінок",
+      "text": "Сторінок",
+      "where": "Field",
+      "file": "src/components/SessionTimer.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-128",
+      "category": "Сесія",
+      "original_text": "Нотатка",
+      "text": "Нотатка",
+      "where": "Field",
+      "file": "src/components/SessionTimer.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-129",
+      "category": "Сесія",
+      "original_text": "думка на полях…",
+      "text": "думка на полях…",
+      "where": "Placeholder",
+      "file": "src/components/SessionTimer.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-130",
+      "category": "Сесія",
+      "original_text": "Згорнути",
+      "text": "Згорнути",
+      "where": "Footer",
+      "file": "src/components/SessionTimer.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-131",
+      "category": "Сесія",
+      "original_text": "Завершити й записати",
+      "text": "Завершити й записати",
+      "where": "Footer",
+      "file": "src/components/SessionTimer.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-132",
+      "category": "Сесія",
+      "original_text": "Завантаження сесії…",
+      "text": "Завантаження сесії…",
+      "where": "Loading",
+      "file": "src/components/SessionTimer.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-133",
+      "category": "Нотатки",
+      "original_text": "На полях",
+      "text": "На полях",
+      "where": "Eyebrow",
+      "file": "src/pages/NotesPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-134",
+      "category": "Нотатки",
+      "original_text": "Цитати й думки з усіх книг — зібрані в одному місці",
+      "text": "Цитати й думки з усіх книг — зібрані в одному місці",
+      "where": "Sub",
+      "file": "src/pages/NotesPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-135",
+      "category": "Нотатки",
+      "original_text": "Усі",
+      "text": "Усі",
+      "where": "Filter",
+      "file": "src/pages/NotesPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-136",
+      "category": "Нотатки",
+      "original_text": "Шукати в нотатках…",
+      "text": "Шукати в нотатках…",
+      "where": "Search",
+      "file": "src/pages/NotesPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-137",
+      "category": "Нотатки",
+      "original_text": "Поки без нотаток",
+      "text": "Поки без нотаток",
+      "where": "Empty title",
+      "file": "src/components/NotesEmptyState.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-138",
+      "category": "Нотатки",
+      "original_text": "Нічого не знайдено",
+      "text": "Нічого не знайдено",
+      "where": "Filtered",
+      "file": "src/components/NotesEmptyState.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-139",
+      "category": "Нотатки",
+      "original_text": "Додай цитату чи думку з картки будь-якої книги — вони зʼявляться тут.",
+      "text": "Додай цитату чи думку з картки будь-якої книги — вони зʼявляться тут.",
+      "where": "Empty msg",
+      "file": "src/components/NotesEmptyState.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-140",
+      "category": "Нотатки",
+      "original_text": "Спробуй інший тип нотатки або зміни пошуковий запит.",
+      "text": "Спробуй інший тип нотатки або зміни пошуковий запит.",
+      "where": "Filtered msg",
+      "file": "src/components/NotesEmptyState.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-141",
+      "category": "Дашборд",
+      "original_text": "Твій читацький рік",
+      "text": "Твій читацький рік",
+      "where": "Eyebrow",
+      "file": "src/pages/DashboardPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-142",
+      "category": "Дашборд",
+      "original_text": "Теплі підсумки — без тиску, лише радість від прочитаного",
+      "text": "Теплі підсумки — без тиску, лише радість від прочитаного",
+      "where": "Sub",
+      "file": "src/pages/DashboardPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-143",
+      "category": "Дашборд",
+      "original_text": "Челендж",
+      "text": "Челендж",
+      "where": "Challenge",
+      "file": "src/pages/DashboardPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-144",
+      "category": "Дашборд",
+      "original_text": "Змінити ціль",
+      "text": "Змінити ціль",
+      "where": "Edit",
+      "file": "src/pages/DashboardPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-145",
+      "category": "Дашборд",
+      "original_text": "Сховати",
+      "text": "Сховати",
+      "where": "Edit",
+      "file": "src/pages/DashboardPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-146",
+      "category": "Дашборд",
+      "original_text": "Зберегти ціль",
+      "text": "Зберегти ціль",
+      "where": "Edit",
+      "file": "src/pages/DashboardPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-147",
+      "category": "Дашборд",
+      "original_text": "книг",
+      "text": "книг",
+      "where": "Stat",
+      "file": "src/pages/DashboardPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-148",
+      "category": "Дашборд",
+      "original_text": "сторінок",
+      "text": "сторінок",
+      "where": "Stat",
+      "file": "src/pages/DashboardPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-149",
+      "category": "Дашборд",
+      "original_text": "часу",
+      "text": "часу",
+      "where": "Stat",
+      "file": "src/pages/DashboardPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-150",
+      "category": "Дашборд",
+      "original_text": "сер. оцінка",
+      "text": "сер. оцінка",
+      "where": "Stat",
+      "file": "src/pages/DashboardPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-151",
+      "category": "Дашборд",
+      "original_text": "найдовша пауза",
+      "text": "найдовша пауза",
+      "where": "Stat",
+      "file": "src/pages/DashboardPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-152",
+      "category": "Дашборд",
+      "original_text": "Книги за місяць",
+      "text": "Книги за місяць",
+      "where": "Panel",
+      "file": "src/pages/DashboardPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-153",
+      "category": "Дашборд",
+      "original_text": "Формат",
+      "text": "Формат",
+      "where": "Panel",
+      "file": "src/pages/DashboardPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-154",
+      "category": "Дашборд",
+      "original_text": "Топ авторів",
+      "text": "Топ авторів",
+      "where": "Panel",
+      "file": "src/pages/DashboardPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-155",
+      "category": "Дашборд",
+      "original_text": "Мови",
+      "text": "Мови",
+      "where": "Panel",
+      "file": "src/pages/DashboardPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-156",
+      "category": "Дашборд",
+      "original_text": "Познач книги як «Прочитано», щоб побачити графік.",
+      "text": "Познач книги як «Прочитано», щоб побачити графік.",
+      "where": "Empty",
+      "file": "src/pages/DashboardPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-157",
+      "category": "Дашборд",
+      "original_text": "Поки немає даних за цей рік.",
+      "text": "Поки немає даних за цей рік.",
+      "where": "Empty",
+      "file": "src/pages/DashboardPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-158",
+      "category": "Дашборд",
+      "original_text": "Завантажуємо статистику…",
+      "text": "Завантажуємо статистику…",
+      "where": "Loading",
+      "file": "src/pages/DashboardPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-159",
+      "category": "Дашборд",
+      "original_text": "Задай ціль на рік — і відстежуй прогрес без тиску.",
+      "text": "Задай ціль на рік — і відстежуй прогрес без тиску.",
+      "where": "Hint",
+      "file": "src/pages/DashboardPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-160",
+      "category": "Дашборд",
+      "original_text": "Тримаєш ідеальний темп — продовжуй у своєму ритмі",
+      "text": "Тримаєш ідеальний темп — продовжуй у своєму ритмі",
+      "where": "Hint",
+      "file": "src/pages/DashboardPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-161",
+      "category": "Дашборд",
+      "original_text": "Зберегти ціль можна лише з підключенням до інternet",
+      "text": "Зберегти ціль можна лише з підключенням до інternet",
+      "where": "Error",
+      "file": "src/pages/DashboardPage.tsx",
+      "apply_ref": "⚠️ typo",
+      "notes": ""
+    },
+    {
+      "id": "copy-162",
+      "category": "Спільноchит",
+      "original_text": "Читаємо разом",
+      "text": "Читаємо разом",
+      "where": "Eyebrow",
+      "file": "src/pages/BuddyReadsPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-163",
+      "category": "Спільноchит",
+      "original_text": "Клуби з дедлайном, спільноchатами й нотатками на полях",
+      "text": "Клуби з дедлайном, спільноchатами й нотатками на полях",
+      "where": "Sub",
+      "file": "src/pages/BuddyReadsPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-164",
+      "category": "Спільноchит",
+      "original_text": "+ Створити",
+      "text": "+ Створити",
+      "where": "CTA",
+      "file": "src/pages/BuddyReadsPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-165",
+      "category": "Спільноchит",
+      "original_text": "Створити клуб",
+      "text": "Створити клуб",
+      "where": "Empty CTA",
+      "file": "src/pages/BuddyReadsPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-166",
+      "category": "Спільноchит",
+      "original_text": "Ще немає жодного клубу",
+      "text": "Ще немає жодного клубу",
+      "where": "Empty",
+      "file": "src/pages/BuddyReadsPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-167",
+      "category": "Спільноchит",
+      "original_text": "Створи свій або долучися за лінком-запрошенням",
+      "text": "Створи свій або долучися за лінком-запрошенням",
+      "where": "Empty sub",
+      "file": "src/pages/BuddyReadsPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-168",
+      "category": "Спільноchит",
+      "original_text": "Архів",
+      "text": "Архів",
+      "where": "Badge",
+      "file": "src/pages/BuddyReadsPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-169",
+      "category": "Спільноchит",
+      "original_text": "Показати архів",
+      "text": "Показати архів",
+      "where": "Checkbox",
+      "file": "src/pages/BuddyReadsPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-170",
+      "category": "Спільноchит",
+      "original_text": "Спільноchат",
+      "text": "Спільноchат",
+      "where": "Chat title",
+      "file": "src/pages/BuddyReadDetailPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-171",
+      "category": "Спільноchит",
+      "original_text": "Прогрес учасників",
+      "text": "Прогрес учасників",
+      "where": "Panel",
+      "file": "src/pages/BuddyReadDetailPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-172",
+      "category": "Спільноchит",
+      "original_text": "Спільні нотатки",
+      "text": "Спільні нотатки",
+      "where": "Panel",
+      "file": "src/pages/BuddyReadDetailPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-173",
+      "category": "Спільноchит",
+      "original_text": "‹ Усі клуби",
+      "text": "‹ Усі клуби",
+      "where": "Back",
+      "file": "src/pages/BuddyReadDetailPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-174",
+      "category": "Спільноchит",
+      "original_text": "Копіювати лінк",
+      "text": "Копіювати лінк",
+      "where": "Action",
+      "file": "src/pages/BuddyReadDetailPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-175",
+      "category": "Спільноchит",
+      "original_text": "Скопійовано!",
+      "text": "Скопійовано!",
+      "where": "Feedback",
+      "file": "src/pages/BuddyReadDetailPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-176",
+      "category": "Спільноchит",
+      "original_text": "Архівувати",
+      "text": "Архівувати",
+      "where": "Action",
+      "file": "src/pages/BuddyReadDetailPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-177",
+      "category": "Спільноchит",
+      "original_text": "Повернути з архіву",
+      "text": "Повернути з архіву",
+      "where": "Action",
+      "file": "src/pages/BuddyReadDetailPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-178",
+      "category": "Спільноchит",
+      "original_text": "· організатор",
+      "text": "· організатор",
+      "where": "Member",
+      "file": "src/pages/BuddyReadDetailPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-179",
+      "category": "Спільноchит",
+      "original_text": "Ще тихо — напиши першим",
+      "text": "Ще тихо — напиши першим",
+      "where": "Chat empty",
+      "file": "src/pages/BuddyReadDetailPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-180",
+      "category": "Спільноchит",
+      "original_text": "Написати повідомлення…",
+      "text": "Написати повідомлення…",
+      "where": "Chat input",
+      "file": "src/pages/BuddyReadDetailPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-181",
+      "category": "Спільноchит",
+      "original_text": "Новий клуб",
+      "text": "Новий клуб",
+      "where": "Sheet",
+      "file": "src/components/BuddyCreateSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-182",
+      "category": "Спільноchит",
+      "original_text": "Долучитися за лінком",
+      "text": "Долучитися за лінком",
+      "where": "Join",
+      "file": "src/components/BuddyJoinSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-183",
+      "category": "Спільноchит",
+      "original_text": "Маєш запрошення? Долучайся за лінком.",
+      "text": "Маєш запрошення? Долучайся за лінком.",
+      "where": "Join panel",
+      "file": "src/pages/BuddyReadsPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-184",
+      "category": "Спільноchит",
+      "original_text": "Клуб не знайдено",
+      "text": "Клуб не знайдено",
+      "where": "Error",
+      "file": "src/pages/BuddyReadDetailPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-185",
+      "category": "Спільноchит",
+      "original_text": "Завантажуємо спільноchит…",
+      "text": "Завантажуємо спільноchит…",
+      "where": "Loading",
+      "file": "src/pages/BuddyReadsPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-186",
+      "category": "Спільноchит",
+      "original_text": "Завантажуємо клуб…",
+      "text": "Завантажуємо клуб…",
+      "where": "Loading",
+      "file": "src/pages/BuddyReadDetailPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-187",
+      "category": "Налаштування",
+      "original_text": "Профіль і налаштування",
+      "text": "Профіль і налаштування",
+      "where": "Title",
+      "file": "src/components/SettingsSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-188",
+      "category": "Налаштування",
+      "original_text": "Твоє ім'я",
+      "text": "Твоє ім'я",
+      "where": "Placeholder",
+      "file": "src/components/SettingsSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-189",
+      "category": "Налаштування",
+      "original_text": "Київ",
+      "text": "Київ",
+      "where": "Placeholder",
+      "file": "src/components/SettingsSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-190",
+      "category": "Налаштування",
+      "original_text": "Нові нотатки — особисті",
+      "text": "Нові нотатки — особисті",
+      "where": "Toggle",
+      "file": "src/components/SettingsSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-191",
+      "category": "Налаштування",
+      "original_text": "За замовчуванням ховати нотатки від інших",
+      "text": "За замовчуванням ховати нотатки від інших",
+      "where": "Hint",
+      "file": "src/components/SettingsSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-192",
+      "category": "Налаштування",
+      "original_text": "Тижневий дайджест",
+      "text": "Тижневий дайджест",
+      "where": "Toggle",
+      "file": "src/components/SettingsSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-193",
+      "category": "Налаштування",
+      "original_text": "Лист щонеділі з підсумком читання",
+      "text": "Лист щонеділі з підсумком читання",
+      "where": "Hint",
+      "file": "src/components/SettingsSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-194",
+      "category": "Налаштування",
+      "original_text": "Нагадування читати",
+      "text": "Нагадування читати",
+      "where": "Toggle",
+      "file": "src/components/SettingsSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-195",
+      "category": "Налаштування",
+      "original_text": "Делікатний поштовх у тихий вечір",
+      "text": "Делікатний поштовх у тихий вечір",
+      "where": "Hint",
+      "file": "src/components/SettingsSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-196",
+      "category": "Налаштування",
+      "original_text": "Бібліотека",
+      "text": "Бібліотека",
+      "where": "Section",
+      "file": "src/components/SettingsSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-197",
+      "category": "Налаштування",
+      "original_text": "На полиці",
+      "text": "На полиці",
+      "where": "Field",
+      "file": "src/components/SettingsSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-198",
+      "category": "Налаштування",
+      "original_text": "Корінці",
+      "text": "Корінці",
+      "where": "Option",
+      "file": "src/components/SettingsSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-199",
+      "category": "Налаштування",
+      "original_text": "Обкладинки",
+      "text": "Обкладинки",
+      "where": "Field",
+      "file": "src/components/SettingsSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-200",
+      "category": "Налаштування",
+      "original_text": "Справжні",
+      "text": "Справжні",
+      "where": "Option",
+      "file": "src/components/SettingsSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-201",
+      "category": "Налаштування",
+      "original_text": "Типографічні",
+      "text": "Типографічні",
+      "where": "Option",
+      "file": "src/components/SettingsSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-202",
+      "category": "Налаштування",
+      "original_text": "Розмір",
+      "text": "Розмір",
+      "where": "Field",
+      "file": "src/components/SettingsSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-203",
+      "category": "Налаштування",
+      "original_text": "Підпис при наведенні",
+      "text": "Підпис при наведенні",
+      "where": "Toggle",
+      "file": "src/components/SettingsSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-204",
+      "category": "Налаштування",
+      "original_text": "Короткий tooltip з назвою книги на полиці",
+      "text": "Короткий tooltip з назвою книги на полиці",
+      "where": "Hint",
+      "file": "src/components/SettingsSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-205",
+      "category": "Налаштування",
+      "original_text": "Кімната",
+      "text": "Кімната",
+      "where": "Section",
+      "file": "src/components/SettingsSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-206",
+      "category": "Налаштування",
+      "original_text": "Настрій",
+      "text": "Настрій",
+      "where": "Field",
+      "file": "src/components/SettingsSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-207",
+      "category": "Налаштування",
+      "original_text": "Вечір",
+      "text": "Вечір",
+      "where": "Mood",
+      "file": "src/components/SettingsSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-208",
+      "category": "Налаштування",
+      "original_text": "День",
+      "text": "День",
+      "where": "Mood",
+      "file": "src/components/SettingsSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-209",
+      "category": "Налаштування",
+      "original_text": "Колір акценту",
+      "text": "Колір акценту",
+      "where": "Field",
+      "file": "src/components/SettingsSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-210",
+      "category": "Налаштування",
+      "original_text": "Скасувати",
+      "text": "Скасувати",
+      "where": "Footer",
+      "file": "src/components/SettingsSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-211",
+      "category": "Налаштування",
+      "original_text": "Зберегти",
+      "text": "Зберегти",
+      "where": "Footer",
+      "file": "src/components/SettingsSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-212",
+      "category": "Налаштування",
+      "original_text": "Збереження…",
+      "text": "Збереження…",
+      "where": "Saving",
+      "file": "src/components/SettingsSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-213",
+      "category": "Goodreads",
+      "original_text": "Goodreads → DiLibris",
+      "text": "Goodreads → DiLibris",
+      "where": "Kicker",
+      "file": "src/components/GoodreadsImportSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-214",
+      "category": "Goodreads",
+      "original_text": "Імпорт бібліотеки",
+      "text": "Імпорт бібліотеки",
+      "where": "Title",
+      "file": "src/components/GoodreadsImportSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-215",
+      "category": "Goodreads",
+      "original_text": "Обрати CSV-файл",
+      "text": "Обрати CSV-файл",
+      "where": "Pick btn",
+      "file": "src/components/GoodreadsImportSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-216",
+      "category": "Goodreads",
+      "original_text": "Підключись до інтернету — імпорт працює лише онлайн.",
+      "text": "Підключись до інтернету — імпорт працює лише онлайн.",
+      "where": "Offline",
+      "file": "src/components/GoodreadsImportSheet.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-217",
+      "category": "Сповіщення",
+      "original_text": "Сповіщення",
+      "text": "Сповіщення",
+      "where": "Panel title",
+      "file": "src/components/NotifBell.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-218",
+      "category": "Сповіщення",
+      "original_text": "Прочитати всі",
+      "text": "Прочитати всі",
+      "where": "Panel",
+      "file": "src/components/NotifBell.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-219",
+      "category": "Сповіщення",
+      "original_text": "Поки тихо 🌙",
+      "text": "Поки тихо 🌙",
+      "where": "Empty",
+      "file": "src/components/NotifBell.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-220",
+      "category": "Сповіщення",
+      "original_text": "Ти на півдорозі до річної цілі — ще трохи!",
+      "text": "Ти на півдорозі до річної цілі — ще трохи!",
+      "where": "Template",
+      "file": "src/lib/syncActivityNotifications.ts",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-221",
+      "category": "Сповіщення",
+      "original_text": "Нове повідомлення у «",
+      "text": "Нове повідомлення у «",
+      "where": "Template prefix",
+      "file": "src/lib/syncActivityNotifications.ts",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-222",
+      "category": "Сповіщення",
+      "original_text": "Нова спільна нотатка у «",
+      "text": "Нова спільна нотатка у «",
+      "where": "Template prefix",
+      "file": "src/lib/syncActivityNotifications.ts",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-223",
+      "category": "Сповіщення",
+      "original_text": "щойно",
+      "text": "щойно",
+      "where": "Relative time",
+      "file": "src/lib/notificationsStore.ts",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-224",
+      "category": "Сповіщення",
+      "original_text": "хв тому",
+      "text": "хв тому",
+      "where": "Relative time suffix",
+      "file": "src/lib/notificationsStore.ts",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-225",
+      "category": "Сповіщення",
+      "original_text": "вчора",
+      "text": "вчора",
+      "where": "Relative time",
+      "file": "src/lib/notificationsStore.ts",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-226",
+      "category": "Offline",
+      "original_text": "Показано збережену копію — сервер тимчасово недоступний.",
+      "text": "Показано збережену копію — сервер тимчасово недоступний.",
+      "where": "Banner",
+      "file": "src/components/OfflineBanner.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-227",
+      "category": "Offline",
+      "original_text": "Синхронізуємо зміни…",
+      "text": "Синхронізуємо зміни…",
+      "where": "Banner",
+      "file": "src/components/OfflineBanner.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-228",
+      "category": "Offline",
+      "original_text": "змін, що очікують синхронізації.",
+      "text": "змін, що очікують синхронізації.",
+      "where": "Banner suffix",
+      "file": "src/components/OfflineBanner.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-229",
+      "category": "Offline",
+      "original_text": "Дані станом на",
+      "text": "Дані станом на",
+      "where": "Dashboard stale prefix",
+      "file": "src/pages/DashboardPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-230",
+      "category": "Помилки",
+      "original_text": "Не вдалося завантажити бібліотеку",
+      "text": "Не вдалося завантажити бібліотеку",
+      "where": "Page",
+      "file": "src/pages/LibraryPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-231",
+      "category": "Помилки",
+      "original_text": "Не вдалося завантажити дашборд",
+      "text": "Не вдалося завантажити дашборд",
+      "where": "Page",
+      "file": "src/pages/DashboardPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-232",
+      "category": "Помилки",
+      "original_text": "Не вдалося завантажити нотатки",
+      "text": "Не вдалося завантажити нотатки",
+      "where": "Page",
+      "file": "src/pages/NotesPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-233",
+      "category": "Помилки",
+      "original_text": "Не вдалося завантажити Спільноchит",
+      "text": "Не вдалося завантажити Спільноchит",
+      "where": "Page",
+      "file": "src/pages/BuddyReadsPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-234",
+      "category": "Помилки",
+      "original_text": "Offline — немає збереженої бібліотеки. Підключись до інternet хоча б раз.",
+      "text": "Offline — немає збереженої бібліотеки. Підключись до інternet хоча б раз.",
+      "where": "Sync",
+      "file": "src/lib/offline/librarySync.ts",
+      "apply_ref": "⚠️ typo",
+      "notes": ""
+    },
+    {
+      "id": "copy-235",
+      "category": "Помилки",
+      "original_text": "Offline — немає збережених нотаток. Підключись до інternet хоча б раз.",
+      "text": "Offline — немає збережених нотаток. Підключись до інternet хоча б раз.",
+      "where": "Sync",
+      "file": "src/lib/offline/notesSync.ts",
+      "apply_ref": "⚠️ typo",
+      "notes": ""
+    },
+    {
+      "id": "copy-236",
+      "category": "Помилки",
+      "original_text": "Offline — немає збережених відгуків. Підключись до інternet хоча б раз.",
+      "text": "Offline — немає збережених відгуків. Підключись до інternet хоча б раз.",
+      "where": "Sync",
+      "file": "src/lib/offline/reviewsSync.ts",
+      "apply_ref": "⚠️ typo",
+      "notes": ""
+    },
+    {
+      "id": "copy-237",
+      "category": "Помилки",
+      "original_text": "Open Library тимчасово недоступна",
+      "text": "Open Library тимчасово недоступна",
+      "where": "API",
+      "file": "src/lib/openLibrary.ts",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-238",
+      "category": "Помилки",
+      "original_text": "Google Books тимчасово недоступний",
+      "text": "Google Books тимчасово недоступний",
+      "where": "API",
+      "file": "src/lib/googleBooks.ts",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-239",
+      "category": "Помилки",
+      "original_text": "Назва полиці не може бути порожньою",
+      "text": "Назва полиці не може бути порожньою",
+      "where": "Validation",
+      "file": "src/lib/offline/librarySync.ts",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-240",
+      "category": "Confirm",
+      "original_text": "Видалити полицю? Книги залишаться без полиці.",
+      "text": "Видалити полицю? Книги залишаться без полиці.",
+      "where": "Library",
+      "file": "src/pages/LibraryPage.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-241",
+      "category": "Confirm",
+      "original_text": "Почати новий прохід? Попереднє прочитання збережеться окремо — зʼявиться новий запис на полиці.",
+      "text": "Почати новий прохід? Попереднє прочитання збережеться окремо — зʼявиться новий запис на полиці.",
+      "where": "Re-read",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-242",
+      "category": "Confirm",
+      "original_text": "Скинути сесію без запису в журнал?",
+      "text": "Скинути сесію без запису в журнал?",
+      "where": "Session",
+      "file": "src/components/SessionTimer.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-243",
+      "category": "Confirm",
+      "original_text": "Видалити нотатку?",
+      "text": "Видалити нотатку?",
+      "where": "Notes",
+      "file": "src/components/BookNotesSection.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-244",
+      "category": "Confirm",
+      "original_text": "Видалити свій відгук?",
+      "text": "Видалити свій відгук?",
+      "where": "Reviews",
+      "file": "src/components/BookReviewsSection.tsx",
+      "apply_ref": "",
+      "notes": ""
+    },
+    {
+      "id": "copy-245",
+      "category": "Confirm",
+      "original_text": "Видалити цю сесію?",
+      "text": "Видалити цю сесію?",
+      "where": "Sessions",
+      "file": "src/components/BookDetailModal.tsx",
+      "apply_ref": "",
+      "notes": ""
+    }
+  ]
+}

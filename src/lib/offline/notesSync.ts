@@ -120,13 +120,13 @@ export async function fetchNotesForEntry(
     } catch {
       const cached = await readCachedEntryNotes(userId, entryId, bookId);
       if (cached.ownNotes.length > 0 || cached.publicNotes.length > 0) return cached;
-      throw new Error('Offline — немає збережених нотаток. Підключись до інternet хоча б раз.');
+      throw new Error('Офлайн — немає збережених нотаток. Підключись до інтернету.');
     }
   }
 
   const cached = await readCachedEntryNotes(userId, entryId, bookId);
   if (cached.ownNotes.length === 0 && cached.publicNotes.length === 0) {
-    throw new Error('Offline — немає збережених нотаток. Підключись до інternet хоча б раз.');
+    throw new Error('Офлайн — немає збережених нотаток. Підключись до інтернету.');
   }
   return cached;
 }
@@ -312,7 +312,7 @@ export async function fetchAllUserNotes(userId: string): Promise<NoteFeedItem[]>
     .sortBy('created_at');
 
   if (!notes.length) {
-    throw new Error('Offline — немає збережених нотаток. Підключись до інternet хоча б раз.');
+    throw new Error('Офлайн — немає збережених нотаток. Підключись до інтернету.');
   }
 
   const items: NoteFeedItem[] = [];

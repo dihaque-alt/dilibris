@@ -86,7 +86,7 @@ export async function fetchDashboardData(userId: string): Promise<DashboardData>
       if (cached) return cached;
       const libraryFallback = await fallbackFromLibraryEntries(userId);
       if (libraryFallback) return libraryFallback;
-      throw new Error('Не вдалося завантажити дашборд');
+      throw new Error('Не вдалося завантажити читацьку статистику');
     }
   }
 
@@ -96,5 +96,5 @@ export async function fetchDashboardData(userId: string): Promise<DashboardData>
   const libraryFallback = await fallbackFromLibraryEntries(userId);
   if (libraryFallback) return libraryFallback;
 
-  throw new Error('Offline — немає збереженої статистики. Відкрий дашборд online хоча б раз.');
+  throw new Error('Офлайн — немає збереженої статистики. Відкрий читацьку статистику онлайн хоча б раз.');
 }

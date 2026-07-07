@@ -298,7 +298,7 @@ export function BookNotesSection({
       {loading ? (
         <p className="form-hint">Завантажуємо нотатки…</p>
       ) : ownNotes.length === 0 && !showForm ? (
-        <p className="empty-hint">Ще немає нотаток. Зберігай цитати, думки або спостереження під час читання.</p>
+        <p className="empty-hint">Ще немає нотаток. Додавай найпершу!</p>
       ) : (
         <ul className="note-list">
           {ownNotes.map((note) => (

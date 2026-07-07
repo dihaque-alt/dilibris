@@ -86,7 +86,7 @@ export async function fetchLibrary(userId: string): Promise<LibraryData> {
 
   const cached = await readCachedLibrary(userId);
   if (!cached) {
-    throw new Error('Offline — немає збереженої бібліотеки. Підключись до інternet хоча б раз.');
+    throw new Error('Офлайн — немає збереженої бібліотеки. Підключись до інтернету.');
   }
   return cached;
 }

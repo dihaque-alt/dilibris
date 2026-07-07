@@ -112,7 +112,7 @@ export async function syncActivityNotifications(userId: string): Promise<void> {
       await addNotification(userId, {
         id: halfKey,
         kind: 'challenge',
-        text: 'Ти на півдорозі до річної цілі — ще трохи!',
+        text: 'Ти на півдорозі до річної цілі',
         createdAt: now.toISOString(),
         go: { page: 'dashboard' },
       });

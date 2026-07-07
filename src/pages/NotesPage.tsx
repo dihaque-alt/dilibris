@@ -22,7 +22,7 @@ const KIND_CHIPS: { key: KindFilter; label: string }[] = [
   { key: 'all', label: 'Усі' },
   { key: 'quote', label: 'Цитата' },
   { key: 'thought', label: 'Думка' },
-  { key: 'general', label: 'Загальна' },
+  { key: 'general', label: 'Спостереження' },
 ];
 
 interface NotesPageProps {
@@ -118,7 +118,7 @@ export function NotesPage({ userId, userEmail }: NotesPageProps) {
         <PageHead
           eyebrow="На полях"
           title="Нотатки"
-          sub="Цитати й думки з усіх книг — зібрані в одному місці"
+          sub="Цитати й думки з усіх зібраних книг"
         />
 
         {error && <p className="banner-error">{error}</p>}

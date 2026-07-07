@@ -73,7 +73,7 @@ export async function searchGoogleBooks(query: string): Promise<BookSearchHit[]>
   });
 
   const res = await fetch(`${SEARCH_URL}?${params}`);
-  if (!res.ok) throw new Error('Google Books тимчасово недоступний');
+  if (!res.ok) throw new Error('Open Library / Google Books тимчасово недоступні');
 
   const data = (await res.json()) as { items?: GoogleVolumeItem[] };
   return (data.items ?? []).map(mapGoogleItem).filter((hit): hit is BookSearchHit => hit !== null);

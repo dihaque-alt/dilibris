@@ -73,13 +73,13 @@ export async function fetchReviewsForBook(userId: string, bookId: string): Promi
     } catch {
       const cached = await readCachedBookReviews(bookId);
       if (cached.reviews.length > 0) return cached;
-      throw new Error('Offline — немає збережених відгуків. Підключись до інternet хоча б раз.');
+      throw new Error('Офлайн — немає збережених відгуків. Підключись до інтернету.');
     }
   }
 
   const cached = await readCachedBookReviews(bookId);
   if (cached.reviews.length === 0) {
-    throw new Error('Offline — немає збережених відгуків. Підключись до інternet хоча б раз.');
+    throw new Error('Офлайн — немає збережених відгуків. Підключись до інтернету.');
   }
   return cached;
 }

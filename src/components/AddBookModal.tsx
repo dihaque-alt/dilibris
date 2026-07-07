@@ -94,7 +94,7 @@ export function AddBookModal({
         setResults(hits);
         setSearchSource(source);
       } catch {
-        setSearchError('Пошук не вдався — спробуй вручну');
+        setSearchError('Пошук невдалий — спробуй вручну');
         setResults([]);
         setSearchSource(null);
       } finally {
@@ -189,7 +189,7 @@ export function AddBookModal({
         </header>
 
         {!shelfId && (
-          <p className="add-book-hint">Спочатку обери або створи полицю.</p>
+          <p className="add-book-hint">Спочатку обери або створи полицю</p>
         )}
 
         <div className="add-book-body">
@@ -215,7 +215,7 @@ export function AddBookModal({
               </button>
             </div>
           ) : (
-            <p className="add-book-hint">Offline — лише ручне додавання.</p>
+            <p className="add-book-hint">Офлайн — лише ручне додавання</p>
           )}
 
           <label className="dl-field">

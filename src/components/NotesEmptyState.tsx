@@ -8,7 +8,7 @@ export function NotesEmptyState({ variant }: NotesEmptyStateProps) {
   const title = variant === 'empty' ? 'Поки без нотаток' : 'Нічого не знайдено';
   const message =
     variant === 'empty'
-      ? 'Додай цитату чи думку з картки будь-якої книги — вони зʼявляться тут.'
+      ? 'Додай цитату чи спостереження з будь-якої книги…'
       : 'Спробуй інший тип нотатки або зміни пошуковий запит.';
 
   return (

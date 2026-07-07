@@ -22,7 +22,7 @@ export const PLACEHOLDER_COVER = '/placeholder-cover.svg';
 export const NOTE_TYPE_LABELS = {
   quote: 'Цитата',
   thought: 'Думка',
-  general: 'Загальна',
+  general: 'Спостереження',
 } as const;
 
 export const NOTE_VISIBILITY_LABELS = {

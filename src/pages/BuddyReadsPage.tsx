@@ -183,7 +183,7 @@ export function BuddyReadsPage({ userId, userEmail }: BuddyReadsPageProps) {
         <PageHead
           eyebrow="Читаємо разом"
           title="Спільночит"
-          sub="Клуби з дедлайном, спільночатами й нотатками на полях"
+          sub="Спільночати й нотатки на полях для друганів-читунів"
         >
           <button type="button" className="dl-primary" onClick={() => setShowCreate(true)}>
             + Створити

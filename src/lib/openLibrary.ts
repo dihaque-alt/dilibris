@@ -15,7 +15,7 @@ export async function searchOpenLibrary(query: string): Promise<OpenLibraryHit[]
   });
 
   const res = await fetch(`${SEARCH_URL}?${params}`);
-  if (!res.ok) throw new Error('Open Library тимчасово недоступна');
+  if (!res.ok) throw new Error('Open Library / Google Books тимчасово недоступні');
 
   const data = (await res.json()) as { docs?: OpenLibraryHit[] };
   return data.docs ?? [];

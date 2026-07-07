@@ -112,7 +112,7 @@ export function LoginForm() {
               </button>
               <div className="auth-reassure">
                 <span>✦</span>
-                <span>Без паролів — лише безпечний лінк на пошту</span>
+                <span>Без паролів, бо ти їх не пам'ятаєш</span>
               </div>
             </form>
           </>

@@ -143,19 +143,7 @@ export function GoodreadsImportSheet({ userId, onClose }: GoodreadsImportSheetPr
 
           {step === 'pick' && (
             <>
-              <ol className="gr-import-steps">
-                <li>
-                  У Goodreads відкрий <strong>My Books</strong> → <strong>Import and export</strong>
-                </li>
-                <li>
-                  Натисни <strong>Export Library</strong> — завантажиться файл{' '}
-                  <code>goodreads_export.csv</code>
-                </li>
-                <li>
-                  Завантаж його сюди — ми створимо полиці за статусами й перенесемо книги, оцінки та
-                  відгуки
-                </li>
-              </ol>
+              <p className="gr-import-steps">3 кроки (My Books → Export → Upload)</p>
 
               <input
                 ref={inputRef}

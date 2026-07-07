@@ -196,7 +196,7 @@ export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps
           <Toggle
             checked={form.profile.defaultPrivate}
             onChange={(v) => patchProfile('defaultPrivate', v)}
-            label="Нові нотатки — особисті"
+            label="Нові нотатки"
             hint="За замовчуванням ховати нотатки від інших"
           />
           <Toggle

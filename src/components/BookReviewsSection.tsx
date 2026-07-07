@@ -185,7 +185,7 @@ export function BookReviewsSection({
       )}
 
       {!embedded && (
-        <p className="form-hint reviews-public-note">Відгуки завжди публічні — їх бачать інші читачі.</p>
+        <p className="form-hint reviews-public-note">Відгуки завжди публічні — їх бачать інші читачі</p>
       )}
 
       {loading ? (
@@ -244,7 +244,7 @@ export function BookReviewsSection({
           <time className="review-date">{formatDateTimeUk(ownReview.updated_at)}</time>
         </article>
       ) : (
-        <p className="empty-hint">Ще немає твого відгуку. Поділись враженнями — інші читачі побачать його тут.</p>
+        <p className="empty-hint">Додай свої перші враження..</p>
       )}
 
       {otherReviews.length > 0 && (

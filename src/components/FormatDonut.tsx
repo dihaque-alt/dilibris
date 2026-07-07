@@ -16,7 +16,7 @@ export function FormatDonut({
 }: FormatDonutProps) {
   const total = paper + ebook + audiobook + unknown;
   if (total === 0) {
-    return <p className="empty-hint">Поки немає даних за цей рік.</p>;
+    return <p className="empty-hint">Поки немає даних за цей рік</p>;
   }
 
   const segments = [
