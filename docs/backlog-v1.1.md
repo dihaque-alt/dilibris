@@ -39,8 +39,8 @@
 | 25 | NotifBell — parity + deep links audit | ✅ |
 | 26 | Goodreads import — polish + spec update | ✅ |
 | 27 | Offline UX — один банер, без дублікатів | ✅ |
-| 28 | Копірайт і labels — один прохід | ⬜ |
-| 29 | Mobile nav + safe area audit | ⬜ |
+| 28 | Копірайт і labels — один прохід | ✅ |
+| 29 | Mobile nav + safe area audit | ✅ |
 | 30 | Accessibility pass (focus, aria, reduced motion) | ⬜ |
 
 ---
@@ -432,14 +432,18 @@ Preview list styling; error states; оновити `product-spec.md` (CSV shippe
 ### 28. Копірайт і labels — один прохід
 Єдиний тон (ти); `labels.ts`; помилки людською мовою; виправити «інternet» typo.
 
-**Файли:** `labels.ts`, `librarySync.ts`, всі `*Page.tsx`
+**Зроблено (2026-07-07):** Canvas copy-inventory застосовано; кирилиця в UI/offline/Goodreads; prod deploy.
+
+**Файли:** `labels.ts`, `librarySync.ts`, всі `*Page.tsx`, `scripts/apply-copy-inventory.mjs`
 
 ---
 
 ### 29. Mobile nav + safe area audit
 Nav pills <820px; bottom sheets; banner/timer safe-area; tap targets ≥44px.
 
-**Файли:** `AppNav.tsx`, `app-shell.css`, `detail-ui.css`
+**Зроблено (2026-07-07):** `viewport-fit=cover`; safe-area на header, offline banner, session banner; mobile nav pills ≥44px; tap targets у header/sheets; clearance під session banner.
+
+**Файли:** `index.html`, `tokens.css`, `AppNav.tsx`, `app-shell.css`, `detail-ui.css`, `index.css`
 
 ---
 

@@ -72,6 +72,27 @@
   color: var(--text-main);
 }
 
+@media (max-width: 820px) {
+  .dl-close {
+    width: var(--tap-min);
+    height: var(--tap-min);
+  }
+
+  .dl-ghost,
+  .dl-primary,
+  .dl-danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--tap-min);
+    touch-action: manipulation;
+  }
+
+  .dl-segmented-btn {
+    min-height: var(--tap-min);
+  }
+}
+
 /* ---- Segmented tabs -------------------------------------------------- */
 .dl-segmented {
   display: flex;
@@ -1308,7 +1329,7 @@ button.dl-toggle-row:focus-visible {
   }
 
   .reader-foot {
-    padding: 12px 16px calc(14px + env(safe-area-inset-bottom));
+    padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px));
   }
 
   .session-fields {
@@ -1725,7 +1746,7 @@ button.dl-toggle-row:focus-visible {
 .add-book-foot {
   display: flex;
   gap: 12px;
-  padding: 16px 24px calc(20px + env(safe-area-inset-bottom));
+  padding: 16px 24px calc(20px + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--line);
 }
 
