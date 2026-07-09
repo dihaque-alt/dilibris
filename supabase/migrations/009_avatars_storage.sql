@@ -14,7 +14,7 @@ create policy "avatars_insert_own"
   to authenticated
   with check (
     bucket_id = 'avatars'
-    and auth.uid()::text = (storage.foldername(name))[1]
+    and starts_with(name, auth.uid()::text || '/')
   );
 
 create policy "avatars_update_own"
@@ -22,7 +22,11 @@ create policy "avatars_update_own"
   to authenticated
   using (
     bucket_id = 'avatars'
-    and auth.uid()::text = (storage.foldername(name))[1]
+    and starts_with(name, auth.uid()::text || '/')
+  )
+  with check (
+    bucket_id = 'avatars'
+    and starts_with(name, auth.uid()::text || '/')
   );
 
 create policy "avatars_delete_own"
@@ -30,5 +34,5 @@ create policy "avatars_delete_own"
   to authenticated
   using (
     bucket_id = 'avatars'
-    and auth.uid()::text = (storage.foldername(name))[1]
+    and starts_with(name, auth.uid()::text || '/')
   );

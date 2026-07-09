@@ -116,7 +116,13 @@ export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps
       patchProfile('avatarUrl', url);
       setAvatarBust(Date.now());
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Не вдалося завантажити фото');
+      const message =
+        err instanceof Error
+          ? err.message
+          : typeof err === 'object' && err && 'message' in err
+            ? String((err as { message: string }).message)
+            : 'Не вдалося завантажити фото';
+      setError(message);
     } finally {
       setAvatarBusy(false);
     }
@@ -221,7 +227,7 @@ export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/jpeg,image/png,image/webp"
+                accept="image/jpeg,image/png,image/webp,image/*"
                 hidden
                 onChange={(e) => void handleAvatarPick(e)}
               />
