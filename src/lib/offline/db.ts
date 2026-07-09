@@ -9,12 +9,13 @@ import type {
   UserBookEntry,
   UserShelf,
 } from '../../types/database';
-import type { StatsEntry } from '../stats';
+import type { SessionMonthRow, StatsEntry } from '../stats';
 
 export interface DashboardSnapshot {
   user_id: string;
   entries: StatsEntry[];
   challenges: ReadingChallenge[];
+  sessions: SessionMonthRow[];
   cached_at: string;
 }
 
@@ -83,6 +84,17 @@ class DiLibrisOfflineDB extends Dexie {
       entries: 'id, user_id, shelf_id, book_id',
       books: 'id',
       sessions: 'id, entry_id',
+      activeSessions: 'user_id, entry_id',
+      notes: 'id, user_id, entry_id, book_id, updated_at',
+      reviews: 'id, user_id, book_id, entry_id, updated_at',
+      dashboardSnapshots: 'user_id',
+      pendingOps: 'id, userId, createdAt',
+    });
+    this.version(6).stores({
+      shelves: 'id, user_id',
+      entries: 'id, user_id, shelf_id, book_id',
+      books: 'id',
+      sessions: 'id, entry_id, user_id',
       activeSessions: 'user_id, entry_id',
       notes: 'id, user_id, entry_id, book_id, updated_at',
       reviews: 'id, user_id, book_id, entry_id, updated_at',

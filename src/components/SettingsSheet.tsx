@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Link } from 'react-router-dom';
+import { useCallback, useEffect, useRef, useState, type ChangeEvent, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { useDialogA11y } from '../hooks/useDialogA11y';
 import { useIsMobile } from '../hooks/useIsMobile';
+import { removeAvatar, uploadAvatar } from '../lib/avatarUpload';
 import {
   ACCENT_PRESETS,
   loadAppearancePrefs,
@@ -21,6 +23,7 @@ import {
   type LibraryDisplayPrefs,
 } from '../lib/libraryDisplayPrefs';
 import { loadUserSettings, saveUserSettings, type UserSettings } from '../lib/userSettings';
+import { ProfileAvatar } from './ProfileAvatar';
 
 interface SettingsSheetProps {
   userId: string;
@@ -60,7 +63,9 @@ export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps
   const dialogRef = useRef<HTMLDivElement>(null);
   const [form, setForm] = useState<SettingsForm | null>(null);
   const [saving, setSaving] = useState(false);
+  const [avatarBusy, setAvatarBusy] = useState(false);
   const [error, setError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleClose = useCallback(() => {
     applyAppearancePrefs(loadAppearancePrefs(userId));
@@ -96,6 +101,37 @@ export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps
 
   function patchAppearance<K extends keyof AppearancePrefs>(key: K, value: AppearancePrefs[K]) {
     setForm((f) => (f ? { ...f, appearance: { ...f.appearance, [key]: value } } : f));
+  }
+
+  async function handleAvatarPick(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    setAvatarBusy(true);
+    setError('');
+    try {
+      const url = await uploadAvatar(userId, file);
+      patchProfile('avatarUrl', url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Не вдалося завантажити фото');
+    } finally {
+      setAvatarBusy(false);
+    }
+  }
+
+  async function handleAvatarRemove() {
+    if (!window.confirm('Прибрати фото профілю?')) return;
+    setAvatarBusy(true);
+    setError('');
+    try {
+      await removeAvatar(userId);
+      patchProfile('avatarUrl', null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Не вдалося прибрати фото');
+    } finally {
+      setAvatarBusy(false);
+    }
   }
 
   async function handleSave() {
@@ -137,7 +173,6 @@ export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps
     );
   }
 
-  const letter = (form.profile.email || '?')[0]?.toUpperCase() ?? '?';
 
   return (
     <SettingsModalShell mobile={mobile} onClose={handleClose}>
@@ -151,12 +186,45 @@ export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps
       >
         {mobile && <div className="dl-sheet-handle" aria-hidden="true" />}
         <header className="dl-settings-head">
-          <span className="profile-avatar profile-avatar--lg" aria-hidden="true">
-            {letter}
-          </span>
+          <ProfileAvatar
+            name={form.profile.name}
+            email={form.profile.email}
+            avatarUrl={form.profile.avatarUrl}
+            size="lg"
+          />
           <div className="dl-settings-head-text">
             <h2 id="settings-title">Профіль і налаштування</h2>
             <p>{form.profile.email}</p>
+            <div className="settings-avatar-actions">
+              <button
+                type="button"
+                className="dl-ghost"
+                disabled={avatarBusy}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {avatarBusy ? 'Завантаження…' : 'Змінити фото'}
+              </button>
+              {form.profile.avatarUrl && (
+                <button
+                  type="button"
+                  className="dl-ghost"
+                  disabled={avatarBusy}
+                  onClick={() => void handleAvatarRemove()}
+                >
+                  Прибрати
+                </button>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                hidden
+                onChange={(e) => void handleAvatarPick(e)}
+              />
+            </div>
+            <Link to={`/u/${userId}`} className="settings-profile-link">
+              Переглянути профіль
+            </Link>
           </div>
           <button type="button" className="dl-close" onClick={handleClose} aria-label="Закрити">
             ✕
@@ -204,6 +272,24 @@ export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps
               className="dl-range"
             />
           </label>
+
+          <label className="dl-field">
+            <span className="dl-field-label">Про себе</span>
+            <textarea
+              className="dl-field-input"
+              value={form.profile.bio}
+              onChange={(e) => patchProfile('bio', e.target.value)}
+              placeholder="Кілька слів про себе як читача"
+              rows={3}
+            />
+          </label>
+
+          <Toggle
+            checked={form.profile.isProfilePublic}
+            onChange={(v) => patchProfile('isProfilePublic', v)}
+            label="Публічний профіль"
+            hint="Інші бачать твоє ім'я, фото та біо в відгуках і нотатках"
+          />
 
           <hr className="dl-settings-divider" />
 

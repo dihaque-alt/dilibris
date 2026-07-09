@@ -18,6 +18,7 @@ import {
   subscribeActiveSession,
 } from '../lib/offline/activeSessionSync';
 import { addSession, fetchEntry } from '../lib/offline/librarySync';
+import { entryProgressMode } from '../lib/sessionProgress';
 import type { ActiveReadingSession, UserBookEntry } from '../types/database';
 import { ActiveSessionBanner } from './ActiveSessionBanner';
 import { useOffline } from './OfflineProvider';
@@ -112,13 +113,14 @@ export function AppOverlaysProvider({ userId, userEmail, children }: AppOverlays
   const logSession = useCallback(
     async (
       entryId: string,
-      payload: { minutes: number; pages: number; note: string | null },
+      payload: { minutes: number; note: string | null; pages?: number; percent?: number },
     ) => {
       await addSession(userId, entryId, {
         sessionDate: todayIsoDate(),
-        pages: payload.pages,
         minutes: payload.minutes,
         note: payload.note,
+        pages: payload.pages,
+        percent: payload.percent,
       });
       await clearActiveSession(userId);
       await refreshPending();
@@ -156,9 +158,16 @@ export function AppOverlaysProvider({ userId, userEmail, children }: AppOverlays
         await saveActiveSession(snap);
       }
       const minutes = Math.max(1, Math.round(elapsedSeconds(snap) / 60));
-      const pages = parseInt(snap.pages_draft, 10) || 0;
+      const progressRaw = parseInt(snap.pages_draft, 10) || 0;
       const note = snap.note_draft.trim() || null;
-      await logSession(session.entry_id, { minutes, pages, note });
+      const entry = await fetchEntry(session.entry_id);
+      const mode = entry ? entryProgressMode(entry) : 'pages';
+      await logSession(
+        session.entry_id,
+        mode === 'percent'
+          ? { minutes, percent: progressRaw, note }
+          : { minutes, pages: progressRaw, note },
+      );
     } catch (err) {
       window.alert(err instanceof Error ? err.message : 'Не вдалося записати сесію');
     }

@@ -12,6 +12,7 @@ import {
   snapshotSession,
   startActiveSession,
 } from '../lib/offline/activeSessionSync';
+import { entryProgressMode } from '../lib/sessionProgress';
 import type { ActiveReadingSession, UserBookEntry } from '../types/database';
 
 interface SessionTimerProps {
@@ -20,7 +21,12 @@ interface SessionTimerProps {
   syncedSession?: ActiveReadingSession | null;
   onDismiss: () => void;
   onDiscard: () => void;
-  onFinish: (payload: { minutes: number; pages: number; note: string | null }) => void | Promise<void>;
+  onFinish: (payload: {
+    minutes: number;
+    note: string | null;
+    pages?: number;
+    percent?: number;
+  }) => void | Promise<void>;
 }
 
 function applyRemoteSession(
@@ -200,12 +206,17 @@ export function SessionTimer({
     }
 
     const minutes = Math.max(1, Math.round(elapsedSeconds(current) / 60));
-    const pagesNum = parseInt(pagesRef.current, 10) || 0;
+    const progressRaw = parseInt(pagesRef.current, 10) || 0;
     const noteText = noteRef.current.trim() || null;
+    const mode = entryProgressMode(entry);
 
     setError('');
     try {
-      await onFinish({ minutes, pages: pagesNum, note: noteText });
+      await onFinish(
+        mode === 'percent'
+          ? { minutes, percent: Math.min(100, progressRaw), note: noteText }
+          : { minutes, pages: progressRaw, note: noteText },
+      );
       onDismiss();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не вдалося записати сесію');
@@ -214,6 +225,8 @@ export function SessionTimer({
 
   const clock = formatSessionClock(sec);
   const canUseSession = !loading && session != null;
+  const progressMode = entryProgressMode(entry);
+  const progressIsPercent = progressMode === 'percent';
 
   closeDialogRef.current = () => {
     void handleDismiss();
@@ -264,15 +277,24 @@ export function SessionTimer({
 
               <div className="session-fields">
                 <label className="dl-field">
-                  <span className="dl-field-label">Сторінок</span>
+                  <span className="dl-field-label">{progressIsPercent ? 'Відсотків' : 'Сторінок'}</span>
                   <input
                     className="dl-field-input"
                     value={pages}
                     disabled={!canUseSession}
-                    onChange={(e) => setPages(e.target.value.replace(/[^0-9]/g, ''))}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/[^0-9]/g, '');
+                      if (progressIsPercent && raw) {
+                        const n = Math.min(100, parseInt(raw, 10) || 0);
+                        setPages(String(n));
+                      } else {
+                        setPages(raw);
+                      }
+                    }}
                     onBlur={() => void persist()}
-                    placeholder="0"
+                    placeholder={progressIsPercent ? '0–100' : '0'}
                     inputMode="numeric"
+                    max={progressIsPercent ? 100 : undefined}
                   />
                 </label>
                 <label className="dl-field session-note-field">

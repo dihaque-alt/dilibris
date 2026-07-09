@@ -11,6 +11,7 @@ export interface StatsEntry {
   total_pages: number | null;
   total_minutes: number;
   format: string | null;
+  progress_mode?: 'pages' | 'percent';
   book?: {
     title: string;
     authors: string[];
@@ -45,6 +46,7 @@ export function entryToStatsEntry(entry: UserBookEntry): StatsEntry {
     total_pages: entry.total_pages,
     total_minutes: entry.total_minutes,
     format: entry.format,
+    progress_mode: entry.progress_mode,
     book: entry.book
       ? {
           title: entry.book.title,
@@ -66,6 +68,57 @@ export function finishedForStats(entries: StatsEntry[]): StatsEntry[] {
 
 export function finishedInYear(entries: StatsEntry[], year: number): StatsEntry[] {
   return finishedForStats(entries).filter((e) => e.finished_on?.startsWith(String(year)));
+}
+
+export type MonthMetric = 'books' | 'pages' | 'minutes';
+
+export interface SessionMonthRow {
+  started_at: string;
+  pages_read: number;
+  minutes: number;
+  progress_mode: 'pages' | 'percent';
+}
+
+export function monthSeriesFromBooks(
+  entries: StatsEntry[],
+  year: number,
+): { month: number; value: number }[] {
+  return booksByMonth(entries, year).map(({ month, count }) => ({ month, value: count }));
+}
+
+export function monthSeriesFromSessions(
+  sessions: SessionMonthRow[],
+  year: number,
+  metric: 'pages' | 'minutes',
+): { month: number; value: number }[] {
+  const counts = Array(12).fill(0);
+  sessions.forEach((s) => {
+    const y = parseInt(s.started_at.slice(0, 4), 10);
+    if (y !== year) return;
+    const monthIdx = parseInt(s.started_at.slice(5, 7), 10) - 1;
+    if (monthIdx < 0 || monthIdx > 11) return;
+    if (metric === 'minutes') {
+      counts[monthIdx] += s.minutes;
+    } else if (s.progress_mode === 'pages') {
+      counts[monthIdx] += s.pages_read;
+    }
+  });
+  return counts.map((value, i) => ({ month: i + 1, value }));
+}
+
+export function formatMonthMetricValue(metric: MonthMetric, value: number): string {
+  if (metric === 'minutes') {
+    if (value >= 60) return `${Math.round(value / 60)} год`;
+    return `${value} хв`;
+  }
+  if (metric === 'pages') return `${value} стор.`;
+  return String(value);
+}
+
+export function monthMetricBarTitle(metric: MonthMetric, value: number): string {
+  if (metric === 'books') return `${value} ${value === 1 ? 'книга' : value < 5 ? 'книги' : 'книг'}`;
+  if (metric === 'pages') return `${value} сторінок`;
+  return formatMonthMetricValue('minutes', value);
 }
 
 export function booksByMonth(entries: StatsEntry[], year: number): { month: number; count: number }[] {

@@ -20,6 +20,7 @@ import {
   updateEntry,
 } from '../lib/offline/librarySync';
 import { formatAuthors, STATUS_LABELS } from '../lib/labels';
+import { entryProgressMode, formatSessionProgressLine } from '../lib/sessionProgress';
 import { formatMinutes, parseRating, snapRating } from '../lib/rating';
 import { useIsMobile } from '../hooks/useIsMobile';
 import type { BookEntryStatus, ProgressMode, ReadingFormat, ReadingSession, UserBookEntry } from '../types/database';
@@ -275,15 +276,16 @@ export function BookDetailModal({
     setSessionSaving(true);
     setError('');
 
-    const pages = Number(sessionPages) || 0;
+    const progressRaw = Number(sessionPages) || 0;
     const minutes = Number(sessionMinutes) || 0;
+    const mode = entryProgressMode(entry);
 
     try {
       await addSession(userId, entry.id, {
         sessionDate,
-        pages,
         minutes,
         note: sessionNote.trim() || null,
+        ...(mode === 'percent' ? { percent: progressRaw } : { pages: progressRaw }),
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не вдалося додати сесію');
@@ -633,10 +635,11 @@ export function BookDetailModal({
                       />
                     </label>
                     <label>
-                      Сторінок
+                      {entryProgressMode(entry) === 'percent' ? 'Відсотків' : 'Сторінок'}
                       <input
                         type="number"
                         min={0}
+                        max={entryProgressMode(entry) === 'percent' ? 100 : undefined}
                         value={sessionPages}
                         onChange={(e) => setSessionPages(e.target.value)}
                       />
@@ -682,8 +685,7 @@ export function BookDetailModal({
                       </div>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontSize: 'var(--fs-sm)' }}>
-                          {session.pages_read > 0 && `${session.pages_read} стор. · `}
-                          {formatMinutes(session.minutes)}
+                          {formatSessionProgressLine(session, entryProgressMode(entry)) || '—'}
                         </div>
                         {session.note && (
                           <div style={{ fontSize: 'var(--fs-xs)', color: 'var(--text-muted)', marginTop: 2 }}>

@@ -10,6 +10,9 @@ export interface UserSettings {
   defaultPrivate: boolean;
   weeklyDigest: boolean;
   reminders: boolean;
+  avatarUrl: string | null;
+  isProfilePublic: boolean;
+  bio: string;
 }
 
 export function loadLocalPrefs(userId: string): Partial<UserSettings> {
@@ -29,7 +32,11 @@ export async function loadUserSettings(userId: string, email: string): Promise<U
   if (isOnline()) {
     try {
       const [{ data: profile }, { data: challenge }] = await Promise.all([
-        supabase.from('profiles').select('display_name').eq('id', userId).maybeSingle(),
+        supabase
+          .from('profiles')
+          .select('display_name, avatar_url, is_profile_public, bio')
+          .eq('id', userId)
+          .maybeSingle(),
         supabase
           .from('reading_challenges')
           .select('target_books')
@@ -46,6 +53,9 @@ export async function loadUserSettings(userId: string, email: string): Promise<U
         defaultPrivate: prefs.defaultPrivate,
         weeklyDigest: prefs.weeklyDigest,
         reminders: prefs.reminders,
+        avatarUrl: profile?.avatar_url ?? null,
+        isProfilePublic: profile?.is_profile_public ?? true,
+        bio: profile?.bio ?? '',
       };
     } catch {
       /* fall through to cached prefs */
@@ -60,6 +70,9 @@ export async function loadUserSettings(userId: string, email: string): Promise<U
     defaultPrivate: prefs.defaultPrivate,
     weeklyDigest: prefs.weeklyDigest,
     reminders: prefs.reminders,
+    avatarUrl: null,
+    isProfilePublic: true,
+    bio: '',
   };
 }
 
@@ -75,7 +88,14 @@ export async function saveUserSettings(userId: string, settings: UserSettings): 
 
   const year = new Date().getFullYear();
 
-  await supabase.from('profiles').update({ display_name: settings.name.trim() || null }).eq('id', userId);
+  await supabase
+    .from('profiles')
+    .update({
+      display_name: settings.name.trim() || null,
+      is_profile_public: settings.isProfilePublic,
+      bio: settings.bio.trim() || null,
+    })
+    .eq('id', userId);
 
   const { data: existing } = await supabase
     .from('reading_challenges')

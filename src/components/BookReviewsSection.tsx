@@ -9,6 +9,7 @@ import {
 } from '../lib/offline/reviewsSync';
 import type { Review } from '../types/database';
 import { useOffline } from './OfflineProvider';
+import { ProfileLink } from './ProfileLink';
 import { StarRating } from './StarRating';
 
 interface BookReviewsSectionProps {
@@ -255,7 +256,11 @@ export function BookReviewsSection({
               <li key={review.id}>
                 <article className="review-card">
                   <header className="review-header">
-                    <strong>{review.profile?.display_name || 'Читач'}</strong>
+                    <ProfileLink
+                      userId={review.user_id}
+                      viewerId={userId}
+                      name={review.profile?.display_name || 'Читач'}
+                    />
                     <span className="review-rating">{formatStarRating(review.rating)}</span>
                   </header>
                   <ReviewBody body={review.body} containsSpoilers={review.contains_spoilers} />

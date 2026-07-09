@@ -332,6 +332,10 @@ button.dl-info-tip-btn:focus-visible {
   height: 158px;
 }
 
+.dl-month-metric {
+  margin: 0 0 14px;
+}
+
 @media (min-width: 860px) {
   .dl-month-chart {
     gap: 12px;
@@ -1332,4 +1336,37 @@ button.note-detail-book-link:hover:not(:disabled) {
   .note-detail-header {
     padding: 12px 18px 0;
   }
+}
+
+.profile-page .profile-card {
+  max-width: 520px;
+}
+
+.profile-card-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.profile-card-name {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: var(--fs-h2);
+}
+
+.profile-card-meta {
+  margin: 4px 0 0;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.profile-card-bio {
+  margin: 0;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.profile-card-foot {
+  margin-top: 20px;
 }

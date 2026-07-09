@@ -16,16 +16,20 @@ import { formatMinutes, formatStarRating } from '../lib/rating';
 import {
   availableYears,
   averageRating,
-  booksByMonth,
   booksByYear,
   finishedInYear,
   formatBreakdown,
   languageBreakdown,
   longestBreakDays,
   MONTH_NAMES_UK,
+  monthMetricBarTitle,
+  monthSeriesFromBooks,
+  monthSeriesFromSessions,
   topAuthors,
   totalMinutesRead,
   totalPagesRead,
+  type MonthMetric,
+  type SessionMonthRow,
   type StatsEntry,
 } from '../lib/stats';
 import type { ReadingChallenge } from '../types/database';
@@ -50,27 +54,56 @@ function challengeHint(finished: number, target: number, year: number): string {
   return 'Тримаєш ідеальний темп — продовжуй у своєму ритмі';
 }
 
-function MonthChart({ data }: { data: { month: number; count: number }[] }) {
-  const max = Math.max(1, ...data.map((d) => d.count));
+function MonthChart({ data, metric }: { data: { month: number; value: number }[]; metric: MonthMetric }) {
+  const max = Math.max(1, ...data.map((d) => d.value));
 
   return (
     <div className="dl-month-chart">
-      {data.map(({ month, count }) => (
+      {data.map(({ month, value }) => (
         <div key={month} className="dl-month-col">
           <div
             className="dl-bar"
             style={{
               width: '100%',
               maxWidth: 34,
-              height: Math.max(5, (count / max) * 122),
-              background: count
+              height: Math.max(5, (value / max) * 122),
+              background: value
                 ? 'linear-gradient(180deg, var(--accent-lime), var(--accent-lime-deep))'
                 : 'var(--line)',
             }}
-            title={`${count} книг`}
+            title={monthMetricBarTitle(metric, value)}
           />
           <span className="dl-month-label">{MONTH_NAMES_UK[month - 1]}</span>
         </div>
+      ))}
+    </div>
+  );
+}
+
+function MonthMetricPicker({
+  value,
+  onChange,
+}: {
+  value: MonthMetric;
+  onChange: (metric: MonthMetric) => void;
+}) {
+  const options: [MonthMetric, string][] = [
+    ['books', 'Книги'],
+    ['pages', 'Сторінки'],
+    ['minutes', 'Час'],
+  ];
+
+  return (
+    <div className="dl-settings-segments dl-month-metric" role="group" aria-label="Метрика графіка">
+      {options.map(([key, label]) => (
+        <button
+          key={key}
+          type="button"
+          className={value === key ? 'is-active' : ''}
+          onClick={() => onChange(key)}
+        >
+          {label}
+        </button>
       ))}
     </div>
   );
@@ -81,7 +114,9 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
   const currentYear = new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [entries, setEntries] = useState<StatsEntry[]>([]);
+  const [sessions, setSessions] = useState<SessionMonthRow[]>([]);
   const [challenges, setChallenges] = useState<ReadingChallenge[]>([]);
+  const [monthMetric, setMonthMetric] = useState<MonthMetric>('books');
   const [fromCache, setFromCache] = useState(false);
   const [cachedAt, setCachedAt] = useState<string | null>(null);
   const [targetBooks, setTargetBooks] = useState('12');
@@ -104,6 +139,7 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
   const loadData = useCallback(async () => {
     const data = await fetchDashboardData(userId);
     setEntries(data.entries);
+    setSessions(data.sessions);
     setChallenges(data.challenges);
     setFromCache(data.fromCache);
     setCachedAt(data.cachedAt);
@@ -136,7 +172,30 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
   const avgRating = averageRating(entries, selectedYear);
   const pages = totalPagesRead(entries, selectedYear);
   const minutes = totalMinutesRead(entries, selectedYear);
-  const monthData = booksByMonth(entries, selectedYear);
+  const monthData =
+    monthMetric === 'books'
+      ? monthSeriesFromBooks(entries, selectedYear)
+      : monthSeriesFromSessions(sessions, selectedYear, monthMetric);
+  const monthChartEmpty =
+    monthMetric === 'books'
+      ? finishedCount === 0
+      : monthData.every((row) => row.value === 0);
+  const monthPanelTitle =
+    monthMetric === 'books'
+      ? 'Книги за місяць'
+      : monthMetric === 'pages'
+        ? 'Сторінки за місяць'
+        : 'Час за місяць';
+  const monthPanelTip =
+    monthMetric === 'books'
+      ? 'Кількість прочитаних книг за кожен місяць обраного року — за датою завершення (finished_on).'
+      : monthMetric === 'pages'
+        ? 'Сума сторінок з сесій читання за місяць. Для аудіокниг з відсотками сторінки не рахуються.'
+        : 'Сума хвилин з сесій читання за кожен місяць обраного року.';
+  const monthEmptyHint =
+    monthMetric === 'books'
+      ? 'Познач книги як «Прочитано», щоб побачити статистику'
+      : 'Записуй сесії читання, щоб побачити статистику';
   const formats = formatBreakdown(entries, selectedYear);
   const authors = topAuthors(entries, selectedYear, 4);
   const languages = languageBreakdown(entries, selectedYear);
@@ -302,14 +361,15 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
         <div className="dl-dash-row is-chart-format">
           <section className="dl-panel">
             <PanelTitle
-              title="Книги за місяць"
-              tipLabel="Як рахуються книги за місяць"
-              tip="Кількість прочитаних книг за кожен місяць обраного року — за датою завершення (finished_on)."
+              title={monthPanelTitle}
+              tipLabel="Як рахується графік"
+              tip={monthPanelTip}
             />
-            {finishedCount === 0 ? (
-              <p className="empty-hint">Познач книги як «Прочитано», щоб побачити статистику</p>
+            <MonthMetricPicker value={monthMetric} onChange={setMonthMetric} />
+            {monthChartEmpty ? (
+              <p className="empty-hint">{monthEmptyHint}</p>
             ) : (
-              <MonthChart data={monthData} />
+              <MonthChart data={monthData} metric={monthMetric} />
             )}
           </section>
 

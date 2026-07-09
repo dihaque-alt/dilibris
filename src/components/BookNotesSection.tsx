@@ -10,6 +10,7 @@ import {
 import { loadLocalPrefs } from '../lib/userSettings';
 import type { Note, NoteType, NoteVisibility } from '../types/database';
 import { NoteBody } from './NoteBody';
+import { ProfileLink } from './ProfileLink';
 import { useOffline } from './OfflineProvider';
 
 interface BookNotesSectionProps {
@@ -336,7 +337,11 @@ export function BookNotesSection({
               <li key={note.id}>
                 <article className="note-card note-card--other">
                   <header className="review-header">
-                    <strong>{note.profile?.display_name || 'Читач'}</strong>
+                    <ProfileLink
+                      userId={note.user_id}
+                      viewerId={userId}
+                      name={note.profile?.display_name || 'Читач'}
+                    />
                     <span className="status-pill">{NOTE_TYPE_LABELS[note.note_type]}</span>
                   </header>
                   {renderNoteMeta(note) && <p className="note-meta">{renderNoteMeta(note)}</p>}

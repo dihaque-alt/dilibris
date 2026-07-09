@@ -1053,6 +1053,28 @@ button.dl-toggle-row:focus-visible {
   color: var(--accent-lime-deep);
 }
 
+.settings-avatar-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.settings-profile-link {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: var(--fs-sm);
+  color: var(--accent-lime-deep);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.dl-field-input[type='textarea'],
+textarea.dl-field-input {
+  resize: vertical;
+  min-height: 72px;
+}
+
 .dl-toggle-text {
   display: flex;
   flex-direction: column;

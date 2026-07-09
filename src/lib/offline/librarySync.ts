@@ -6,6 +6,12 @@ import { offlineDb, isOnline, nowIso, type PendingOp } from './db';
 import type { BookEntryStatus, ReadingFormat, ReadingSession, UserBookEntry, UserShelf } from '../../types/database';
 import { todayIsoDate } from '../dates';
 import { defaultProgressMode } from '../progress';
+import {
+  nextCurrentPageAfterSession,
+  revertCurrentPageAfterSession,
+  resolveSessionDelta,
+  type SessionLogInput,
+} from '../sessionProgress';
 
 const ENTRY_SELECT = `
   *,
@@ -500,19 +506,18 @@ async function patchEntryProgress(
   return updated;
 }
 
-export async function addSession(
-  userId: string,
-  entryId: string,
-  payload: { sessionDate: string; pages: number; minutes: number; note: string | null },
-) {
+export async function addSession(userId: string, entryId: string, payload: SessionLogInput) {
   const id = crypto.randomUUID();
+  const entry = await offlineDb.entries.get(entryId);
+  const progressDelta = entry ? resolveSessionDelta(entry, payload) : Math.max(0, payload.pages ?? 0);
+
   const session: ReadingSession = {
     id,
     entry_id: entryId,
     user_id: userId,
     started_at: `${payload.sessionDate}T12:00:00`,
     ended_at: null,
-    pages_read: payload.pages,
+    pages_read: progressDelta,
     minutes: payload.minutes,
     note: payload.note,
     created_at: nowIso(),
@@ -520,9 +525,8 @@ export async function addSession(
 
   await offlineDb.sessions.put(session);
 
-  const entry = await offlineDb.entries.get(entryId);
   if (entry) {
-    const nextPage = payload.pages > 0 ? entry.current_page + payload.pages : entry.current_page;
+    const nextPage = nextCurrentPageAfterSession(entry, progressDelta);
     await offlineDb.entries.put({
       ...entry,
       current_page: nextPage,
@@ -537,15 +541,15 @@ export async function addSession(
       entry_id: entryId,
       user_id: userId,
       started_at: session.started_at,
-      pages_read: payload.pages,
+      pages_read: progressDelta,
       minutes: payload.minutes,
       note: payload.note,
     });
     if (error) throw error;
-    if (entry && payload.pages > 0) {
+    if (entry && progressDelta > 0) {
       const { error: pageError } = await supabase
         .from('user_book_entries')
-        .update({ current_page: entry.current_page + payload.pages })
+        .update({ current_page: nextCurrentPageAfterSession(entry, progressDelta) })
         .eq('id', entryId);
       if (pageError) throw pageError;
     }
@@ -561,15 +565,15 @@ export async function addSession(
       entry_id: entryId,
       user_id: userId,
       started_at: session.started_at,
-      pages_read: payload.pages,
+      pages_read: progressDelta,
       minutes: payload.minutes,
       note: payload.note,
     },
   });
 
-  if (entry && (payload.pages > 0 || payload.minutes > 0)) {
+  if (entry && (progressDelta > 0 || payload.minutes > 0)) {
     const entryPatch: { id: string; current_page?: number; total_minutes?: number } = { id: entryId };
-    if (payload.pages > 0) entryPatch.current_page = entry.current_page + payload.pages;
+    if (progressDelta > 0) entryPatch.current_page = nextCurrentPageAfterSession(entry, progressDelta);
     if (payload.minutes > 0) entryPatch.total_minutes = entry.total_minutes + payload.minutes;
     await enqueue(userId, {
       table: 'user_book_entries',
@@ -597,7 +601,7 @@ export async function deleteSession(userId: string, sessionId: string, entryId: 
   const entry = await offlineDb.entries.get(entryId);
   if (entry && session) {
     const totalMinutes = await sumSessionMinutes(entryId);
-    const currentPage = Math.max(0, entry.current_page - session.pages_read);
+    const currentPage = revertCurrentPageAfterSession(entry, session.pages_read);
     await patchEntryProgress(entryId, { current_page: currentPage, total_minutes: totalMinutes });
 
     if (isOnline()) {
