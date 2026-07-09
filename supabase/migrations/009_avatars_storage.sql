@@ -6,6 +6,7 @@ on conflict (id) do nothing;
 
 create policy "avatars_public_read"
   on storage.objects for select
+  to public
   using (bucket_id = 'avatars');
 
 create policy "avatars_insert_own"

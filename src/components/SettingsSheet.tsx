@@ -64,6 +64,7 @@ export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps
   const [form, setForm] = useState<SettingsForm | null>(null);
   const [saving, setSaving] = useState(false);
   const [avatarBusy, setAvatarBusy] = useState(false);
+  const [avatarBust, setAvatarBust] = useState(0);
   const [error, setError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -113,6 +114,7 @@ export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps
     try {
       const url = await uploadAvatar(userId, file);
       patchProfile('avatarUrl', url);
+      setAvatarBust(Date.now());
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не вдалося завантажити фото');
     } finally {
@@ -127,6 +129,7 @@ export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps
     try {
       await removeAvatar(userId);
       patchProfile('avatarUrl', null);
+      setAvatarBust(Date.now());
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Не вдалося прибрати фото');
     } finally {
@@ -191,6 +194,7 @@ export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps
             email={form.profile.email}
             avatarUrl={form.profile.avatarUrl}
             size="lg"
+            cacheBust={avatarBust || undefined}
           />
           <div className="dl-settings-head-text">
             <h2 id="settings-title">Профіль і налаштування</h2>

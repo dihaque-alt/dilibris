@@ -3,6 +3,12 @@ import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { useAppOverlays } from './AppOverlays';
 import { NotifBell } from './NotifBell';
+import { ProfileAvatar } from './ProfileAvatar';
+import {
+  PROFILE_UPDATED_EVENT,
+  fetchProfileHeader,
+  type ProfileHeader,
+} from '../lib/profileHeader';
 import { supabase } from '../lib/supabase';
 
 interface AppNavProps {
@@ -28,7 +34,43 @@ export function AppNav({ userEmail, userId, active, onAddShelf }: AppNavProps) {
   const profileRef = useRef<HTMLButtonElement>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuPos, setMenuPos] = useState<{ top: number; right: number } | null>(null);
-  const letter = (userEmail || '?')[0]?.toUpperCase() ?? '?';
+  const [profileHeader, setProfileHeader] = useState<ProfileHeader>({
+    displayName: null,
+    avatarUrl: null,
+  });
+  const [avatarBust, setAvatarBust] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void fetchProfileHeader(userId)
+      .then((header) => {
+        if (!cancelled) setProfileHeader(header);
+      })
+      .catch(() => {
+        /* keep letter fallback */
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userId]);
+
+  useEffect(() => {
+    function refreshProfile() {
+      void fetchProfileHeader(userId)
+        .then((header) => {
+          setProfileHeader(header);
+          setAvatarBust(Date.now());
+        })
+        .catch(() => {
+          /* ignore */
+        });
+    }
+
+    window.addEventListener(PROFILE_UPDATED_EVENT, refreshProfile);
+    return () => window.removeEventListener(PROFILE_UPDATED_EVENT, refreshProfile);
+  }, [userId]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -152,9 +194,12 @@ export function AppNav({ userEmail, userId, active, onAddShelf }: AppNavProps) {
             onClick={() => setMenuOpen((v) => !v)}
             aria-expanded={menuOpen}
           >
-            <span className="profile-avatar" aria-hidden="true">
-              {letter}
-            </span>
+            <ProfileAvatar
+              name={profileHeader.displayName}
+              email={userEmail}
+              avatarUrl={profileHeader.avatarUrl}
+              cacheBust={avatarBust || undefined}
+            />
             <span className="header-email">{userEmail}</span>
             <span aria-hidden="true">{menuOpen ? '▴' : '▾'}</span>
           </button>
