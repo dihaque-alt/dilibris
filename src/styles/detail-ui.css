@@ -35,6 +35,7 @@
 .notif-item:active,
 .notif-dismiss:active,
 .notif-panel-close:active,
+.notif-action-btn:active,
 .notif-mark-all:active {
   opacity: 1 !important;
 }
