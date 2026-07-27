@@ -209,7 +209,7 @@ export async function deleteEntry(userId: string, entryId: string) {
 export async function updateBook(
   userId: string,
   bookId: string,
-  patch: { language?: string | null },
+  patch: { language?: string | null; cover_url?: string | null },
 ) {
   const book = await offlineDb.books.get(bookId);
   if (book) {
@@ -233,6 +233,27 @@ export async function updateBook(
     operation: 'update',
     payload: { id: bookId, ...patch },
   });
+}
+
+const coverPersistInflight = new Set<string>();
+
+/** Save Open Library cover URL to books.cover_url when shelf lookup finds one. */
+export async function persistOpenLibraryCover(
+  userId: string,
+  bookId: string,
+  coverUrl: string,
+): Promise<void> {
+  if (!coverUrl.trim() || coverPersistInflight.has(bookId)) return;
+
+  const book = await offlineDb.books.get(bookId);
+  if (book?.cover_url) return;
+
+  coverPersistInflight.add(bookId);
+  try {
+    await updateBook(userId, bookId, { cover_url: coverUrl });
+  } finally {
+    coverPersistInflight.delete(bookId);
+  }
 }
 
 export async function addBook(

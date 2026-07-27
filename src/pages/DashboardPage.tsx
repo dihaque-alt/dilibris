@@ -215,7 +215,7 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
   async function handleSaveChallenge(e: FormEvent) {
     e.preventDefault();
     if (!isOnline()) {
-      setError('Зберегти ціль можна лише після підключення');
+      setError('Зберегти ціль можна лише з підключенням до інтернету.');
       return;
     }
 

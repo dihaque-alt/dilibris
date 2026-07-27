@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { resolveOpenLibraryCoverUrl } from '../lib/openLibrary';
+import { persistOpenLibraryCover } from '../lib/offline/librarySync';
 import { CoverArt } from './CoverArt';
 import { CatKnifeArt } from './CatKnifeArt';
 import {
@@ -16,6 +17,8 @@ interface BookCoverProps {
   coverUrl?: string | null;
   externalIds?: Record<string, string>;
   openLibraryLookup?: boolean;
+  /** When set, resolved OL cover is written to books.cover_url */
+  persistCover?: { userId: string; bookId: string };
   entryId?: string;
   width?: number;
   hero?: boolean;
@@ -37,9 +40,11 @@ export function BookCover({
   size = 'md',
   className = '',
   visual,
+  persistCover,
 }: BookCoverProps) {
   const [olCoverUrl, setOlCoverUrl] = useState<string | null>(null);
   const [olFailed, setOlFailed] = useState(false);
+  const persistedRef = useRef(false);
 
   const presetWidths: Record<string, number> = {
     sm: 64,
@@ -57,6 +62,7 @@ export function BookCover({
 
   useEffect(() => {
     setOlFailed(false);
+    persistedRef.current = false;
     if (coverUrl || !openLibraryLookup || olFailed) {
       setOlCoverUrl(null);
       return;
@@ -71,6 +77,12 @@ export function BookCover({
       cancelled = true;
     };
   }, [coverUrl, openLibraryLookup, title, authors, externalIds, coverSize, olFailed]);
+
+  useEffect(() => {
+    if (!olCoverUrl || coverUrl || !persistCover || persistedRef.current) return;
+    persistedRef.current = true;
+    void persistOpenLibraryCover(persistCover.userId, persistCover.bookId, olCoverUrl);
+  }, [olCoverUrl, coverUrl, persistCover]);
 
   const displayUrl = coverUrl || olCoverUrl;
   const hasImage = Boolean(displayUrl);

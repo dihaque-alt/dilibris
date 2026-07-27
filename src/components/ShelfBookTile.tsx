@@ -91,6 +91,11 @@ export function ShelfBookTile({
               width={bookWidth}
               size="shelf"
               visual={realCovers ? { ...visual, placeholder: false } : visual}
+              persistCover={
+                realCovers && !visual.coverUrl
+                  ? { userId: entry.user_id, bookId: entry.book_id }
+                  : undefined
+              }
             />
           </div>
         )}

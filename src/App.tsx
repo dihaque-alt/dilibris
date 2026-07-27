@@ -69,7 +69,6 @@ function AuthenticatedRoutes({ userId, userEmail }: { userId: string; userEmail:
           <Route path="/" element={<LibraryPage userId={userId} userEmail={userEmail} />} />
           <Route path="/dashboard" element={<DashboardPage userId={userId} userEmail={userEmail} />} />
           <Route path="/notes" element={<NotesPage userId={userId} userEmail={userEmail} />} />
-          <Route path="/u/:profileId" element={<ProfilePage userId={userId} userEmail={userEmail} />} />
           <Route path="/buddy-reads" element={<BuddyReadsPage userId={userId} userEmail={userEmail} />} />
           <Route path="/buddy-reads/join/:token" element={<BuddyReadJoinPage />} />
           <Route path="/buddy-reads/:id" element={<BuddyReadDetailPage userId={userId} userEmail={userEmail} />} />
@@ -98,6 +97,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
+      <Route path="/u/:profileId" element={<ProfilePage />} />
       <Route
         path="/*"
         element={
