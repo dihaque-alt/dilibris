@@ -1,9 +1,23 @@
 import { supabase } from './supabase';
-import { addNotification, loadExistingNotificationIds } from './notificationsStore';
+import { addNotificationsBatch, loadExistingNotificationIds } from './notificationsStore';
+
+const RECENT_MS = 7 * 86400000;
+
+function excerpt(text: string, max = 72): string {
+  const trimmed = text.trim().replace(/\s+/g, ' ');
+  if (trimmed.length <= max) return trimmed;
+  return `${trimmed.slice(0, max - 1)}…`;
+}
+
+function isRecent(iso: string, cutoffMs: number): boolean {
+  return new Date(iso).getTime() >= cutoffMs;
+}
 
 /** Pull recent buddy/challenge activity into the notification feed. */
 export async function syncActivityNotifications(userId: string): Promise<void> {
   const existingIds = await loadExistingNotificationIds(userId);
+  const cutoffMs = Date.now() - RECENT_MS;
+  const batch: Parameters<typeof addNotificationsBatch>[1] = [];
 
   const { data: memberships, error: memErr } = await supabase
     .from('buddy_read_members')
@@ -18,20 +32,24 @@ export async function syncActivityNotifications(userId: string): Promise<void> {
     buddyIds.length
       ? supabase
           .from('buddy_read_messages')
-          .select('id, buddy_read_id, user_id, body, created_at, buddy_read:buddy_reads (title)')
+          .select(
+            'id, buddy_read_id, user_id, body, created_at, profile:profiles (display_name), buddy_read:buddy_reads (title)',
+          )
           .in('buddy_read_id', buddyIds)
           .neq('user_id', userId)
           .order('created_at', { ascending: false })
-          .limit(20)
+          .limit(12)
       : Promise.resolve({ data: [] }),
     buddyIds.length
       ? supabase
           .from('notes')
-          .select('id, buddy_read_id, user_id, body, created_at, buddy_read:buddy_reads (title)')
+          .select(
+            'id, buddy_read_id, user_id, body, created_at, profile:profiles (display_name), buddy_read:buddy_reads (title)',
+          )
           .in('buddy_read_id', buddyIds)
           .neq('user_id', userId)
           .order('created_at', { ascending: false })
-          .limit(20)
+          .limit(12)
       : Promise.resolve({ data: [] }),
     buddyIds.length
       ? supabase
@@ -45,13 +63,19 @@ export async function syncActivityNotifications(userId: string): Promise<void> {
   for (const msg of messages ?? []) {
     const key = `msg:${msg.id}`;
     if (existingIds.has(key)) continue;
+    const createdAt = msg.created_at as string;
+    if (!isRecent(createdAt, cutoffMs)) continue;
     existingIds.add(key);
     const title = (msg.buddy_read as { title?: string } | null)?.title ?? 'клуб';
-    await addNotification(userId, {
+    const author = (msg.profile as { display_name?: string } | null)?.display_name ?? 'Читач';
+    const preview = excerpt(String(msg.body ?? ''));
+    batch.push({
       id: key,
       kind: 'buddy',
-      text: `Нове повідомлення у «${title}»`,
-      createdAt: msg.created_at as string,
+      text: preview
+        ? `«${author}» у «${title}»: ${preview}`
+        : `Нове повідомлення від «${author}» у «${title}»`,
+      createdAt,
       go: { page: 'buddy-reads', buddyReadId: msg.buddy_read_id as string },
     });
   }
@@ -59,13 +83,19 @@ export async function syncActivityNotifications(userId: string): Promise<void> {
   for (const note of notes ?? []) {
     const key = `note:${note.id}`;
     if (existingIds.has(key)) continue;
+    const createdAt = note.created_at as string;
+    if (!isRecent(createdAt, cutoffMs)) continue;
     existingIds.add(key);
     const title = (note.buddy_read as { title?: string } | null)?.title ?? 'клуб';
-    await addNotification(userId, {
+    const author = (note.profile as { display_name?: string } | null)?.display_name ?? 'Читач';
+    const preview = excerpt(String(note.body ?? ''));
+    batch.push({
       id: key,
       kind: 'buddy',
-      text: `Нова спільна нотатка у «${title}»`,
-      createdAt: note.created_at as string,
+      text: preview
+        ? `Нотатка від «${author}» у «${title}»: ${preview}`
+        : `Нова нотатка від «${author}» у «${title}»`,
+      createdAt,
       go: { page: 'buddy-reads', buddyReadId: note.buddy_read_id as string },
     });
   }
@@ -79,11 +109,11 @@ export async function syncActivityNotifications(userId: string): Promise<void> {
     const key = `deadline:${br.id}:${br.target_finish_on}`;
     if (existingIds.has(key)) continue;
     existingIds.add(key);
-    await addNotification(userId, {
+    batch.push({
       id: key,
       kind: 'deadline',
       text: `Дедлайн клубу «${br.title}» — через ${days} ${days === 1 ? 'день' : days < 5 ? 'дні' : 'днів'}`,
-      createdAt: now.toISOString(),
+      createdAt: `${br.target_finish_on}T09:00:00`,
       go: { page: 'buddy-reads', buddyReadId: br.id as string },
     });
   }
@@ -109,13 +139,15 @@ export async function syncActivityNotifications(userId: string): Promise<void> {
     const target = challenge.target_books as number;
     const halfKey = `challenge-half:${year}`;
     if (finished >= Math.ceil(target / 2) && finished < target && !existingIds.has(halfKey)) {
-      await addNotification(userId, {
+      batch.push({
         id: halfKey,
         kind: 'challenge',
-        text: 'Ти на півдорозі до річної цілі',
+        text: `Ти на півдорозі: ${finished} з ${target} книг`,
         createdAt: now.toISOString(),
         go: { page: 'dashboard' },
       });
     }
   }
+
+  await addNotificationsBatch(userId, batch);
 }

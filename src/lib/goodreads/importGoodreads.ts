@@ -214,7 +214,6 @@ export async function importGoodreadsLibrary(
 
   const library = await fetchLibrary(userId);
   const seen = existingGoodreadsIds(library.entries);
-  const shelves = [...library.shelves];
 
   const result: ImportResult = { imported: 0, skipped: 0, failed: 0, errors: [] };
   const total = rows.length;
@@ -230,7 +229,7 @@ export async function importGoodreadsLibrary(
 
     try {
       const status = mapGoodreadsRowStatus(row);
-      const shelfId = await ensureStatusShelf(userId, status, shelves);
+      const shelfId = await ensureStatusShelf(userId, status);
       await importOneRow(userId, row, shelfId, status);
       if (row.bookId) seen.add(row.bookId);
       result.imported++;

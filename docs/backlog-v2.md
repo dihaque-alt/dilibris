@@ -14,6 +14,14 @@
 | 32 | Дашборд — місячна статистика (книги / сторінки / час) | ✅ |
 | 33 | Фото профілю (upload + Settings) | ✅ |
 | 34 | Публічні профілі + навігація | ✅ |
+| 35 | Open Library — ISBN + обкладинки на полиці | ✅ |
+
+---
+
+### 35. Open Library — ISBN + обкладинки на полиці
+ISBN-пошук при додаванні книги; підтягування cover з Open Library на полиці (режим «Справжні»); коректний `metadata_source`.
+
+**Файли:** `openLibrary.ts`, `BookCover.tsx`, `ShelfBookTile.tsx`, `librarySync.ts`
 
 ---
 

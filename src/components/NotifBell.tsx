@@ -1,13 +1,17 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDialogA11y } from '../hooks/useDialogA11y';
 import { notificationRoute } from '../lib/notificationRoutes';
+import { syncActivityNotifications } from '../lib/syncActivityNotifications';
 import {
+  dismissAllNotifications,
+  dismissNotification,
   hydrateNotificationTimes,
   loadNotifications,
   markAllNotifsRead,
   markNotifRead,
   notifGlyph,
+  syncNotifications,
   type AppNotification,
 } from '../lib/notificationsStore';
 
@@ -18,6 +22,7 @@ interface NotifBellProps {
 export function NotifBell({ userId }: NotifBellProps) {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [items, setItems] = useState<AppNotification[]>(() =>
     hydrateNotificationTimes(loadNotifications(userId)),
   );
@@ -36,6 +41,31 @@ export function NotifBell({ userId }: NotifBellProps) {
     return () => window.removeEventListener('dilibris:notifications', onChange);
   }, [userId]);
 
+  useEffect(() => {
+    if (!open) return;
+
+    let cancelled = false;
+    setSyncing(true);
+
+    void (async () => {
+      try {
+        await syncNotifications(userId);
+        if (cancelled) return;
+        await syncActivityNotifications(userId);
+        if (cancelled) return;
+        await syncNotifications(userId);
+        if (cancelled) return;
+        refresh();
+      } finally {
+        if (!cancelled) setSyncing(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [open, userId]);
+
   const unread = items.filter((n) => !n.read).length;
 
   function handleOpen(id: string, n: AppNotification) {
@@ -43,6 +73,11 @@ export function NotifBell({ userId }: NotifBellProps) {
     setOpen(false);
     const path = notificationRoute(n);
     if (path) navigate(path);
+  }
+
+  function handleDismiss(id: string, e: MouseEvent) {
+    e.stopPropagation();
+    void dismissNotification(userId, id).then(setItems);
   }
 
   return (
@@ -78,34 +113,64 @@ export function NotifBell({ userId }: NotifBellProps) {
           >
             <div className="notif-panel-head">
               <span className="notif-panel-title">Сповіщення</span>
-              {unread > 0 && (
+              <div className="notif-panel-actions">
+                {items.length > 0 && (
+                  <button
+                    type="button"
+                    className="notif-mark-all"
+                    onClick={() => void dismissAllNotifications(userId).then(setItems)}
+                  >
+                    Прибрати всі
+                  </button>
+                )}
+                {unread > 0 && (
+                  <button
+                    type="button"
+                    className="notif-mark-all"
+                    onClick={() => setItems(markAllNotifsRead(userId))}
+                  >
+                    Прочитати всі
+                  </button>
+                )}
                 <button
                   type="button"
-                  className="notif-mark-all"
-                  onClick={() => setItems(markAllNotifsRead(userId))}
+                  className="notif-panel-close"
+                  onClick={() => setOpen(false)}
+                  aria-label="Закрити"
                 >
-                  Прочитати всі
+                  ✕
                 </button>
-              )}
+              </div>
             </div>
             <div className="notif-list">
-              {items.length === 0 ? (
+              {syncing && items.length === 0 ? (
+                <div className="notif-empty">Оновлюємо…</div>
+              ) : items.length === 0 ? (
                 <div className="notif-empty">Поки тихо 🌙</div>
               ) : (
                 items.map((n) => (
-                  <button
-                    key={n.id}
-                    type="button"
-                    className={`notif-item${n.read ? '' : ' is-unread'}`}
-                    onClick={() => handleOpen(n.id, n)}
-                  >
-                    <span className="notif-glyph">{notifGlyph(n.kind)}</span>
-                    <span className="notif-body">
-                      <span className="notif-text">{n.text}</span>
-                      <span className="notif-time">{n.time}</span>
-                    </span>
-                    {!n.read && <span className="notif-dot" aria-hidden="true" />}
-                  </button>
+                  <div key={n.id} className={`notif-item-wrap${n.read ? '' : ' is-unread'}`}>
+                    <button
+                      type="button"
+                      className="notif-item"
+                      onClick={() => handleOpen(n.id, n)}
+                    >
+                      <span className="notif-glyph">{notifGlyph(n.kind)}</span>
+                      <span className="notif-body">
+                        <span className="notif-text">{n.text}</span>
+                        <span className="notif-time">{n.time}</span>
+                      </span>
+                      {!n.read && <span className="notif-dot" aria-hidden="true" />}
+                    </button>
+                    <button
+                      type="button"
+                      className="notif-dismiss"
+                      aria-label="Прибрати сповіщення"
+                      onClick={(e) => handleDismiss(n.id, e)}
+                    >
+                      ✕
+                    </button>
+                  </div>
                 ))
               )}
             </div>

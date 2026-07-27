@@ -8,6 +8,11 @@
   --grain-leather: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20width='200'%20height='280'%3E%3Cfilter%20id='l'%3E%3CfeTurbulence%20type='fractalNoise'%20baseFrequency='0.02%200.04'%20numOctaves='2'%20seed='9'/%3E%3CfeColorMatrix%20type='saturate'%20values='0'/%3E%3C/filter%3E%3Crect%20width='100%25'%20height='100%25'%20filter='url(%23l)'/%3E%3C/svg%3E");
 }
 
+button,
+[role='button'] {
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* ============ THE ROOM — real photo backdrop ========================== */
 .dl-room {
   position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;

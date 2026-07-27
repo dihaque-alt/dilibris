@@ -5,6 +5,7 @@ import { executeReviewOp, refreshUserReviewsCache } from './reviewsSync';
 import { offlineDb, isOnline, nowIso, type PendingOp } from './db';
 import type { BookEntryStatus, ReadingFormat, ReadingSession, UserBookEntry, UserShelf } from '../../types/database';
 import { todayIsoDate } from '../dates';
+import { STATUS_LABELS } from '../labels';
 import { defaultProgressMode } from '../progress';
 import {
   nextCurrentPageAfterSession,
@@ -144,6 +145,23 @@ export async function createShelf(
     payload: { id, user_id: userId, name, status_filter: statusFilter, sort_order: sortOrder },
   });
   return shelf;
+}
+
+/** Shelf whose status_filter matches entry status (creates status shelf if missing). */
+export async function ensureStatusShelfForUser(
+  userId: string,
+  status: BookEntryStatus,
+): Promise<string> {
+  const shelves = await offlineDb.shelves.where('user_id').equals(userId).toArray();
+  const byFilter = shelves.find((s) => s.status_filter === status);
+  if (byFilter) return byFilter.id;
+
+  const label = STATUS_LABELS[status];
+  const byName = shelves.find((s) => s.name === label);
+  if (byName) return byName.id;
+
+  const shelf = await createShelf(userId, label, status, shelves.length);
+  return shelf.id;
 }
 
 export async function deleteShelf(userId: string, shelfId: string) {
@@ -336,12 +354,25 @@ export async function addBook(
 
 export async function updateEntry(userId: string, entryId: string, patch: Record<string, unknown>) {
   const existing = await offlineDb.entries.get(entryId);
+  const nextPatch = { ...patch };
+
+  if (
+    existing &&
+    typeof patch.status === 'string' &&
+    patch.status !== existing.status
+  ) {
+    nextPatch.shelf_id = await ensureStatusShelfForUser(
+      userId,
+      patch.status as BookEntryStatus,
+    );
+  }
+
   if (existing) {
-    await offlineDb.entries.put({ ...existing, ...patch, updated_at: nowIso() } as UserBookEntry);
+    await offlineDb.entries.put({ ...existing, ...nextPatch, updated_at: nowIso() } as UserBookEntry);
   }
 
   if (isOnline()) {
-    const { error } = await supabase.from('user_book_entries').update(patch).eq('id', entryId);
+    const { error } = await supabase.from('user_book_entries').update(nextPatch).eq('id', entryId);
     if (error) throw error;
     return;
   }
@@ -349,7 +380,7 @@ export async function updateEntry(userId: string, entryId: string, patch: Record
   await enqueue(userId, {
     table: 'user_book_entries',
     operation: 'update',
-    payload: { id: entryId, ...patch },
+    payload: { id: entryId, ...nextPatch },
   });
 }
 

@@ -108,6 +108,29 @@ function emitNotificationsChanged() {
   window.dispatchEvent(new CustomEvent('dilibris:notifications'));
 }
 
+export async function dismissNotification(userId: string, id: string): Promise<AppNotification[]> {
+  const items = loadCachedNotifications(userId).filter((n) => n.id !== id);
+  cacheNotifications(userId, items);
+
+  if (isOnline()) {
+    await supabase.from('user_notifications').delete().eq('user_id', userId).eq('id', id);
+  }
+
+  emitNotificationsChanged();
+  return hydrateNotificationTimes(items);
+}
+
+export async function dismissAllNotifications(userId: string): Promise<AppNotification[]> {
+  cacheNotifications(userId, []);
+
+  if (isOnline()) {
+    await supabase.from('user_notifications').delete().eq('user_id', userId);
+  }
+
+  emitNotificationsChanged();
+  return [];
+}
+
 async function fetchRemoteNotifications(userId: string): Promise<AppNotification[]> {
   const { data, error } = await supabase
     .from('user_notifications')
@@ -215,6 +238,7 @@ export async function addNotification(
     createdAt?: string;
     read?: boolean;
   },
+  options?: { silent?: boolean },
 ): Promise<AppNotification[]> {
   const createdAt = partial.createdAt ?? new Date().toISOString();
   const id = partial.id ?? `n-${createdAt}-${Math.random().toString(36).slice(2, 8)}`;
@@ -242,6 +266,51 @@ export async function addNotification(
       ignoreDuplicates: true,
     });
     if (error) throw error;
+  }
+
+  if (!options?.silent) emitNotificationsChanged();
+  return hydrateNotificationTimes(items);
+}
+
+export async function addNotificationsBatch(
+  userId: string,
+  partials: Array<
+    Omit<AppNotification, 'id' | 'time' | 'read' | 'createdAt'> & {
+      id?: string;
+      createdAt?: string;
+      read?: boolean;
+    }
+  >,
+): Promise<AppNotification[]> {
+  if (!partials.length) return hydrateNotificationTimes(loadCachedNotifications(userId));
+
+  const existing = loadCachedNotifications(userId);
+  const existingIds = new Set(existing.map((n) => n.id));
+  const fresh: AppNotification[] = [];
+
+  for (const partial of partials) {
+    const createdAt = partial.createdAt ?? new Date().toISOString();
+    const id = partial.id ?? `n-${createdAt}-${Math.random().toString(36).slice(2, 8)}`;
+    if (existingIds.has(id)) continue;
+    existingIds.add(id);
+    fresh.push({
+      id,
+      kind: partial.kind,
+      text: partial.text,
+      go: partial.go,
+      read: partial.read ?? false,
+      createdAt,
+      time: relTime(createdAt),
+    });
+  }
+
+  if (!fresh.length) return hydrateNotificationTimes(existing);
+
+  const items = [...fresh, ...existing].slice(0, 40);
+  cacheNotifications(userId, items);
+
+  if (isOnline()) {
+    await upsertNotifications(userId, fresh);
   }
 
   emitNotificationsChanged();
