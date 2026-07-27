@@ -85,9 +85,12 @@ export function ShelfBookTile({
               title={visual.title}
               authors={visual.authors}
               coverUrl={realCovers ? visual.coverUrl : null}
+              openLibraryLookup={realCovers && !visual.coverUrl}
+              externalIds={entry.book?.external_ids}
               entryId={visual.entryId}
               width={bookWidth}
               size="shelf"
+              visual={realCovers ? { ...visual, placeholder: false } : visual}
             />
           </div>
         )}

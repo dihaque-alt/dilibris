@@ -180,4 +180,5 @@ export interface OpenLibraryHit {
   first_publish_year?: number;
   number_of_pages_median?: number;
   language?: string[];
+  isbn?: string[];
 }

@@ -224,6 +224,7 @@ export function LibraryPage({ userId, userEmail }: LibraryPageProps) {
     publishedYear: number | null;
     externalIds: Record<string, string>;
     status: BookEntryStatus;
+    language?: string | null;
   }) {
     if (!addBookShelfId) throw new Error('Обери полицю');
     await addBook(userId, addBookShelfId, payload);

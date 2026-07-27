@@ -12,6 +12,7 @@ import {
   resolveSessionDelta,
   type SessionLogInput,
 } from '../sessionProgress';
+import { metadataSourceFromExternalIds } from '../openLibrary';
 
 const ENTRY_SELECT = `
   *,
@@ -232,6 +233,9 @@ export async function addBook(
 ) {
   const bookId = crypto.randomUUID();
   const entryId = crypto.randomUUID();
+  const metadataSource = metadataSourceFromExternalIds(payload.externalIds);
+  const isbn10 = payload.externalIds.isbn_10 ?? null;
+  const isbn13 = payload.externalIds.isbn_13 ?? null;
 
   const book = {
     id: bookId,
@@ -277,7 +281,9 @@ export async function addBook(
         published_year: payload.publishedYear,
         language: payload.language ?? null,
         external_ids: payload.externalIds,
-        metadata_source: Object.keys(payload.externalIds).length ? 'open_library' : 'manual',
+        isbn_10: isbn10,
+        isbn_13: isbn13,
+        metadata_source: metadataSource,
         created_by: userId,
       })
       .select()
@@ -308,7 +314,9 @@ export async function addBook(
       published_year: payload.publishedYear,
       language: payload.language ?? null,
       external_ids: payload.externalIds,
-      metadata_source: Object.keys(payload.externalIds).length ? 'open_library' : 'manual',
+      isbn_10: isbn10,
+      isbn_13: isbn13,
+      metadata_source: metadataSource,
       created_by: userId,
     },
   });

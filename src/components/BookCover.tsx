@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+import { resolveOpenLibraryCoverUrl } from '../lib/openLibrary';
 import { CoverArt } from './CoverArt';
 import { CatKnifeArt } from './CatKnifeArt';
 import {
@@ -12,6 +14,8 @@ interface BookCoverProps {
   title: string;
   authors?: string[];
   coverUrl?: string | null;
+  externalIds?: Record<string, string>;
+  openLibraryLookup?: boolean;
   entryId?: string;
   width?: number;
   hero?: boolean;
@@ -25,6 +29,8 @@ export function BookCover({
   title,
   authors = [],
   coverUrl,
+  externalIds,
+  openLibraryLookup = false,
   entryId = title,
   width,
   hero = false,
@@ -32,6 +38,9 @@ export function BookCover({
   className = '',
   visual,
 }: BookCoverProps) {
+  const [olCoverUrl, setOlCoverUrl] = useState<string | null>(null);
+  const [olFailed, setOlFailed] = useState(false);
+
   const presetWidths: Record<string, number> = {
     sm: 64,
     md: 92,
@@ -44,8 +53,28 @@ export function BookCover({
   const h = Math.round(w * (hero && size !== 'flyout' ? 1.5 : ratio));
   const palette = visual?.cover ?? coverPalette(entryId, title);
   const art = visual?.art ?? bookArt(entryId, title);
-  const hasImage = Boolean(coverUrl);
-  const placeholder = visual?.placeholder ?? !hasImage;
+  const coverSize = hero || size === 'flyout' ? 'L' : 'M';
+
+  useEffect(() => {
+    setOlFailed(false);
+    if (coverUrl || !openLibraryLookup || olFailed) {
+      setOlCoverUrl(null);
+      return;
+    }
+
+    let cancelled = false;
+    void resolveOpenLibraryCoverUrl({ title, authors, externalIds }, coverSize).then((url) => {
+      if (!cancelled) setOlCoverUrl(url);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [coverUrl, openLibraryLookup, title, authors, externalIds, coverSize, olFailed]);
+
+  const displayUrl = coverUrl || olCoverUrl;
+  const hasImage = Boolean(displayUrl);
+  const placeholder = visual?.placeholder ?? (!hasImage && !openLibraryLookup);
 
   return (
     <div
@@ -79,10 +108,15 @@ export function BookCover({
       {hasImage && (
         <img
           className="dl-cover-img"
-          src={coverUrl!}
+          src={displayUrl!}
           alt={`Обкладинка: ${title}`}
           loading="lazy"
           onError={(e) => {
+            if (olCoverUrl && !coverUrl) {
+              setOlFailed(true);
+              setOlCoverUrl(null);
+              return;
+            }
             e.currentTarget.style.display = 'none';
           }}
         />
