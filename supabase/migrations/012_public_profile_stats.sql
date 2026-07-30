@@ -44,7 +44,7 @@ as $$
             and e2.finished_on >= date_trunc('year', current_date)::date
             and e2.rating is not null
         ),
-        'currently_reading', count(*) filter (where e.status = 'currently_reading')
+        'currently_reading', count(*) filter (where e.status = 'reading')
       )
       from public.user_book_entries e
       where e.user_id = p_user_id
