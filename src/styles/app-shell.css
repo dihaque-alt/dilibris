@@ -126,6 +126,7 @@
 .dl-primary:hover:not(:disabled) {
   filter: brightness(1.07);
   transform: translateY(-1px);
+  opacity: 1;
 }
 
 .dl-primary:disabled {

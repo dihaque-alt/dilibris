@@ -53,6 +53,10 @@ textarea {
 
 button {
   cursor: pointer;
+}
+
+/* Legacy unstyled buttons only — handoff controls use .dl-* in detail-ui / app-shell */
+button:not([class*='dl-']):not(.nav-link):not(.header-menu-item):not(.header-profile):not(.profile-link):not(.notif-bell-btn):not(.notif-item):not(.notif-dismiss):not(.login-google-btn):not(.notes-card):not(.note-detail-book-link):not(.btn-icon):not(.shelf-btn):not(.shelf-delete):not(.btn-small) {
   border: none;
   border-radius: 8px;
   padding: 0.55rem 1rem;
@@ -60,11 +64,11 @@ button {
   color: #fff;
 }
 
-button:hover:not(:disabled) {
+button:not([class*='dl-']):not(.nav-link):not(.header-menu-item):not(.header-profile):not(.profile-link):not(.notif-bell-btn):not(.notif-item):not(.notif-dismiss):not(.login-google-btn):not(.notes-card):not(.note-detail-book-link):not(.btn-icon):not(.shelf-btn):not(.shelf-delete):not(.btn-small):hover:not(:disabled) {
   background: var(--accent-hover);
 }
 
-button:disabled {
+button:not([class*='dl-']):not(.nav-link):not(.header-menu-item):not(.header-profile):not(.profile-link):not(.notif-bell-btn):not(.notif-item):not(.notif-dismiss):not(.login-google-btn):not(.notes-card):not(.note-detail-book-link):not(.btn-icon):not(.shelf-btn):not(.shelf-delete):not(.btn-small):disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }

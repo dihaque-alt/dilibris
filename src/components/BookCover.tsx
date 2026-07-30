@@ -2,12 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { resolveOpenLibraryCoverUrl } from '../lib/openLibrary';
 import { persistOpenLibraryCover } from '../lib/offline/librarySync';
 import { CoverArt } from './CoverArt';
-import { CatKnifeArt } from './CatKnifeArt';
 import {
   bookArt,
   bookRatio,
   coverPalette,
-  formatAuthorsShort,
   type BookVisualMeta,
 } from '../lib/bookVisual';
 
@@ -44,6 +42,7 @@ export function BookCover({
 }: BookCoverProps) {
   const [olCoverUrl, setOlCoverUrl] = useState<string | null>(null);
   const [olFailed, setOlFailed] = useState(false);
+  const [lookupDone, setLookupDone] = useState(!openLibraryLookup);
   const persistedRef = useRef(false);
 
   const presetWidths: Record<string, number> = {
@@ -62,21 +61,32 @@ export function BookCover({
 
   useEffect(() => {
     setOlFailed(false);
+    setLookupDone(!openLibraryLookup);
     persistedRef.current = false;
-    if (coverUrl || !openLibraryLookup || olFailed) {
+
+    if (coverUrl || !openLibraryLookup) {
       setOlCoverUrl(null);
       return;
     }
 
     let cancelled = false;
-    void resolveOpenLibraryCoverUrl({ title, authors, externalIds }, coverSize).then((url) => {
-      if (!cancelled) setOlCoverUrl(url);
-    });
+    void resolveOpenLibraryCoverUrl({ title, authors, externalIds }, coverSize)
+      .then((url) => {
+        if (cancelled) return;
+        setOlCoverUrl(url);
+        if (!url) setOlFailed(true);
+      })
+      .catch(() => {
+        if (!cancelled) setOlFailed(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLookupDone(true);
+      });
 
     return () => {
       cancelled = true;
     };
-  }, [coverUrl, openLibraryLookup, title, authors, externalIds, coverSize, olFailed]);
+  }, [coverUrl, openLibraryLookup, title, authors, externalIds, coverSize]);
 
   useEffect(() => {
     if (!olCoverUrl || coverUrl || !persistCover || persistedRef.current) return;
@@ -85,28 +95,15 @@ export function BookCover({
   }, [olCoverUrl, coverUrl, persistCover]);
 
   const displayUrl = coverUrl || olCoverUrl;
-  const hasImage = Boolean(displayUrl);
-  const placeholder = visual?.placeholder ?? (!hasImage && !openLibraryLookup);
+  const hasImage = Boolean(displayUrl) && !olFailed;
+  const useTypographic = !hasImage && (!openLibraryLookup || lookupDone || olFailed);
 
   return (
     <div
-      className={`dl-cover-frame${hero ? ' is-hero' : ''}${size ? ` dl-cover-frame--${size}` : ''}${className ? ` ${className}` : ''}`}
+      className={`dl-cover-frame${hero ? ' is-hero' : ''}${size ? ` dl-cover-frame--${size}` : ''}${useTypographic ? ' is-typographic' : ''}${className ? ` ${className}` : ''}`}
       style={{ width: w, height: h }}
     >
-      {placeholder ? (
-        <div
-          className="dl-cover-art dl-cover-art--placeholder"
-          style={{ background: 'linear-gradient(165deg, #FBF3E5, #EFE2CC)' }}
-        >
-          <div className="dl-cover-cat-wrap">
-            <CatKnifeArt />
-          </div>
-          <div className="dl-cover-plate dl-cover-plate--cat">
-            <span className="dl-cover-plate-title">{title}</span>
-            <span className="dl-cover-plate-author">{formatAuthorsShort(authors)}</span>
-          </div>
-        </div>
-      ) : (
+      {useTypographic && (
         <CoverArt
           title={title}
           authors={authors}
@@ -123,26 +120,29 @@ export function BookCover({
           src={displayUrl!}
           alt={`Обкладинка: ${title}`}
           loading="lazy"
-          onError={(e) => {
+          onError={() => {
             if (olCoverUrl && !coverUrl) {
               setOlFailed(true);
               setOlCoverUrl(null);
               return;
             }
-            e.currentTarget.style.display = 'none';
           }}
         />
       )}
 
-      <span className="dl-cover-cloth" aria-hidden="true" />
-      <span className="dl-cover-mottle" aria-hidden="true" />
-      <span className="dl-cover-paper" aria-hidden="true" />
-      <span className="dl-cover-vignette" aria-hidden="true" />
-      <span className="dl-cover-sheen" aria-hidden="true" />
-      <span className="dl-cover-room-light" aria-hidden="true" />
-      <span className="dl-cover-spine-edge" aria-hidden="true" />
-      <span className="dl-cover-top-pages" aria-hidden="true" />
-      <span className="dl-cover-fore-edge" aria-hidden="true" />
+      {hasImage && (
+        <>
+          <span className="dl-cover-cloth" aria-hidden="true" />
+          <span className="dl-cover-mottle" aria-hidden="true" />
+          <span className="dl-cover-paper" aria-hidden="true" />
+          <span className="dl-cover-vignette" aria-hidden="true" />
+          <span className="dl-cover-sheen" aria-hidden="true" />
+          <span className="dl-cover-room-light" aria-hidden="true" />
+          <span className="dl-cover-spine-edge" aria-hidden="true" />
+          <span className="dl-cover-top-pages" aria-hidden="true" />
+          <span className="dl-cover-fore-edge" aria-hidden="true" />
+        </>
+      )}
     </div>
   );
 }

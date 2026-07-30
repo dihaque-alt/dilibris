@@ -90,7 +90,7 @@ export function ShelfBookTile({
               entryId={visual.entryId}
               width={bookWidth}
               size="shelf"
-              visual={realCovers ? { ...visual, placeholder: false } : visual}
+              visual={visual}
               persistCover={
                 realCovers && !visual.coverUrl
                   ? { userId: entry.user_id, bookId: entry.book_id }

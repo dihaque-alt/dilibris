@@ -315,12 +315,6 @@ export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps
             label="Тижневий дайджест"
             hint="Лист щонеділі з підсумком читання"
           />
-          <Toggle
-            checked={form.profile.reminders}
-            onChange={(v) => patchProfile('reminders', v)}
-            label="Нагадування читати"
-            hint="Делікатний поштовх у тихий вечір"
-          />
 
           <hr className="dl-settings-divider" />
 
