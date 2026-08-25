@@ -10,35 +10,36 @@ function formatPagesLabel(pages: number): string {
   return String(pages);
 }
 
+function seriesPoints(
+  data: { month: number; books: number; pages: number }[],
+  key: 'books' | 'pages',
+  max: number,
+): string {
+  const n = data.length;
+  if (n === 0) return '';
+
+  return data
+    .map((row, i) => {
+      const x = ((i + 0.5) / n) * 100;
+      const y = 94 - (row[key] / max) * 82;
+      return `${x.toFixed(2)},${y.toFixed(2)}`;
+    })
+    .join(' ');
+}
+
 export function MonthBooksPagesChart({ data }: MonthBooksPagesChartProps) {
   const maxBooks = Math.max(1, ...data.map((d) => d.books));
   const maxPages = Math.max(1, ...data.map((d) => d.pages));
+  const hasPages = data.some((d) => d.pages > 0);
 
-  const layout = useMemo(() => {
-    const w = 360;
-    const h = 72;
-    const pad = { t: 8, r: 4, b: 8, l: 4 };
-    const innerW = w - pad.l - pad.r;
-    const innerH = h - pad.t - pad.b;
-
-    const points = data.map((row, i) => {
-      const x = pad.l + (i / Math.max(1, data.length - 1)) * innerW;
-      const yBooks = pad.t + innerH - (row.books / maxBooks) * innerH;
-      const yPages = pad.t + innerH - (row.pages / maxPages) * innerH;
-      return { ...row, x, yBooks, yPages };
-    });
-
-    return { w, h, pad, innerH, points };
-  }, [data, maxBooks, maxPages]);
-
-  const booksPath = layout.points
-    .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.yBooks.toFixed(1)}`)
-    .join(' ');
-  const pagesPath = layout.points
-    .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.yPages.toFixed(1)}`)
-    .join(' ');
-
-  const baselineY = layout.pad.t + layout.innerH;
+  const booksPolyline = useMemo(
+    () => seriesPoints(data, 'books', maxBooks),
+    [data, maxBooks],
+  );
+  const pagesPolyline = useMemo(
+    () => (hasPages ? seriesPoints(data, 'pages', maxPages) : ''),
+    [data, maxPages, hasPages],
+  );
 
   return (
     <div className="dl-month-dual-line">
@@ -46,64 +47,60 @@ export function MonthBooksPagesChart({ data }: MonthBooksPagesChartProps) {
         <span>
           <i className="is-books" aria-hidden="true" /> Книги
         </span>
-        <span>
-          <i className="is-pages" aria-hidden="true" /> Сторінки
-        </span>
+        {hasPages && (
+          <span>
+            <i className="is-pages" aria-hidden="true" /> Сторінки
+          </span>
+        )}
       </div>
-      <svg
-        className="dl-month-dual-svg"
-        viewBox={`0 0 ${layout.w} ${layout.h}`}
-        role="img"
-        aria-label="Книги та сторінки за місяцями"
-      >
-        <line
-          x1={layout.pad.l}
-          y1={baselineY}
-          x2={layout.w - layout.pad.r}
-          y2={baselineY}
-          className="dl-month-dual-axis"
-        />
-        {layout.points.map((p) => (
-          <line
-            key={`tick-${p.month}`}
-            x1={p.x}
-            y1={baselineY}
-            x2={p.x}
-            y2={baselineY + 4}
-            className="dl-month-dual-tick"
-          />
-        ))}
-        <path d={booksPath} className="dl-month-dual-line-path is-books" fill="none" />
-        <path d={pagesPath} className="dl-month-dual-line-path is-pages" fill="none" />
-        {layout.points.map((p) => (
-          <g key={p.month}>
-            <circle
-              cx={p.x}
-              cy={p.yBooks}
-              r={p.books > 0 ? 3.5 : 2}
-              className={`dl-month-dual-dot is-books${p.books > 0 ? '' : ' is-zero'}`}
-            />
-            <circle
-              cx={p.x}
-              cy={p.yPages}
-              r={p.pages > 0 ? 3.5 : 2}
-              className={`dl-month-dual-dot is-pages${p.pages > 0 ? '' : ' is-zero'}`}
-            />
-          </g>
-        ))}
-      </svg>
+
+      <div className="dl-month-dual-plot">
+        <svg
+          className="dl-month-dual-lines"
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
+          aria-hidden="true"
+        >
+          <line x1="0" y1="94" x2="100" y2="94" className="dl-month-dual-axis" />
+          <polyline points={booksPolyline} className="dl-month-dual-line-path is-books" fill="none" />
+          {hasPages && (
+            <polyline points={pagesPolyline} className="dl-month-dual-line-path is-pages" fill="none" />
+          )}
+        </svg>
+
+        <div className="dl-month-dual-cols">
+          {data.map((row) => (
+            <div key={row.month} className="dl-month-dual-col">
+              <div className="dl-month-dual-col-plot">
+                {row.books > 0 && (
+                  <span
+                    className="dl-month-dual-dot is-books"
+                    style={{ bottom: `calc(6% + ${(row.books / maxBooks) * 82}%)` }}
+                  />
+                )}
+                {hasPages && row.pages > 0 && (
+                  <span
+                    className="dl-month-dual-dot is-pages"
+                    style={{ bottom: `calc(6% + ${(row.pages / maxPages) * 82}%)` }}
+                  />
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="dl-month-dual-values">
         {data.map((row) => (
           <div key={row.month} className="dl-month-dual-value-col">
-            <span className={`dl-month-dual-value is-books${row.books > 0 ? '' : ' is-empty'}`}>
-              {row.books > 0 ? row.books : '·'}
-            </span>
-            <span className={`dl-month-dual-value is-pages${row.pages > 0 ? '' : ' is-empty'}`}>
-              {row.pages > 0 ? formatPagesLabel(row.pages) : '·'}
-            </span>
+            {row.books > 0 && <span className="dl-month-dual-value is-books">{row.books}</span>}
+            {hasPages && row.pages > 0 && (
+              <span className="dl-month-dual-value is-pages">{formatPagesLabel(row.pages)}</span>
+            )}
           </div>
         ))}
       </div>
+
       <div className="dl-month-dual-months">
         {data.map((row) => (
           <span key={row.month}>{MONTH_NAMES_UK[row.month - 1]}</span>
