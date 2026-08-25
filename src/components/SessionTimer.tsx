@@ -163,13 +163,19 @@ export function SessionTimer({
   }, [session, loading]);
 
   useEffect(() => {
-    const onHide = () => {
+    const onVisibility = () => {
+      const current = sessionRef.current;
       if (document.visibilityState === 'hidden') {
+        void persist();
+        return;
+      }
+      if (document.visibilityState === 'visible' && current) {
+        setSec(elapsedSeconds(current));
         void persist();
       }
     };
-    document.addEventListener('visibilitychange', onHide);
-    return () => document.removeEventListener('visibilitychange', onHide);
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => document.removeEventListener('visibilitychange', onVisibility);
   }, []);
 
   async function togglePause() {
@@ -205,13 +211,20 @@ export function SessionTimer({
       return;
     }
 
-    const minutes = Math.max(1, Math.round(elapsedSeconds(current) / 60));
+    const snap = snapshotSession(current, { is_running: false });
+    sessionRef.current = snap;
+    setSession(snap);
+    setRunning(false);
+    setSec(elapsedSeconds(snap));
+
+    const minutes = Math.max(1, Math.round(elapsedSeconds(snap) / 60));
     const progressRaw = parseInt(pagesRef.current, 10) || 0;
     const noteText = noteRef.current.trim() || null;
     const mode = entryProgressMode(entry);
 
     setError('');
     try {
+      await saveActiveSession(snap);
       await onFinish(
         mode === 'percent'
           ? { minutes, percent: Math.min(100, progressRaw), note: noteText }

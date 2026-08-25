@@ -1,4 +1,5 @@
 import { supabase } from '../supabase';
+import { ensureSupabaseReady } from '../supabaseAuth';
 import type { ActiveReadingSession } from '../../types/database';
 import { offlineDb, isOnline, nowIso, type ActiveReadingSessionLocal } from './db';
 
@@ -105,17 +106,21 @@ async function clearPendingActiveSessionDeletes(userId: string): Promise<void> {
 }
 
 async function pushToServer(session: ActiveReadingSession): Promise<void> {
-  if (!isOnline()) {
-    await saveLocal(session, true);
-    return;
-  }
+  await saveLocal(session, true);
 
-  const { error } = await supabase.from('active_reading_sessions').upsert(session, {
-    onConflict: 'user_id',
-  });
-  if (error) throw error;
-  await clearPendingActiveSessionDeletes(session.user_id);
-  await saveLocal(session, false);
+  if (!isOnline()) return;
+
+  try {
+    await ensureSupabaseReady();
+    const { error } = await supabase.from('active_reading_sessions').upsert(session, {
+      onConflict: 'user_id',
+    });
+    if (error) throw error;
+    await clearPendingActiveSessionDeletes(session.user_id);
+    await saveLocal(session, false);
+  } catch {
+    /* keep dirty local copy; flush on reconnect */
+  }
 }
 
 export async function fetchActiveSession(userId: string): Promise<ActiveReadingSession | null> {
@@ -177,23 +182,36 @@ export async function saveActiveSession(session: ActiveReadingSession): Promise<
 export async function clearActiveSession(userId: string): Promise<void> {
   await offlineDb.activeSessions.delete(userId);
 
-  if (isOnline()) {
+  if (!isOnline()) {
+    await offlineDb.pendingOps.add({
+      id: crypto.randomUUID(),
+      userId,
+      table: 'active_reading_sessions',
+      operation: 'delete',
+      payload: { user_id: userId },
+      createdAt: Date.now(),
+    });
+    return;
+  }
+
+  try {
+    await ensureSupabaseReady();
     const { error } = await supabase
       .from('active_reading_sessions')
       .delete()
       .eq('user_id', userId);
     if (error) throw error;
-    return;
+    await clearPendingActiveSessionDeletes(userId);
+  } catch {
+    await offlineDb.pendingOps.add({
+      id: crypto.randomUUID(),
+      userId,
+      table: 'active_reading_sessions',
+      operation: 'delete',
+      payload: { user_id: userId },
+      createdAt: Date.now(),
+    });
   }
-
-  await offlineDb.pendingOps.add({
-    id: crypto.randomUUID(),
-    userId,
-    table: 'active_reading_sessions',
-    operation: 'delete',
-    payload: { user_id: userId },
-    createdAt: Date.now(),
-  });
 }
 
 /** Push dirty local draft or pending delete after reconnect. */

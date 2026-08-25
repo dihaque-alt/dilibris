@@ -1,4 +1,5 @@
 import { supabase } from '../supabase';
+import { ensureSupabaseReady } from '../supabaseAuth';
 import { clearActiveSession, flushActiveSession } from './activeSessionSync';
 import { executeNoteOp, refreshUserNotesCache } from './notesSync';
 import { executeReviewOp, refreshUserReviewsCache } from './reviewsSync';
@@ -595,46 +596,53 @@ export async function addSession(userId: string, entryId: string, payload: Sessi
     });
   }
 
+  const entryPatch =
+    entry && (progressDelta > 0 || payload.minutes > 0)
+      ? {
+          id: entryId,
+          ...(progressDelta > 0
+            ? { current_page: nextCurrentPageAfterSession(entry, progressDelta) }
+            : {}),
+          ...(payload.minutes > 0 ? { total_minutes: entry.total_minutes + payload.minutes } : {}),
+        }
+      : null;
+
+  const sessionPayload = {
+    id,
+    entry_id: entryId,
+    user_id: userId,
+    started_at: session.started_at,
+    pages_read: progressDelta,
+    minutes: payload.minutes,
+    note: payload.note,
+  };
+
   if (isOnline()) {
-    const { error } = await supabase.from('reading_sessions').insert({
-      id,
-      entry_id: entryId,
-      user_id: userId,
-      started_at: session.started_at,
-      pages_read: progressDelta,
-      minutes: payload.minutes,
-      note: payload.note,
-    });
-    if (error) throw error;
-    if (entry && progressDelta > 0) {
-      const { error: pageError } = await supabase
-        .from('user_book_entries')
-        .update({ current_page: nextCurrentPageAfterSession(entry, progressDelta) })
-        .eq('id', entryId);
-      if (pageError) throw pageError;
+    try {
+      await ensureSupabaseReady();
+      const { error } = await supabase.from('reading_sessions').insert(sessionPayload);
+      if (error) throw error;
+      if (entryPatch && progressDelta > 0) {
+        const { error: pageError } = await supabase
+          .from('user_book_entries')
+          .update({ current_page: entryPatch.current_page })
+          .eq('id', entryId);
+        if (pageError) throw pageError;
+      }
+      await fetchEntry(entryId);
+      return;
+    } catch {
+      /* queue for sync — local journal already updated */
     }
-    await fetchEntry(entryId);
-    return;
   }
 
   await enqueue(userId, {
     table: 'reading_sessions',
     operation: 'insert',
-    payload: {
-      id,
-      entry_id: entryId,
-      user_id: userId,
-      started_at: session.started_at,
-      pages_read: progressDelta,
-      minutes: payload.minutes,
-      note: payload.note,
-    },
+    payload: sessionPayload,
   });
 
-  if (entry && (progressDelta > 0 || payload.minutes > 0)) {
-    const entryPatch: { id: string; current_page?: number; total_minutes?: number } = { id: entryId };
-    if (progressDelta > 0) entryPatch.current_page = nextCurrentPageAfterSession(entry, progressDelta);
-    if (payload.minutes > 0) entryPatch.total_minutes = entry.total_minutes + payload.minutes;
+  if (entryPatch) {
     await enqueue(userId, {
       table: 'user_book_entries',
       operation: 'update',
