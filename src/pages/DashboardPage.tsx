@@ -5,6 +5,7 @@ import { FormatDonut } from '../components/FormatDonut';
 import { InfoTooltip, PanelTitle } from '../components/InfoTooltip';
 import { PageHead } from '../components/PageHead';
 import { RoomBackdrop } from '../components/RoomBackdrop';
+import { SegmentedDonut } from '../components/SegmentedDonut';
 import { StatBarRow } from '../components/StatBarRow';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { useOfflinePageDetail } from '../components/OfflineProvider';
@@ -12,19 +13,22 @@ import { formatDateTimeUk } from '../lib/dates';
 import { fetchDashboardData } from '../lib/offline/dashboardSync';
 import { isOnline } from '../lib/offline/db';
 import { supabase } from '../lib/supabase';
-import { formatMinutes, formatStarRating } from '../lib/rating';
 import {
   availableYears,
+  averageDaysToFinish,
   averageRating,
+  bookLengthBreakdown,
   booksByYear,
   finishedInYear,
   formatBreakdown,
+  formatDaysToFinish,
   languageBreakdown,
   longestBreakDays,
   MONTH_NAMES_UK,
   monthMetricBarTitle,
   monthSeriesFromBooks,
   monthSeriesFromSessions,
+  ratingBreakdown,
   topAuthors,
   totalMinutesRead,
   totalPagesRead,
@@ -32,6 +36,7 @@ import {
   type SessionMonthRow,
   type StatsEntry,
 } from '../lib/stats';
+import { formatMinutes, formatStarRating } from '../lib/rating';
 import type { ReadingChallenge } from '../types/database';
 import '../styles/library.css';
 import '../styles/screens-ui.css';
@@ -203,12 +208,19 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
   const yearly = booksByYear(entries);
   const langTotal = languages.reduce((sum, l) => sum + l.count, 0);
   const maxAuthor = authors[0]?.count ?? 1;
+  const ratings = ratingBreakdown(entries, selectedYear);
+  const maxRating = ratings[0]?.count ?? 1;
+  const lengths = bookLengthBreakdown(entries, selectedYear);
+  const avgFinishDays = averageDaysToFinish(entries, selectedYear);
+  const hoursRead =
+    minutes >= 60 ? `${(minutes / 60).toFixed(minutes >= 600 ? 0 : 1).replace('.0', '')} год` : `${minutes} хв`;
 
   const stats = [
     [String(finishedCount), 'книг'],
     [pages.toLocaleString('uk-UA'), 'сторінок'],
     [formatMinutes(minutes), 'часу'],
     [avgRating != null ? formatStarRating(Math.round(avgRating * 2) / 2) : '—', 'середня оцінка'],
+    ...(avgFinishDays != null ? [[formatDaysToFinish(avgFinishDays), 'на книгу']] : []),
     ...(breakDays != null ? [[`${breakDays} днів`, 'найдовша пауза']] : []),
   ] as const;
 
@@ -278,8 +290,8 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
       <main className="dl-page dashboard-page">
         <PageHead
           eyebrow="Твій читацький рік"
-          title="Читацька статистика"
-          sub="Читацькі підсумки"
+          title="Статистика"
+          sub="Книги, сторінки, час і оцінки — усі підсумки року"
         >
           <label className="dl-year-pill">
             Рік
@@ -297,6 +309,20 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
         </PageHead>
 
         {error && <p className="banner-error">{error}</p>}
+
+        {finishedCount > 0 && (
+          <p className="dl-stats-overview">
+            {finishedCount} {finishedCount === 1 ? 'книга' : finishedCount < 5 ? 'книги' : 'книг'}
+            {' · '}
+            {pages.toLocaleString('uk-UA')} сторінок
+            {minutes > 0 && (
+              <>
+                {' · '}
+                {hoursRead}
+              </>
+            )}
+          </p>
+        )}
 
         <section className="dl-panel dl-challenge">
           <div className="dl-challenge-head">
@@ -386,6 +412,48 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
               unknown={formats.unknown}
               centerValue={finishedCount}
             />
+          </section>
+        </div>
+
+        <div className="dl-dash-row is-length-ratings">
+          <section className="dl-panel">
+            <PanelTitle
+              title="Обсяг книг"
+              tipLabel="Як рахується обсяг"
+              tip="Кількість сторінок прочитаних книг: до 300, 300–499, від 500. Без даних про сторінки — «Невідомо»."
+            />
+            <SegmentedDonut
+              centerValue={finishedCount}
+              segments={[
+                { count: lengths.short, color: 'var(--accent-lime)', label: '< 300 стор.' },
+                { count: lengths.medium, color: 'var(--status-done)', label: '300–499' },
+                { count: lengths.long, color: 'var(--gold-deep)', label: '500+' },
+                { count: lengths.unknown, color: 'var(--line)', label: 'Невідомо' },
+              ]}
+            />
+          </section>
+
+          <section className="dl-panel">
+            <PanelTitle
+              title="Оцінки"
+              tipLabel="Як рахуються оцінки"
+              tip="Розподіл зірок серед прочитаних книг обраного року — лише книги з оцінкою."
+            />
+            {ratings.length === 0 ? (
+              <p className="empty-hint">Постав оцінки прочитаним книгам — побачиш розподіл</p>
+            ) : (
+              <div className="dl-statbar-list">
+                {ratings.map((row) => (
+                  <StatBarRow
+                    key={row.rating}
+                    label={formatStarRating(row.rating)}
+                    note={row.count}
+                    frac={row.count / maxRating}
+                    variant="gold"
+                  />
+                ))}
+              </div>
+            )}
           </section>
         </div>
 

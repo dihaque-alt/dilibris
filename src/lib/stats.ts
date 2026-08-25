@@ -224,3 +224,59 @@ export function availableYears(entries: StatsEntry[]): number[] {
   });
   return [...years].sort((a, b) => b - a);
 }
+
+export function ratingBreakdown(
+  entries: StatsEntry[],
+  year: number,
+): { rating: number; count: number }[] {
+  const counts = new Map<number, number>();
+  finishedInYear(entries, year).forEach((e) => {
+    if (e.rating == null) return;
+    const rating = Math.round(e.rating * 2) / 2;
+    counts.set(rating, (counts.get(rating) ?? 0) + 1);
+  });
+  return [...counts.entries()]
+    .sort((a, b) => b[0] - a[0])
+    .map(([rating, count]) => ({ rating, count }));
+}
+
+export function bookLengthBreakdown(entries: StatsEntry[], year: number) {
+  const finished = finishedInYear(entries, year);
+  let short = 0;
+  let medium = 0;
+  let long = 0;
+  let unknown = 0;
+
+  finished.forEach((e) => {
+    const pages = e.total_pages ?? e.book?.page_count ?? 0;
+    if (pages <= 0) unknown += 1;
+    else if (pages < 300) short += 1;
+    else if (pages < 500) medium += 1;
+    else long += 1;
+  });
+
+  return { short, medium, long, unknown };
+}
+
+export function averageDaysToFinish(entries: StatsEntry[], year: number): number | null {
+  const durations: number[] = [];
+  finishedInYear(entries, year).forEach((e) => {
+    if (!e.started_on || !e.finished_on) return;
+    const start = new Date(`${e.started_on}T00:00:00`).getTime();
+    const end = new Date(`${e.finished_on}T00:00:00`).getTime();
+    const days = Math.round((end - start) / 86400000);
+    if (days >= 0) durations.push(days);
+  });
+  if (!durations.length) return null;
+  return Math.round(durations.reduce((sum, d) => sum + d, 0) / durations.length);
+}
+
+export function formatDaysToFinish(days: number): string {
+  if (days === 1) return '1 день';
+  if (days >= 2 && days <= 4) return `${days} дні`;
+  if (days >= 5 && days <= 20) return `${days} днів`;
+  const weeks = Math.round(days / 7);
+  if (weeks < 8) return `${weeks} ${weeks === 1 ? 'тиждень' : weeks < 5 ? 'тижні' : 'тижнів'}`;
+  const months = Math.round(days / 30);
+  return `${months} ${months === 1 ? 'місяць' : months < 5 ? 'місяці' : 'місяців'}`;
+}

@@ -238,7 +238,7 @@ export function AddBookModal({
                 />
               </div>
 
-              {searching && <p className="add-book-hint">Шукаємо…</p>}
+              {searching && <p className="add-book-hint">Шукаємо в Open Library та Google Books…</p>}
               {searchError && <p className="form-error">{searchError}</p>}
 
               <div className="add-book-results">

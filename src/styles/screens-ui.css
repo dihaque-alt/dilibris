@@ -303,16 +303,34 @@ button.dl-info-tip-btn:focus-visible {
   grid-template-columns: 1fr;
 }
 
+.dl-dash-row.is-length-ratings {
+  grid-template-columns: 1fr;
+}
+
+.dl-stats-overview {
+  margin: 0 0 16px;
+  padding: 14px 18px;
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--bg-card) 88%, var(--accent-lime-light));
+  border: 1px solid var(--line);
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: clamp(1.05rem, 2.2vw, 1.25rem);
+  color: var(--text-main);
+  letter-spacing: 0.2px;
+}
+
 @media (min-width: 860px) {
   .dl-stat-grid {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   }
 
   .dl-dash-row.is-chart-format {
     grid-template-columns: 1.6fr 1fr;
   }
 
-  .dl-dash-row.is-authors-langs {
+  .dl-dash-row.is-authors-langs,
+  .dl-dash-row.is-length-ratings {
     grid-template-columns: 1fr 1fr;
   }
 }

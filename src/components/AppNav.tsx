@@ -151,7 +151,7 @@ export function AppNav({ userEmail, userId, active, onAddShelf }: AppNavProps) {
 
   const links = [
     { key: 'library' as const, label: 'Бібліотека', to: '/' },
-    { key: 'dashboard' as const, label: 'Дашборд', to: '/dashboard' },
+    { key: 'dashboard' as const, label: 'Статистика', to: '/dashboard' },
     { key: 'notes' as const, label: 'Нотатки', to: '/notes' },
     { key: 'buddy-reads' as const, label: 'Спільночит', to: '/buddy-reads' },
   ];

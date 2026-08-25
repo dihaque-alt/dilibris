@@ -93,7 +93,7 @@ export async function searchGoogleBooks(
   const isbn = options?.isbn ?? normalizeIsbnQuery(trimmed);
   const params = new URLSearchParams({
     q: isbn ? `isbn:${isbn}` : trimmed,
-    maxResults: '12',
+    maxResults: '20',
     printType: 'books',
     projection: 'lite',
   });

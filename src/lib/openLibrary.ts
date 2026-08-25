@@ -50,7 +50,7 @@ export async function searchOpenLibrary(
 
   const isbn = normalizeIsbnQuery(trimmed);
   const params = new URLSearchParams({
-    limit: '12',
+    limit: '20',
     fields:
       'key,title,author_name,cover_i,first_publish_year,number_of_pages_median,language,isbn',
   });

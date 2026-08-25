@@ -2,7 +2,7 @@ import { type BookSearchHit, searchGoogleBooks } from './googleBooks';
 import { normalizeIsbnQuery, openLibraryHitToSearchHit, searchOpenLibrary } from './openLibrary';
 
 const CYRILLIC_RE = /[\u0400-\u04FF]/;
-const MERGE_LIMIT = 16;
+const MERGE_LIMIT = 24;
 
 export function hasCyrillic(text: string): boolean {
   return CYRILLIC_RE.test(text);
@@ -16,20 +16,19 @@ function hitDedupeKey(hit: BookSearchHit): string {
   return `ta:${title}|${author}`;
 }
 
-/** Prefer Open Library hits when the same book appears in both catalogs. */
-export function mergeBookSearchHits(
-  primary: BookSearchHit[],
-  secondary: BookSearchHit[],
-): BookSearchHit[] {
+/** Prefer earlier hits (Open Library first) when the same book appears in both catalogs. */
+export function mergeBookSearchHits(...groups: BookSearchHit[][]): BookSearchHit[] {
   const merged: BookSearchHit[] = [];
   const seen = new Set<string>();
 
-  for (const hit of [...primary, ...secondary]) {
-    const key = hitDedupeKey(hit);
-    if (seen.has(key)) continue;
-    seen.add(key);
-    merged.push(hit);
-    if (merged.length >= MERGE_LIMIT) break;
+  for (const group of groups) {
+    for (const hit of group) {
+      const key = hitDedupeKey(hit);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      merged.push(hit);
+      if (merged.length >= MERGE_LIMIT) return merged;
+    }
   }
 
   return merged;
@@ -38,6 +37,25 @@ export function mergeBookSearchHits(
 export interface BookSearchResult {
   hits: BookSearchHit[];
   sources: BookSearchHit['source'][];
+}
+
+async function fetchOpenLibraryHits(query: string, preferUkrainian = false): Promise<BookSearchHit[]> {
+  try {
+    return (await searchOpenLibrary(query, { preferUkrainian })).map(openLibraryHitToSearchHit);
+  } catch {
+    return [];
+  }
+}
+
+async function fetchGoogleBooksHits(
+  query: string,
+  options?: { isbn?: string | null; preferUkrainian?: boolean },
+): Promise<BookSearchHit[]> {
+  try {
+    return await searchGoogleBooks(query, options);
+  } catch {
+    return [];
+  }
 }
 
 export async function searchBooksCombined(query: string): Promise<BookSearchResult> {
@@ -49,32 +67,25 @@ export async function searchBooksCombined(query: string): Promise<BookSearchResu
 
   if (isbn) {
     const [olHits, gbHits] = await Promise.all([
-      searchOpenLibrary(trimmed, { preferUkrainian })
-        .then((hits) => hits.map(openLibraryHitToSearchHit))
-        .catch(() => [] as BookSearchHit[]),
-      searchGoogleBooks(trimmed, { isbn, preferUkrainian }).catch(() => [] as BookSearchHit[]),
+      fetchOpenLibraryHits(trimmed),
+      fetchGoogleBooksHits(trimmed, { isbn, preferUkrainian }),
     ]);
     const hits = mergeBookSearchHits(olHits, gbHits);
     return { hits, sources: [...new Set(hits.map((h) => h.source))] };
   }
 
-  let olHits: BookSearchHit[] = [];
-  try {
-    olHits = (await searchOpenLibrary(trimmed, { preferUkrainian })).map(openLibraryHitToSearchHit);
-  } catch {
-    /* fall through */
+  const tasks: Promise<BookSearchHit[]>[] = [
+    fetchOpenLibraryHits(trimmed),
+    fetchGoogleBooksHits(trimmed),
+  ];
+
+  if (preferUkrainian) {
+    tasks.push(fetchOpenLibraryHits(trimmed, true));
+    tasks.push(fetchGoogleBooksHits(trimmed, { preferUkrainian: true }));
   }
 
-  let gbHits: BookSearchHit[] = [];
-  if (olHits.length < 3 || preferUkrainian) {
-    try {
-      gbHits = await searchGoogleBooks(trimmed, { preferUkrainian });
-    } catch {
-      /* ignore */
-    }
-  }
-
-  const hits = mergeBookSearchHits(olHits, gbHits);
+  const groups = await Promise.all(tasks);
+  const hits = mergeBookSearchHits(...groups);
   return { hits, sources: [...new Set(hits.map((h) => h.source))] };
 }
 
