@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import { AppNav } from '../components/AppNav';
 import { ChallengeBar } from '../components/ChallengeBar';
 import { FormatDonut } from '../components/FormatDonut';
-import { InfoTooltip, PanelTitle } from '../components/InfoTooltip';
 import { PageHead } from '../components/PageHead';
 import { RoomBackdrop } from '../components/RoomBackdrop';
 import { SegmentedDonut } from '../components/SegmentedDonut';
@@ -25,7 +24,6 @@ import {
   languageBreakdown,
   longestBreakDays,
   MONTH_NAMES_UK,
-  monthMetricBarTitle,
   monthSeriesFromBooks,
   monthSeriesFromSessions,
   ratingBreakdown,
@@ -59,7 +57,7 @@ function challengeHint(finished: number, target: number, year: number): string {
   return 'Тримаєш ідеальний темп — продовжуй у своєму ритмі';
 }
 
-function MonthChart({ data, metric }: { data: { month: number; value: number }[]; metric: MonthMetric }) {
+function MonthChart({ data }: { data: { month: number; value: number }[]; metric: MonthMetric }) {
   const max = Math.max(1, ...data.map((d) => d.value));
 
   return (
@@ -76,7 +74,6 @@ function MonthChart({ data, metric }: { data: { month: number; value: number }[]
                 ? 'linear-gradient(180deg, var(--accent-lime), var(--accent-lime-deep))'
                 : 'var(--line)',
             }}
-            title={monthMetricBarTitle(metric, value)}
           />
           <span className="dl-month-label">{MONTH_NAMES_UK[month - 1]}</span>
         </div>
@@ -191,12 +188,6 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
       : monthMetric === 'pages'
         ? 'Сторінки за місяць'
         : 'Час за місяць';
-  const monthPanelTip =
-    monthMetric === 'books'
-      ? 'Кількість прочитаних книг за кожен місяць обраного року — за датою завершення (finished_on).'
-      : monthMetric === 'pages'
-        ? 'Сума сторінок з сесій читання за місяць. Для аудіокниг з відсотками сторінки не рахуються.'
-        : 'Сума хвилин з сесій читання за кожен місяць обраного року.';
   const monthEmptyHint =
     monthMetric === 'books'
       ? 'Познач книги як «Прочитано», щоб побачити статистику'
@@ -327,14 +318,7 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
         <section className="dl-panel dl-challenge">
           <div className="dl-challenge-head">
             <div>
-              <div className="dl-challenge-kicker">
-                Челендж {selectedYear}
-                <InfoTooltip
-                  label="Як рахується челендж"
-                  placement="top"
-                  text="Книги зі статусом «Прочитано» (або перечитання з датою завершення), де увімкнено «Зарахувати до цьогорічної цілі», і дата завершення у вибраному році."
-                />
-              </div>
+              <div className="dl-challenge-kicker">Челендж {selectedYear}</div>
               <div className="dl-challenge-title">
                 {finishedCount} з {target > 0 ? target : '—'} книг
               </div>
@@ -386,11 +370,7 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
 
         <div className="dl-dash-row is-chart-format">
           <section className="dl-panel">
-            <PanelTitle
-              title={monthPanelTitle}
-              tipLabel="Як рахується графік"
-              tip={monthPanelTip}
-            />
+            <h2 className="dl-panel-title">{monthPanelTitle}</h2>
             <MonthMetricPicker value={monthMetric} onChange={setMonthMetric} />
             {monthChartEmpty ? (
               <p className="empty-hint">{monthEmptyHint}</p>
@@ -400,11 +380,7 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
           </section>
 
           <section className="dl-panel">
-            <PanelTitle
-              title="Формат"
-              tipLabel="Як рахується формат"
-              tip="Поле «Формат» з картки книги: паперова, електронна або аудіо. Без формату — у блоці «Не вказано»."
-            />
+            <h2 className="dl-panel-title">Формат</h2>
             <FormatDonut
               paper={formats.paper}
               ebook={formats.ebook}
@@ -417,11 +393,7 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
 
         <div className="dl-dash-row is-length-ratings">
           <section className="dl-panel">
-            <PanelTitle
-              title="Обсяг книг"
-              tipLabel="Як рахується обсяг"
-              tip="Кількість сторінок прочитаних книг: до 300, 300–499, від 500. Без даних про сторінки — «Невідомо»."
-            />
+            <h2 className="dl-panel-title">Обсяг книг</h2>
             <SegmentedDonut
               centerValue={finishedCount}
               segments={[
@@ -434,11 +406,7 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
           </section>
 
           <section className="dl-panel">
-            <PanelTitle
-              title="Оцінки"
-              tipLabel="Як рахуються оцінки"
-              tip="Розподіл зірок серед прочитаних книг обраного року — лише книги з оцінкою."
-            />
+            <h2 className="dl-panel-title">Оцінки</h2>
             {ratings.length === 0 ? (
               <p className="empty-hint">Постав оцінки прочитаним книгам — побачиш розподіл</p>
             ) : (
@@ -459,11 +427,7 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
 
         <div className="dl-dash-row is-authors-langs">
           <section className="dl-panel">
-            <PanelTitle
-              title="Топ авторів"
-              tipLabel="Як рахуються автори"
-              tip="Автори з прочитаних книг обраного року. Якщо в книзі кілька авторів — кожен отримує +1."
-            />
+            <h2 className="dl-panel-title">Топ авторів</h2>
             {authors.length === 0 ? (
               <p className="empty-hint">Поки немає даних за цей рік</p>
             ) : (
@@ -482,11 +446,7 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
           </section>
 
           <section className="dl-panel">
-            <PanelTitle
-              title="Мови"
-              tipLabel="Як рахуються мови"
-              tip="Мова з картки книги (вкладка «Прогрес» → «Мова книги»). Якщо не задано — потрапляє в «Мова не вказана»."
-            />
+            <h2 className="dl-panel-title">Мови</h2>
             {languages.length === 0 ? (
               <p className="empty-hint">Поки немає даних за цей рік</p>
             ) : (

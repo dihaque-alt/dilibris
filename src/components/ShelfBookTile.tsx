@@ -11,7 +11,6 @@ interface ShelfBookTileProps {
   bookWidth: number;
   progress: number;
   view: BookViewMode;
-  showTip: boolean;
   realCovers: boolean;
   onPick: (entry: UserBookEntry, rect: DOMRect) => void;
 }
@@ -21,7 +20,6 @@ export function ShelfBookTile({
   bookWidth,
   progress,
   view,
-  showTip,
   realCovers,
   onPick,
 }: ShelfBookTileProps) {
@@ -30,7 +28,6 @@ export function ShelfBookTile({
   const visual = bookVisualFromEntry(entry);
   const statusKey = STATUS_CSS_VAR[entry.status];
   const isSpine = view === 'spine';
-  const tipVisible = showTip && hover;
 
   function handlePick(e: { stopPropagation: () => void }) {
     e.stopPropagation();
@@ -59,13 +56,6 @@ export function ShelfBookTile({
       tabIndex={0}
       aria-label={`${visual.title}, ${formatAuthorsShort(visual.authors)}`}
     >
-      {showTip && (
-        <div className="dl-tip" style={{ opacity: tipVisible ? 1 : 0 }} aria-hidden={!tipVisible}>
-          <span className="t">{visual.title}</span>
-          <span className="a">{formatAuthorsShort(visual.authors)}</span>
-        </div>
-      )}
-
       <div
         className="dl-cv"
         style={{

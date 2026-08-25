@@ -6,7 +6,6 @@ export type BookSizePreset = 'compact' | 'cozy' | 'grand';
 export interface LibraryDisplayPrefs {
   bookView: BookViewMode;
   bookSize: BookSizePreset;
-  hoverTitles: boolean;
   realCovers: boolean;
 }
 

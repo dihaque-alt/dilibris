@@ -370,10 +370,7 @@ export function LibraryPage({ userId, userEmail }: LibraryPageProps) {
                         }}
                       />
                     ) : (
-                      <h2
-                        onDoubleClick={() => startShelfRename(shelf)}
-                        title="Подвійний клік — перейменувати"
-                      >
+                      <h2 onDoubleClick={() => startShelfRename(shelf)}>
                         {shelf.name}
                       </h2>
                     )}
@@ -414,7 +411,6 @@ export function LibraryPage({ userId, userEmail }: LibraryPageProps) {
                           entry={entry}
                           bookWidth={bookWidth}
                           view={display.bookView}
-                          showTip={display.hoverTitles}
                           realCovers={display.realCovers}
                           progress={entryProgress(entry)}
                           onPick={openFlyout}

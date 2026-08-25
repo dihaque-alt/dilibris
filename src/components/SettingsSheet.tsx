@@ -346,12 +346,6 @@ export function SettingsSheet({ userId, userEmail, onClose }: SettingsSheetProps
             ])}
             onChange={(v) => patchLibrary('bookSize', v as BookSizePreset)}
           />
-          <Toggle
-            checked={form.library.hoverTitles}
-            onChange={(v) => patchLibrary('hoverTitles', v)}
-            label="Підпис при наведенні"
-            hint="Короткий tooltip з назвою книги на полиці"
-          />
 
           <hr className="dl-settings-divider" />
 

@@ -17,7 +17,6 @@ const APPEARANCE_DEFAULTS: AppearancePrefs = {
 const LIBRARY_DEFAULTS: LibraryDisplayPrefs = {
   bookView: 'cover',
   bookSize: 'cozy',
-  hoverTitles: true,
   realCovers: true,
 };
 
