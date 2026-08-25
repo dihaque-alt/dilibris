@@ -324,7 +324,7 @@
   text-transform: uppercase;
 }
 
-.dl-month-dual-bars {
+.dl-month-dual-line {
   margin-top: 0;
 }
 
@@ -332,7 +332,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   font-family: var(--font-sans);
   font-size: 10px;
   color: var(--text-faint);
@@ -342,7 +342,7 @@
   display: inline-block;
   width: 8px;
   height: 8px;
-  border-radius: 2px;
+  border-radius: 50%;
   margin-right: 5px;
   vertical-align: middle;
 }
@@ -355,45 +355,63 @@
   background: var(--gold-deep);
 }
 
-.dl-month-chart.is-dual {
-  height: 108px;
-}
-
-.dl-month-chart.is-dual .dl-month-bar-stack.is-dual {
-  min-height: 78px;
-}
-
-.dl-month-dual-pair {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 3px;
+.dl-month-dual-svg {
   width: 100%;
+  max-height: 88px;
+  display: block;
 }
 
-.dl-month-dual-item {
-  flex: 1;
-  max-width: 16px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 3px;
-  min-width: 0;
+.dl-month-dual-axis {
+  stroke: var(--line);
+  stroke-width: 1;
 }
 
-.dl-month-chart.is-dual .dl-bar.is-books {
-  width: 100%;
-  max-width: 14px;
-  border-radius: 4px 4px 0 0;
-  background: linear-gradient(180deg, var(--accent-lime), var(--accent-lime-deep));
+.dl-month-dual-line-path {
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.dl-month-chart.is-dual .dl-bar.is-pages {
-  width: 100%;
-  max-width: 14px;
-  border-radius: 4px 4px 0 0;
-  background: linear-gradient(180deg, var(--gold-highlight), var(--gold-deep));
+.dl-month-dual-line-path.is-books {
+  stroke: var(--accent-lime-deep);
+}
+
+.dl-month-dual-line-path.is-pages {
+  stroke: var(--gold-deep);
+}
+
+.dl-month-dual-dot.is-books {
+  fill: var(--accent-lime-deep);
+}
+
+.dl-month-dual-dot.is-pages {
+  fill: var(--gold-deep);
+}
+
+.dl-month-dual-value {
+  font-family: var(--font-sans);
+  font-size: 7px;
+  font-weight: 700;
+  text-anchor: middle;
+}
+
+.dl-month-dual-value.is-books {
+  fill: var(--accent-lime-deep);
+}
+
+.dl-month-dual-value.is-pages {
+  fill: var(--gold-deep);
+}
+
+.dl-month-dual-months {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 2px;
+  margin-top: 4px;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  color: var(--text-faint);
+  text-align: center;
 }
 
 .dl-statbar-list {
