@@ -131,6 +131,7 @@ export function NotifBell({ userId }: NotifBellProps) {
         aria-modal="true"
         aria-label="Сповіщення"
       >
+        {mobile && <div className="notif-sheet-handle" aria-hidden="true" />}
         <div className="notif-panel-head">
           <div className="notif-panel-head-row">
             <span className="notif-panel-title">Сповіщення</span>
@@ -180,16 +181,18 @@ export function NotifBell({ userId }: NotifBellProps) {
                     <span className="notif-text">{n.text}</span>
                     <span className="notif-time">{n.time}</span>
                   </span>
+                </button>
+                <div className="notif-item-actions">
                   {!n.read && <span className="notif-dot" aria-hidden="true" />}
-                </button>
-                <button
-                  type="button"
-                  className="notif-dismiss"
-                  aria-label="Прибрати сповіщення"
-                  onClick={(e) => handleDismiss(n.id, e)}
-                >
-                  ✕
-                </button>
+                  <button
+                    type="button"
+                    className="notif-dismiss"
+                    aria-label="Прибрати сповіщення"
+                    onClick={(e) => handleDismiss(n.id, e)}
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
             ))
           )}

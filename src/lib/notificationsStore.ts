@@ -35,6 +35,22 @@ interface NotificationRow {
 
 const CACHE_KEY = (userId: string) => `dilibris_notifs_${userId}`;
 const LEGACY_SEED_IDS = new Set(['n1', 'n4']);
+export const NOTIFICATION_TTL_MS = 7 * 86400000;
+
+function isFreshNotification(n: AppNotification, now = Date.now()): boolean {
+  const ts = new Date(n.createdAt).getTime();
+  return Number.isFinite(ts) && now - ts < NOTIFICATION_TTL_MS;
+}
+
+function filterFreshNotifications(items: AppNotification[]): AppNotification[] {
+  return items.filter((n) => isFreshNotification(n));
+}
+
+async function purgeStaleNotificationsRemote(userId: string): Promise<void> {
+  if (!isOnline()) return;
+  const cutoff = new Date(Date.now() - NOTIFICATION_TTL_MS).toISOString();
+  await supabase.from('user_notifications').delete().eq('user_id', userId).lt('created_at', cutoff);
+}
 
 function relTime(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -92,7 +108,7 @@ function loadCachedNotifications(userId: string): AppNotification[] {
         ...n,
         createdAt: n.createdAt ?? new Date(Date.now() - i * 3600000).toISOString(),
       }));
-      return items.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+      return filterFreshNotifications(items).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     }
   } catch {
     /* ignore */
@@ -169,30 +185,38 @@ async function flushCachedReadState(userId: string, remote: AppNotification[]): 
 }
 
 export function loadNotifications(userId: string): AppNotification[] {
-  return hydrateNotificationTimes(loadCachedNotifications(userId));
+  const cached = loadCachedNotifications(userId);
+  const fresh = filterFreshNotifications(cached);
+  if (fresh.length !== cached.length) {
+    cacheNotifications(userId, fresh);
+  }
+  return hydrateNotificationTimes(fresh);
 }
 
 export async function syncNotifications(userId: string): Promise<AppNotification[]> {
-  const cached = loadCachedNotifications(userId);
+  const cached = filterFreshNotifications(loadCachedNotifications(userId));
 
   if (!isOnline()) {
+    cacheNotifications(userId, cached);
     return hydrateNotificationTimes(cached);
   }
 
   try {
-    let remote = await fetchRemoteNotifications(userId);
+    await purgeStaleNotificationsRemote(userId);
+    let remote = filterFreshNotifications(await fetchRemoteNotifications(userId));
 
     if (remote.length === 0 && cached.length > 0) {
       await upsertNotifications(userId, cached);
-      remote = await fetchRemoteNotifications(userId);
+      remote = filterFreshNotifications(await fetchRemoteNotifications(userId));
     } else if (remote.length > 0) {
       await flushCachedReadState(userId, remote);
-      remote = await fetchRemoteNotifications(userId);
+      remote = filterFreshNotifications(await fetchRemoteNotifications(userId));
     }
 
     cacheNotifications(userId, remote);
     return hydrateNotificationTimes(remote);
   } catch {
+    cacheNotifications(userId, cached);
     return hydrateNotificationTimes(cached);
   }
 }

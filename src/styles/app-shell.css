@@ -288,25 +288,39 @@
   bottom: 0;
   left: 0;
   right: 0;
-  width: auto;
+  width: 100%;
   max-width: none;
+  margin: 0;
+  box-sizing: border-box;
   border-radius: var(--r-lg) var(--r-lg) 0 0;
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
+  max-height: min(85dvh, 520px);
+  display: flex;
+  flex-direction: column;
   animation: dl-sheet-up var(--dur-base) var(--ease-warm);
 }
 
 .notif-panel--portal.is-sheet .notif-list {
-  max-height: min(58vh, 420px);
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.notif-sheet-handle {
+  width: 40px;
+  height: 4px;
+  margin: 10px auto 4px;
+  border-radius: 999px;
+  background: var(--line-strong);
+  flex-shrink: 0;
 }
 
 .notif-panel--portal.is-sheet::before {
-  content: '';
-  display: block;
-  width: 40px;
-  height: 4px;
-  margin: 10px auto 0;
-  border-radius: 999px;
-  background: var(--line-strong);
+  content: none;
 }
 
 @media (max-width: 820px) {
@@ -421,6 +435,7 @@
   display: flex;
   align-items: stretch;
   border-bottom: 1px solid var(--line);
+  min-width: 0;
 }
 
 .notif-item-wrap:last-child {
@@ -450,9 +465,20 @@
   background: var(--bg-card-soft);
 }
 
+.notif-item-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 8px 10px 8px 0;
+}
+
 .notif-dismiss {
   flex-shrink: 0;
   width: var(--tap-min);
+  height: var(--tap-min);
   min-height: var(--tap-min);
   border: none;
   background: transparent;
@@ -460,7 +486,9 @@
   color: var(--text-faint);
   font-size: 15px;
   touch-action: manipulation;
-  align-self: stretch;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-pill);
 }
 
 .notif-dismiss:hover {
@@ -485,6 +513,7 @@
   font-size: var(--fs-sm);
   color: var(--text-main);
   line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 
 .notif-time {
@@ -501,7 +530,6 @@
   border-radius: 999px;
   background: var(--accent-lime);
   flex: 0 0 auto;
-  margin-top: 5px;
 }
 
 .notif-empty {
