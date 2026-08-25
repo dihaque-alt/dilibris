@@ -16,8 +16,8 @@ export function MonthBooksPagesChart({ data }: MonthBooksPagesChartProps) {
 
   const layout = useMemo(() => {
     const w = 360;
-    const h = 88;
-    const pad = { t: 16, r: 4, b: 4, l: 4 };
+    const h = 72;
+    const pad = { t: 8, r: 4, b: 8, l: 4 };
     const innerW = w - pad.l - pad.r;
     const innerH = h - pad.t - pad.b;
 
@@ -63,29 +63,47 @@ export function MonthBooksPagesChart({ data }: MonthBooksPagesChartProps) {
           y2={baselineY}
           className="dl-month-dual-axis"
         />
+        {layout.points.map((p) => (
+          <line
+            key={`tick-${p.month}`}
+            x1={p.x}
+            y1={baselineY}
+            x2={p.x}
+            y2={baselineY + 4}
+            className="dl-month-dual-tick"
+          />
+        ))}
         <path d={booksPath} className="dl-month-dual-line-path is-books" fill="none" />
         <path d={pagesPath} className="dl-month-dual-line-path is-pages" fill="none" />
         {layout.points.map((p) => (
           <g key={p.month}>
-            {p.books > 0 && (
-              <>
-                <text x={p.x} y={p.yBooks - 5} className="dl-month-dual-value is-books">
-                  {p.books}
-                </text>
-                <circle cx={p.x} cy={p.yBooks} r={3} className="dl-month-dual-dot is-books" />
-              </>
-            )}
-            {p.pages > 0 && (
-              <>
-                <text x={p.x} y={p.yPages - 5} className="dl-month-dual-value is-pages">
-                  {formatPagesLabel(p.pages)}
-                </text>
-                <circle cx={p.x} cy={p.yPages} r={3} className="dl-month-dual-dot is-pages" />
-              </>
-            )}
+            <circle
+              cx={p.x}
+              cy={p.yBooks}
+              r={p.books > 0 ? 3.5 : 2}
+              className={`dl-month-dual-dot is-books${p.books > 0 ? '' : ' is-zero'}`}
+            />
+            <circle
+              cx={p.x}
+              cy={p.yPages}
+              r={p.pages > 0 ? 3.5 : 2}
+              className={`dl-month-dual-dot is-pages${p.pages > 0 ? '' : ' is-zero'}`}
+            />
           </g>
         ))}
       </svg>
+      <div className="dl-month-dual-values">
+        {data.map((row) => (
+          <div key={row.month} className="dl-month-dual-value-col">
+            <span className={`dl-month-dual-value is-books${row.books > 0 ? '' : ' is-empty'}`}>
+              {row.books > 0 ? row.books : '·'}
+            </span>
+            <span className={`dl-month-dual-value is-pages${row.pages > 0 ? '' : ' is-empty'}`}>
+              {row.pages > 0 ? formatPagesLabel(row.pages) : '·'}
+            </span>
+          </div>
+        ))}
+      </div>
       <div className="dl-month-dual-months">
         {data.map((row) => (
           <span key={row.month}>{MONTH_NAMES_UK[row.month - 1]}</span>

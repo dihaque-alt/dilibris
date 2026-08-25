@@ -357,13 +357,19 @@
 
 .dl-month-dual-svg {
   width: 100%;
-  max-height: 88px;
+  max-height: 72px;
   display: block;
 }
 
 .dl-month-dual-axis {
   stroke: var(--line);
   stroke-width: 1;
+}
+
+.dl-month-dual-tick {
+  stroke: var(--line);
+  stroke-width: 1;
+  opacity: 0.7;
 }
 
 .dl-month-dual-line-path {
@@ -388,19 +394,58 @@
   fill: var(--gold-deep);
 }
 
+.dl-month-dual-dot.is-zero {
+  fill: var(--bg-card);
+  stroke: var(--line);
+  stroke-width: 1;
+  opacity: 0.85;
+}
+
+.dl-month-dual-dot.is-books.is-zero {
+  stroke: var(--accent-lime-deep);
+  opacity: 0.35;
+}
+
+.dl-month-dual-dot.is-pages.is-zero {
+  stroke: var(--gold-deep);
+  opacity: 0.35;
+}
+
+.dl-month-dual-values {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 2px;
+  margin-top: 6px;
+}
+
+.dl-month-dual-value-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  min-width: 0;
+}
+
 .dl-month-dual-value {
   font-family: var(--font-sans);
-  font-size: 7px;
+  font-size: 8px;
   font-weight: 700;
-  text-anchor: middle;
+  line-height: 1.1;
+  text-align: center;
 }
 
 .dl-month-dual-value.is-books {
-  fill: var(--accent-lime-deep);
+  color: var(--accent-lime-deep);
 }
 
 .dl-month-dual-value.is-pages {
-  fill: var(--gold-deep);
+  color: var(--gold-deep);
+}
+
+.dl-month-dual-value.is-empty {
+  font-weight: 400;
+  color: var(--text-faint);
+  opacity: 0.5;
 }
 
 .dl-month-dual-months {
