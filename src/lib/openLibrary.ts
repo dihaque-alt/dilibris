@@ -41,7 +41,10 @@ function writeCoverCache(key: string, coverId: number | null) {
   }
 }
 
-export async function searchOpenLibrary(query: string): Promise<OpenLibraryHit[]> {
+export async function searchOpenLibrary(
+  query: string,
+  options?: { preferUkrainian?: boolean },
+): Promise<OpenLibraryHit[]> {
   const trimmed = query.trim();
   if (trimmed.length < 2) return [];
 
@@ -53,7 +56,10 @@ export async function searchOpenLibrary(query: string): Promise<OpenLibraryHit[]
   });
 
   if (isbn) params.set('isbn', isbn);
-  else params.set('q', trimmed);
+  else {
+    const q = options?.preferUkrainian ? `${trimmed} language:ukr` : trimmed;
+    params.set('q', q);
+  }
 
   const res = await fetch(`${SEARCH_URL}?${params}`);
   if (!res.ok) throw new Error('Open Library / Google Books тимчасово недоступні');

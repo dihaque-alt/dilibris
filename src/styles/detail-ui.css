@@ -1798,6 +1798,13 @@ textarea.dl-field-input {
   white-space: nowrap;
 }
 
+.add-book-hit-source {
+  margin-top: 2px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
 .add-book-manual {
   display: flex;
   flex-direction: column;

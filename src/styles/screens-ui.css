@@ -1167,6 +1167,109 @@ button.dl-info-tip-btn:focus-visible {
   margin-bottom: 16px;
 }
 
+.notes-page .notes-book-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.notes-page .notes-book-group {
+  padding: 0;
+  overflow: hidden;
+}
+
+.notes-page .notes-book-group-head {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  padding: 8px 8px 8px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.notes-page .notes-book-group-toggle {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  padding: 6px 4px;
+  touch-action: manipulation;
+}
+
+.notes-page .notes-book-group-toggle:hover {
+  background: var(--bg-card-soft);
+  border-radius: var(--r-md);
+}
+
+.notes-page .notes-book-group-copy {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.notes-page .notes-book-group-title {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: var(--fs-body);
+  color: var(--text-main);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notes-page .notes-book-group-author {
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notes-page .notes-book-group-count {
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--text-faint);
+}
+
+.notes-page .notes-book-group-chevron {
+  flex-shrink: 0;
+  color: var(--text-faint);
+  font-size: 0.85rem;
+  width: 20px;
+  text-align: center;
+}
+
+.notes-page .notes-book-group-open {
+  align-self: center;
+  flex-shrink: 0;
+}
+
+.notes-page .notes-book-group-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 14px 16px;
+}
+
+.notes-page .notes-book-group-body .notes-card {
+  box-shadow: none;
+  border: 1px solid var(--line);
+}
+
+.notes-page .notes-card-meta {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+
 .notes-page .notes-card {
   display: block;
   width: 100%;

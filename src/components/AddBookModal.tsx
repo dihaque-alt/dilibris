@@ -3,9 +3,13 @@ import { createPortal } from 'react-dom';
 import { useBodyScrollLock } from '../hooks/useBodyScrollLock';
 import { useDialogA11y } from '../hooks/useDialogA11y';
 import { useIsMobile } from '../hooks/useIsMobile';
-import { type BookSearchHit, searchGoogleBooks } from '../lib/googleBooks';
+import { type BookSearchHit } from '../lib/googleBooks';
 import { errorMessage } from '../lib/buddyRead';
-import { openLibraryHitToSearchHit, searchOpenLibrary } from '../lib/openLibrary';
+import {
+  BOOK_SEARCH_SOURCE_LABELS,
+  formatBookSearchSources,
+  searchBooksCombined,
+} from '../lib/bookSearch';
 import { BOOK_LANGUAGE_OPTIONS } from '../lib/language';
 import { formatAuthors, STATUS_LABELS } from '../lib/labels';
 import type { BookEntryStatus } from '../types/database';
@@ -30,26 +34,6 @@ interface AddBookModalProps {
 }
 
 type Tab = 'search' | 'manual';
-type SearchSource = BookSearchHit['source'] | null;
-
-async function searchBooks(query: string): Promise<{ hits: BookSearchHit[]; source: SearchSource }> {
-  try {
-    const olHits = await searchOpenLibrary(query);
-    if (olHits.length > 0) {
-      return { hits: olHits.map(openLibraryHitToSearchHit), source: 'open_library' };
-    }
-  } catch {
-    // fall through to Google Books
-  }
-
-  const gbHits = await searchGoogleBooks(query);
-  return { hits: gbHits, source: gbHits.length > 0 ? 'google_books' : null };
-}
-
-const SOURCE_LABELS: Record<NonNullable<SearchSource>, string> = {
-  open_library: 'Результати з Open Library',
-  google_books: 'Результати з Google Books',
-};
 
 export function AddBookModal({
   shelfId,
@@ -66,7 +50,7 @@ export function AddBookModal({
   const [tab, setTab] = useState<Tab>(searchEnabled ? 'search' : 'manual');
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<BookSearchHit[]>([]);
-  const [searchSource, setSearchSource] = useState<SearchSource>(null);
+  const [searchSources, setSearchSources] = useState<BookSearchHit['source'][]>([]);
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState('');
 
@@ -87,7 +71,7 @@ export function AddBookModal({
     const q = query.trim();
     if (q.length < 2) {
       setResults([]);
-      setSearchSource(null);
+      setSearchSources([]);
       return;
     }
 
@@ -95,13 +79,13 @@ export function AddBookModal({
       setSearching(true);
       setSearchError('');
       try {
-        const { hits, source } = await searchBooks(q);
+        const { hits, sources } = await searchBooksCombined(q);
         setResults(hits);
-        setSearchSource(source);
+        setSearchSources(sources);
       } catch {
         setSearchError('Пошук невдалий — спробуй вручну');
         setResults([]);
-        setSearchSource(null);
+        setSearchSources([]);
       } finally {
         setSearching(false);
       }
@@ -272,6 +256,7 @@ export function AddBookModal({
                     <div className="add-book-hit-text">
                       <div className="add-book-hit-title">{hit.title}</div>
                       <div className="add-book-hit-author">{formatAuthors(hit.authors)}</div>
+                      <div className="add-book-hit-source">{BOOK_SEARCH_SOURCE_LABELS[hit.source]}</div>
                     </div>
                     <button
                       type="button"
@@ -285,8 +270,8 @@ export function AddBookModal({
                 ))}
               </div>
 
-              {searchSource && (
-                <p className="add-book-source">{SOURCE_LABELS[searchSource]}</p>
+              {searchSources.length > 0 && (
+                <p className="add-book-source">{formatBookSearchSources(searchSources)}</p>
               )}
             </>
           ) : (

@@ -1,17 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { AppNav } from '../components/AppNav';
-import { BookCover } from '../components/BookCover';
-import { BookDetailModal } from '../components/BookDetailModal';
-import { NoteBadge } from '../components/NoteBadge';
+import { NotesByBook } from '../components/NotesByBook';
 import { NoteDetailModal } from '../components/NoteDetailModal';
 import { NotesEmptyState } from '../components/NotesEmptyState';
 import { PageHead } from '../components/PageHead';
 import { RoomBackdrop } from '../components/RoomBackdrop';
 import { useAppOverlays } from '../components/AppOverlays';
 import { fetchAllUserNotes, type NoteFeedItem } from '../lib/notesFeed';
-import { formatAuthors, NOTE_TYPE_LABELS, NOTE_VISIBILITY_LABELS } from '../lib/labels';
+import { groupNotesByBook } from '../lib/groupNotesByBook';
 import { fetchEntry } from '../lib/offline/librarySync';
+import { BookDetailModal } from '../components/BookDetailModal';
 import type { NoteType, UserBookEntry } from '../types/database';
 import '../styles/library.css';
 import '../styles/screens-ui.css';
@@ -28,12 +27,6 @@ const KIND_CHIPS: { key: KindFilter; label: string }[] = [
 interface NotesPageProps {
   userId: string;
   userEmail: string;
-}
-
-function noteBadgeTone(type: NoteType): 'quote' | 'thought' | 'general' {
-  if (type === 'quote') return 'quote';
-  if (type === 'thought') return 'thought';
-  return 'general';
 }
 
 export function NotesPage({ userId, userEmail }: NotesPageProps) {
@@ -83,24 +76,30 @@ export function NotesPage({ userId, userEmail }: NotesPageProps) {
   }, [items]);
 
   const term = q.trim().toLowerCase();
-  const filtered = items.filter(({ note, entry }) => {
-    if (kind !== 'all' && note.note_type !== kind) return false;
-    if (!term) return true;
-    const book = entry.book;
-    const haystack = [
-      note.body,
-      book?.title ?? '',
-      book?.authors?.join(' ') ?? '',
-    ]
-      .join(' ')
-      .toLowerCase();
-    return haystack.includes(term);
-  });
+  const filtered = useMemo(
+    () =>
+      items.filter(({ note, entry }) => {
+        if (kind !== 'all' && note.note_type !== kind) return false;
+        if (!term) return true;
+        const book = entry.book;
+        const haystack = [note.body, book?.title ?? '', book?.authors?.join(' ') ?? '']
+          .join(' ')
+          .toLowerCase();
+        return haystack.includes(term);
+      }),
+    [items, kind, term],
+  );
+
+  const groups = useMemo(() => groupNotesByBook(filtered), [filtered]);
 
   const emptyVariant = items.length === 0 ? 'empty' : 'filtered';
 
   function openNote(item: NoteFeedItem) {
     setSelectedNote(item);
+  }
+
+  function openBook(item: NoteFeedItem) {
+    setSelectedEntry(item.entry);
   }
 
   function openBookFromNote() {
@@ -118,7 +117,7 @@ export function NotesPage({ userId, userEmail }: NotesPageProps) {
         <PageHead
           eyebrow="На полях"
           title="Нотатки"
-          sub="Цитати й думки з усіх зібраних книг"
+          sub="Згруповано за книгами — цитати й думки з полів"
         />
 
         {error && <p className="banner-error">{error}</p>}
@@ -153,58 +152,7 @@ export function NotesPage({ userId, userEmail }: NotesPageProps) {
         ) : filtered.length === 0 ? (
           <NotesEmptyState variant={emptyVariant} />
         ) : (
-          <div className="notes-masonry">
-            {filtered.map((item) => {
-              const { note, entry } = item;
-              const book = entry.book;
-              return (
-                <div key={note.id} className="notes-masonry-item">
-                  <article
-                    className="dl-panel notes-card"
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => openNote(item)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        openNote(item);
-                      }
-                    }}
-                  >
-                    <div className="notes-card-badges">
-                      <NoteBadge tone={noteBadgeTone(note.note_type)}>
-                        {NOTE_TYPE_LABELS[note.note_type]}
-                      </NoteBadge>
-                      <NoteBadge tone={note.visibility === 'public' ? 'pub' : 'priv'}>
-                        {NOTE_VISIBILITY_LABELS[note.visibility]}
-                      </NoteBadge>
-                    </div>
-                    <p
-                      className={`notes-card-body${note.note_type === 'quote' ? ' is-quote' : ''}`}
-                    >
-                      {note.body}
-                    </p>
-                    <div className="notes-card-foot">
-                      <BookCover
-                        title={book?.title ?? 'Книга'}
-                        authors={book?.authors}
-                        coverUrl={book?.cover_url}
-                        entryId={entry.id}
-                        width={28}
-                      />
-                      <div className="notes-card-book">
-                        <div className="notes-card-title">{book?.title ?? 'Книга'}</div>
-                        <div className="notes-card-author">{formatAuthors(book?.authors)}</div>
-                      </div>
-                      {note.page_number != null && note.page_number > 0 && (
-                        <span className="notes-card-page">стор. {note.page_number}</span>
-                      )}
-                    </div>
-                  </article>
-                </div>
-              );
-            })}
-          </div>
+          <NotesByBook groups={groups} onOpenNote={openNote} onOpenBook={openBook} />
         )}
       </main>
 
