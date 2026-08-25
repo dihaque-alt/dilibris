@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { syncNotifications } from '../lib/notificationsStore';
+import { purgeRetiredNotifications, syncNotifications } from '../lib/notificationsStore';
 import { syncActivityNotifications } from '../lib/syncActivityNotifications';
 
 interface NotificationSyncEffectProps {
@@ -12,6 +12,8 @@ export function NotificationSyncEffect({ userId }: NotificationSyncEffectProps) 
 
     void (async () => {
       try {
+        await purgeRetiredNotifications(userId);
+        if (cancelled) return;
         await syncNotifications(userId);
         if (cancelled) return;
         await syncActivityNotifications(userId);

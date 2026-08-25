@@ -36,7 +36,21 @@ interface NotificationRow {
 const CACHE_KEY = (userId: string) => `dilibris_notifs_${userId}`;
 const DISMISSED_KEY = (userId: string) => `dilibris_notifs_dismissed_${userId}`;
 const LEGACY_SEED_IDS = new Set(['n1', 'n4']);
+/** Auto-generated milestones we no longer ship; purge on sync so they cannot reappear. */
+const RETIRED_NOTIFICATION_PREFIXES = ['challenge-half:'];
 export const NOTIFICATION_TTL_MS = 7 * 86400000;
+
+function isRetiredNotificationId(id: string): boolean {
+  return RETIRED_NOTIFICATION_PREFIXES.some((prefix) => id.startsWith(prefix));
+}
+
+function withoutRetiredNotifications(items: AppNotification[]): AppNotification[] {
+  return items.filter((n) => !isRetiredNotificationId(n.id));
+}
+
+function visibleNotifications(userId: string, items: AppNotification[]): AppNotification[] {
+  return withoutRetiredNotifications(withoutDismissed(userId, items));
+}
 
 function loadDismissedNotificationIds(userId: string): Set<string> {
   try {
@@ -221,15 +235,43 @@ async function flushCachedReadState(userId: string, remote: AppNotification[]): 
 
 export function loadNotifications(userId: string): AppNotification[] {
   const cached = loadCachedNotifications(userId);
-  const fresh = withoutDismissed(userId, filterFreshNotifications(cached));
+  const fresh = visibleNotifications(userId, filterFreshNotifications(cached));
   if (fresh.length !== cached.length) {
     cacheNotifications(userId, fresh);
   }
   return hydrateNotificationTimes(fresh);
 }
 
+/** Drop retired notification types from cache and Supabase (one-time cleanup per load). */
+export async function purgeRetiredNotifications(userId: string): Promise<void> {
+  const cached = loadCachedNotifications(userId);
+  const retiredIds = new Set(
+    [...cached, ...(isOnline() ? await fetchRemoteNotifications(userId).catch(() => []) : [])]
+      .filter((n) => isRetiredNotificationId(n.id))
+      .map((n) => n.id),
+  );
+
+  if (!retiredIds.size) return;
+
+  const remaining = visibleNotifications(
+    userId,
+    cached.filter((n) => !retiredIds.has(n.id)),
+  );
+  cacheNotifications(userId, remaining);
+
+  if (isOnline()) {
+    await Promise.all(
+      [...retiredIds].map((id) =>
+        supabase.from('user_notifications').delete().eq('user_id', userId).eq('id', id),
+      ),
+    );
+  }
+
+  emitNotificationsChanged();
+}
+
 export async function syncNotifications(userId: string): Promise<AppNotification[]> {
-  const cached = withoutDismissed(userId, filterFreshNotifications(loadCachedNotifications(userId)));
+  const cached = visibleNotifications(userId, filterFreshNotifications(loadCachedNotifications(userId)));
 
   if (!isOnline()) {
     cacheNotifications(userId, cached);
@@ -238,18 +280,27 @@ export async function syncNotifications(userId: string): Promise<AppNotification
 
   try {
     await purgeStaleNotificationsRemote(userId);
-    let remote = filterFreshNotifications(await fetchRemoteNotifications(userId));
+    let remote = visibleNotifications(
+      userId,
+      filterFreshNotifications(await fetchRemoteNotifications(userId)),
+    );
 
     if (remote.length === 0 && cached.length > 0) {
       await upsertNotifications(userId, cached);
-      remote = filterFreshNotifications(await fetchRemoteNotifications(userId));
+      remote = visibleNotifications(
+        userId,
+        filterFreshNotifications(await fetchRemoteNotifications(userId)),
+      );
     } else if (remote.length > 0) {
       await flushCachedReadState(userId, remote);
-      remote = filterFreshNotifications(await fetchRemoteNotifications(userId));
+      remote = visibleNotifications(
+        userId,
+        filterFreshNotifications(await fetchRemoteNotifications(userId)),
+      );
     }
 
     cacheNotifications(userId, remote);
-    return hydrateNotificationTimes(withoutDismissed(userId, remote));
+    return hydrateNotificationTimes(remote);
   } catch {
     cacheNotifications(userId, cached);
     return hydrateNotificationTimes(cached);
@@ -303,7 +354,11 @@ export async function addNotification(
   const id = partial.id ?? `n-${createdAt}-${Math.random().toString(36).slice(2, 8)}`;
 
   if (loadCachedNotifications(userId).some((n) => n.id === id)) {
-    return hydrateNotificationTimes(loadCachedNotifications(userId));
+    return hydrateNotificationTimes(visibleNotifications(userId, loadCachedNotifications(userId)));
+  }
+
+  if (loadDismissedNotificationIds(userId).has(id) || isRetiredNotificationId(id)) {
+    return hydrateNotificationTimes(visibleNotifications(userId, loadCachedNotifications(userId)));
   }
 
   const next: AppNotification = {
@@ -343,14 +398,15 @@ export async function addNotificationsBatch(
 ): Promise<AppNotification[]> {
   if (!partials.length) return hydrateNotificationTimes(loadCachedNotifications(userId));
 
-  const existing = loadCachedNotifications(userId);
+  const existing = visibleNotifications(userId, loadCachedNotifications(userId));
   const existingIds = new Set(existing.map((n) => n.id));
+  const dismissed = loadDismissedNotificationIds(userId);
   const fresh: AppNotification[] = [];
 
   for (const partial of partials) {
     const createdAt = partial.createdAt ?? new Date().toISOString();
     const id = partial.id ?? `n-${createdAt}-${Math.random().toString(36).slice(2, 8)}`;
-    if (existingIds.has(id)) continue;
+    if (existingIds.has(id) || dismissed.has(id) || isRetiredNotificationId(id)) continue;
     existingIds.add(id);
     fresh.push({
       id,
@@ -385,12 +441,15 @@ export async function loadExistingNotificationIds(userId: string): Promise<Set<s
   const dismissed = loadDismissedNotificationIds(userId);
   if (isOnline()) {
     try {
-      const remote = withoutDismissed(userId, await fetchRemoteNotifications(userId));
+      const remote = visibleNotifications(userId, await fetchRemoteNotifications(userId));
       cacheNotifications(userId, remote);
       return new Set([...remote.map((n) => n.id), ...dismissed]);
     } catch {
       /* fall through */
     }
   }
-  return new Set([...loadCachedNotifications(userId).map((n) => n.id), ...dismissed]);
+  return new Set([
+    ...visibleNotifications(userId, loadCachedNotifications(userId)).map((n) => n.id),
+    ...dismissed,
+  ]);
 }

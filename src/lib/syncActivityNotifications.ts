@@ -118,36 +118,5 @@ export async function syncActivityNotifications(userId: string): Promise<void> {
     });
   }
 
-  const year = now.getFullYear();
-  const { data: challenge } = await supabase
-    .from('reading_challenges')
-    .select('target_books')
-    .eq('user_id', userId)
-    .eq('year', year)
-    .maybeSingle();
-
-  if (challenge?.target_books) {
-    const { count } = await supabase
-      .from('user_book_entries')
-      .select('id', { count: 'exact', head: true })
-      .eq('user_id', userId)
-      .eq('status', 'finished')
-      .gte('finished_on', `${year}-01-01`)
-      .lte('finished_on', `${year}-12-31`);
-
-    const finished = count ?? 0;
-    const target = challenge.target_books as number;
-    const halfKey = `challenge-half:${year}`;
-    if (finished >= Math.ceil(target / 2) && finished < target && !existingIds.has(halfKey)) {
-      batch.push({
-        id: halfKey,
-        kind: 'challenge',
-        text: `Ти на півдорозі: ${finished} з ${target} книг`,
-        createdAt: now.toISOString(),
-        go: { page: 'dashboard' },
-      });
-    }
-  }
-
   await addNotificationsBatch(userId, batch);
 }

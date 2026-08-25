@@ -14,6 +14,7 @@ import {
   markAllNotifsRead,
   markNotifRead,
   notifGlyph,
+  purgeRetiredNotifications,
   syncNotifications,
   type AppNotification,
 } from '../lib/notificationsStore';
@@ -81,6 +82,8 @@ export function NotifBell({ userId }: NotifBellProps) {
 
     void (async () => {
       try {
+        await purgeRetiredNotifications(userId);
+        if (cancelled) return;
         await syncNotifications(userId);
         if (cancelled) return;
         await syncActivityNotifications(userId);
