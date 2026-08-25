@@ -356,6 +356,12 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
             ) : (
               <MonthChart data={monthData} metric={monthMetric} />
             )}
+            {!monthDualEmpty && (
+              <div className="dl-month-dual-inset">
+                <h3 className="dl-month-subtitle">Книги та сторінки</h3>
+                <MonthBooksPagesChart data={monthDualData} />
+              </div>
+            )}
           </section>
 
           <section className="dl-panel">
@@ -369,19 +375,6 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
             />
           </section>
         </div>
-
-        <section className="dl-panel dl-month-dual-panel">
-          <h2 className="dl-panel-title">Книги та сторінки за місяць</h2>
-          {monthDualEmpty ? (
-            <p className="empty-hint">{monthEmptyHint}</p>
-          ) : (
-            <MonthBooksPagesChart
-              data={monthDualData}
-              totalBooks={finishedCount}
-              totalPages={pages}
-            />
-          )}
-        </section>
 
         <div className="dl-dash-row is-length-ratings">
           <section className="dl-panel">

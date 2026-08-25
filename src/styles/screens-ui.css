@@ -292,132 +292,108 @@
   flex-direction: column;
   justify-content: flex-end;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
-.dl-month-hover-value {
+.dl-month-bar-value {
   font-family: var(--font-sans);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
-  color: var(--text-main);
+  line-height: 1.1;
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
-  padding: 3px 7px;
-  border-radius: var(--r-pill);
-  background: var(--bg-card);
-  border: 1px solid var(--line-strong);
-  box-shadow: var(--shadow-card);
 }
 
-.dl-month-col.is-active .dl-bar {
-  filter: brightness(1.05);
+.dl-month-dual-inset {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
 }
 
-.dl-month-dual-panel {
-  margin-bottom: 16px;
-}
-
-.dl-month-dual-summary {
+.dl-month-subtitle {
   margin: 0 0 10px;
-  font-family: var(--font-serif);
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
   font-weight: 700;
-  font-size: var(--fs-body);
-  color: var(--text-main);
+  letter-spacing: 0.2px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.dl-month-dual-bars {
+  margin-top: 0;
 }
 
 .dl-month-dual-legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 14px;
-  margin-bottom: 12px;
+  gap: 12px;
+  margin-bottom: 8px;
   font-family: var(--font-sans);
-  font-size: var(--fs-xs);
-  color: var(--text-muted);
+  font-size: 10px;
+  color: var(--text-faint);
 }
 
 .dl-month-dual-legend i {
   display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  margin-right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  margin-right: 5px;
   vertical-align: middle;
 }
 
 .dl-month-dual-legend i.is-books {
-  background: #5eb8e8;
+  background: var(--accent-lime-deep);
 }
 
 .dl-month-dual-legend i.is-pages {
-  background: #e86a6a;
+  background: var(--gold-deep);
 }
 
-.dl-month-dual-chart-wrap {
-  position: relative;
+.dl-month-chart.is-dual {
+  height: 108px;
 }
 
-.dl-month-dual-popover {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 2;
+.dl-month-chart.is-dual .dl-month-bar-stack.is-dual {
+  min-height: 78px;
+}
+
+.dl-month-dual-pair {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3px;
+  width: 100%;
+}
+
+.dl-month-dual-item {
+  flex: 1;
+  max-width: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 8px 12px;
-  border-radius: var(--r-md);
-  background: var(--bg-card);
-  border: 1px solid var(--line-strong);
-  box-shadow: var(--shadow-card);
-  font-family: var(--font-sans);
-  font-size: var(--fs-xs);
-  color: var(--text-muted);
-  pointer-events: none;
+  justify-content: flex-end;
+  gap: 3px;
+  min-width: 0;
 }
 
-.dl-month-dual-popover strong {
-  color: var(--text-main);
-  font-size: var(--fs-sm);
-}
-
-.dl-month-dual-chart {
+.dl-month-chart.is-dual .dl-bar.is-books {
   width: 100%;
-  height: auto;
-  display: block;
+  max-width: 14px;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(180deg, var(--accent-lime), var(--accent-lime-deep));
 }
 
-.dl-month-dual-line {
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.dl-month-dual-line.is-books {
-  stroke: #5eb8e8;
-}
-
-.dl-month-dual-line.is-pages {
-  stroke: #e86a6a;
-}
-
-.dl-month-dual-dot.is-books {
-  fill: #5eb8e8;
-}
-
-.dl-month-dual-dot.is-pages {
-  fill: #e86a6a;
-}
-
-.dl-month-dual-months {
-  display: grid;
-  grid-template-columns: repeat(12, 1fr);
-  gap: 2px;
-  margin-top: 6px;
-  font-family: var(--font-sans);
-  font-size: 10px;
-  color: var(--text-faint);
-  text-align: center;
+.dl-month-chart.is-dual .dl-bar.is-pages {
+  width: 100%;
+  max-width: 14px;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(180deg, var(--gold-highlight), var(--gold-deep));
 }
 
 .dl-statbar-list {
