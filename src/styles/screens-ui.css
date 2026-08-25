@@ -284,6 +284,142 @@
   color: var(--text-faint);
 }
 
+.dl-month-bar-stack {
+  flex: 1;
+  width: 100%;
+  min-height: 122px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+}
+
+.dl-month-hover-value {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+  padding: 3px 7px;
+  border-radius: var(--r-pill);
+  background: var(--bg-card);
+  border: 1px solid var(--line-strong);
+  box-shadow: var(--shadow-card);
+}
+
+.dl-month-col.is-active .dl-bar {
+  filter: brightness(1.05);
+}
+
+.dl-month-dual-panel {
+  margin-bottom: 16px;
+}
+
+.dl-month-dual-summary {
+  margin: 0 0 10px;
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-size: var(--fs-body);
+  color: var(--text-main);
+}
+
+.dl-month-dual-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 12px;
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+.dl-month-dual-legend i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.dl-month-dual-legend i.is-books {
+  background: #5eb8e8;
+}
+
+.dl-month-dual-legend i.is-pages {
+  background: #e86a6a;
+}
+
+.dl-month-dual-chart-wrap {
+  position: relative;
+}
+
+.dl-month-dual-popover {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 12px;
+  border-radius: var(--r-md);
+  background: var(--bg-card);
+  border: 1px solid var(--line-strong);
+  box-shadow: var(--shadow-card);
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.dl-month-dual-popover strong {
+  color: var(--text-main);
+  font-size: var(--fs-sm);
+}
+
+.dl-month-dual-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.dl-month-dual-line {
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.dl-month-dual-line.is-books {
+  stroke: #5eb8e8;
+}
+
+.dl-month-dual-line.is-pages {
+  stroke: #e86a6a;
+}
+
+.dl-month-dual-dot.is-books {
+  fill: #5eb8e8;
+}
+
+.dl-month-dual-dot.is-pages {
+  fill: #e86a6a;
+}
+
+.dl-month-dual-months {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 2px;
+  margin-top: 6px;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  color: var(--text-faint);
+  text-align: center;
+}
+
 .dl-statbar-list {
   display: flex;
   flex-direction: column;

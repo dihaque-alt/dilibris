@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react
 import { AppNav } from '../components/AppNav';
 import { ChallengeBar } from '../components/ChallengeBar';
 import { FormatDonut } from '../components/FormatDonut';
+import { MonthBooksPagesChart } from '../components/MonthBooksPagesChart';
+import { MonthChart } from '../components/MonthChart';
 import { PageHead } from '../components/PageHead';
 import { RoomBackdrop } from '../components/RoomBackdrop';
 import { SegmentedDonut } from '../components/SegmentedDonut';
@@ -23,7 +25,7 @@ import {
   formatDaysToFinish,
   languageBreakdown,
   longestBreakDays,
-  MONTH_NAMES_UK,
+  monthBooksAndPagesSeries,
   monthSeriesFromBooks,
   monthSeriesFromSessions,
   ratingBreakdown,
@@ -55,31 +57,6 @@ function challengeHint(finished: number, target: number, year: number): string {
   if (diff > 0) return `Ти на ${diff} ${diff === 1 ? 'книгу' : 'книги'} попереду графіка — так тримати`;
   if (diff < 0) return `Ще ${Math.abs(diff)} ${Math.abs(diff) === 1 ? 'книга' : 'книг'} до комфортного темпу — без поспіху`;
   return 'Тримаєш ідеальний темп — продовжуй у своєму ритмі';
-}
-
-function MonthChart({ data }: { data: { month: number; value: number }[]; metric: MonthMetric }) {
-  const max = Math.max(1, ...data.map((d) => d.value));
-
-  return (
-    <div className="dl-month-chart">
-      {data.map(({ month, value }) => (
-        <div key={month} className="dl-month-col">
-          <div
-            className="dl-bar"
-            style={{
-              width: '100%',
-              maxWidth: 34,
-              height: Math.max(5, (value / max) * 122),
-              background: value
-                ? 'linear-gradient(180deg, var(--accent-lime), var(--accent-lime-deep))'
-                : 'var(--line)',
-            }}
-          />
-          <span className="dl-month-label">{MONTH_NAMES_UK[month - 1]}</span>
-        </div>
-      ))}
-    </div>
-  );
 }
 
 function MonthMetricPicker({
@@ -178,6 +155,8 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
     monthMetric === 'books'
       ? monthSeriesFromBooks(entries, selectedYear)
       : monthSeriesFromSessions(sessions, selectedYear, monthMetric);
+  const monthDualData = monthBooksAndPagesSeries(entries, sessions, selectedYear);
+  const monthDualEmpty = monthDualData.every((row) => row.books === 0 && row.pages === 0);
   const monthChartEmpty =
     monthMetric === 'books'
       ? finishedCount === 0
@@ -390,6 +369,19 @@ export function DashboardPage({ userId, userEmail }: DashboardPageProps) {
             />
           </section>
         </div>
+
+        <section className="dl-panel dl-month-dual-panel">
+          <h2 className="dl-panel-title">Книги та сторінки за місяць</h2>
+          {monthDualEmpty ? (
+            <p className="empty-hint">{monthEmptyHint}</p>
+          ) : (
+            <MonthBooksPagesChart
+              data={monthDualData}
+              totalBooks={finishedCount}
+              totalPages={pages}
+            />
+          )}
+        </section>
 
         <div className="dl-dash-row is-length-ratings">
           <section className="dl-panel">

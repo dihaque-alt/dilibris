@@ -115,6 +115,20 @@ export function formatMonthMetricValue(metric: MonthMetric, value: number): stri
   return String(value);
 }
 
+export function monthBooksAndPagesSeries(
+  entries: StatsEntry[],
+  sessions: SessionMonthRow[],
+  year: number,
+): { month: number; books: number; pages: number }[] {
+  const books = monthSeriesFromBooks(entries, year);
+  const pages = monthSeriesFromSessions(sessions, year, 'pages');
+  return books.map((row, i) => ({
+    month: row.month,
+    books: row.value,
+    pages: pages[i]?.value ?? 0,
+  }));
+}
+
 export function monthMetricBarTitle(metric: MonthMetric, value: number): string {
   if (metric === 'books') return `${value} ${value === 1 ? 'книга' : value < 5 ? 'книги' : 'книг'}`;
   if (metric === 'pages') return `${value} сторінок`;
