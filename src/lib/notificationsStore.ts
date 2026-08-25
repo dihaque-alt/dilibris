@@ -34,8 +34,38 @@ interface NotificationRow {
 }
 
 const CACHE_KEY = (userId: string) => `dilibris_notifs_${userId}`;
+const DISMISSED_KEY = (userId: string) => `dilibris_notifs_dismissed_${userId}`;
 const LEGACY_SEED_IDS = new Set(['n1', 'n4']);
 export const NOTIFICATION_TTL_MS = 7 * 86400000;
+
+function loadDismissedNotificationIds(userId: string): Set<string> {
+  try {
+    const raw = localStorage.getItem(DISMISSED_KEY(userId));
+    if (raw) return new Set(JSON.parse(raw) as string[]);
+  } catch {
+    /* ignore */
+  }
+  return new Set();
+}
+
+function rememberDismissedNotification(userId: string, id: string) {
+  const dismissed = loadDismissedNotificationIds(userId);
+  dismissed.add(id);
+  localStorage.setItem(DISMISSED_KEY(userId), JSON.stringify([...dismissed].slice(-80)));
+}
+
+function rememberDismissedNotifications(userId: string, ids: string[]) {
+  if (!ids.length) return;
+  const dismissed = loadDismissedNotificationIds(userId);
+  ids.forEach((id) => dismissed.add(id));
+  localStorage.setItem(DISMISSED_KEY(userId), JSON.stringify([...dismissed].slice(-80)));
+}
+
+function withoutDismissed(userId: string, items: AppNotification[]): AppNotification[] {
+  const dismissed = loadDismissedNotificationIds(userId);
+  if (!dismissed.size) return items;
+  return items.filter((n) => !dismissed.has(n.id));
+}
 
 function isFreshNotification(n: AppNotification, now = Date.now()): boolean {
   const ts = new Date(n.createdAt).getTime();
@@ -125,6 +155,7 @@ function emitNotificationsChanged() {
 }
 
 export async function dismissNotification(userId: string, id: string): Promise<AppNotification[]> {
+  rememberDismissedNotification(userId, id);
   const items = loadCachedNotifications(userId).filter((n) => n.id !== id);
   cacheNotifications(userId, items);
 
@@ -137,6 +168,10 @@ export async function dismissNotification(userId: string, id: string): Promise<A
 }
 
 export async function dismissAllNotifications(userId: string): Promise<AppNotification[]> {
+  rememberDismissedNotifications(
+    userId,
+    loadCachedNotifications(userId).map((n) => n.id),
+  );
   cacheNotifications(userId, []);
 
   if (isOnline()) {
@@ -186,7 +221,7 @@ async function flushCachedReadState(userId: string, remote: AppNotification[]): 
 
 export function loadNotifications(userId: string): AppNotification[] {
   const cached = loadCachedNotifications(userId);
-  const fresh = filterFreshNotifications(cached);
+  const fresh = withoutDismissed(userId, filterFreshNotifications(cached));
   if (fresh.length !== cached.length) {
     cacheNotifications(userId, fresh);
   }
@@ -194,7 +229,7 @@ export function loadNotifications(userId: string): AppNotification[] {
 }
 
 export async function syncNotifications(userId: string): Promise<AppNotification[]> {
-  const cached = filterFreshNotifications(loadCachedNotifications(userId));
+  const cached = withoutDismissed(userId, filterFreshNotifications(loadCachedNotifications(userId)));
 
   if (!isOnline()) {
     cacheNotifications(userId, cached);
@@ -214,7 +249,7 @@ export async function syncNotifications(userId: string): Promise<AppNotification
     }
 
     cacheNotifications(userId, remote);
-    return hydrateNotificationTimes(remote);
+    return hydrateNotificationTimes(withoutDismissed(userId, remote));
   } catch {
     cacheNotifications(userId, cached);
     return hydrateNotificationTimes(cached);
@@ -347,14 +382,15 @@ export function hydrateNotificationTimes(items: AppNotification[]): AppNotificat
 }
 
 export async function loadExistingNotificationIds(userId: string): Promise<Set<string>> {
+  const dismissed = loadDismissedNotificationIds(userId);
   if (isOnline()) {
     try {
-      const remote = await fetchRemoteNotifications(userId);
+      const remote = withoutDismissed(userId, await fetchRemoteNotifications(userId));
       cacheNotifications(userId, remote);
-      return new Set(remote.map((n) => n.id));
+      return new Set([...remote.map((n) => n.id), ...dismissed]);
     } catch {
       /* fall through */
     }
   }
-  return new Set(loadCachedNotifications(userId).map((n) => n.id));
+  return new Set([...loadCachedNotifications(userId).map((n) => n.id), ...dismissed]);
 }

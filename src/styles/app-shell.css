@@ -204,6 +204,7 @@
 
 .menu-backdrop--notif {
   z-index: 200;
+  touch-action: none;
 }
 
 .header-menu {
@@ -295,17 +296,14 @@
   border-radius: var(--r-lg) var(--r-lg) 0 0;
   padding-left: env(safe-area-inset-left, 0px);
   padding-right: env(safe-area-inset-right, 0px);
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
   max-height: min(85dvh, 520px);
-  display: flex;
-  flex-direction: column;
+  height: auto;
   animation: dl-sheet-up var(--dur-base) var(--ease-warm);
 }
 
 .notif-panel--portal.is-sheet .notif-list {
-  flex: 1;
-  min-height: 0;
-  max-height: none;
+  max-height: min(52dvh, 380px);
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
